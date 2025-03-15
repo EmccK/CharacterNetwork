@@ -547,6 +547,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User profile update route
+  app.patch("/api/users/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Only allow users to update their own profile, unless they're an admin
+      if (userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "You don't have permission to update this profile" });
+      }
+      
+      const { username, email } = req.body;
+      
+      // Check if username is already taken by another user
+      if (username) {
+        const existingUser = await storage.getUserByUsername(username);
+        if (existingUser && existingUser.id !== userId) {
+          return res.status(400).json({ message: "Username is already taken" });
+        }
+      }
+      
+      const updatedUser = await storage.updateUser(userId, { username, email });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Remove password from response
+      const { password, ...userWithoutPassword } = updatedUser;
+      
+      res.json(userWithoutPassword);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Change password route
+  app.post("/api/users/:id/change-password", isAuthenticated, async (req, res, next) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Only allow users to change their own password, unless they're an admin
+      if (userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "You don't have permission to change this password" });
+      }
+      
+      const { currentPassword, newPassword } = req.body;
+      
+      // Verify current password
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Skip password verification for admins changing other users' passwords
+      if (userId === req.user.id) {
+        // Use the comparePasswords function from auth.ts
+        // Since we can't directly import it here, we'll need to implement a simpler version
+        const { scrypt, timingSafeEqual } = await import('crypto');
+        const { promisify } = await import('util');
+        const scryptAsync = promisify(scrypt);
+        
+        const [hashedPassword, salt] = user.password.split('.');
+        const hashedInputBuffer = Buffer.from(hashedPassword, 'hex');
+        const suppliedInputBuffer = await scryptAsync(currentPassword, salt, 64) as Buffer;
+        
+        if (!timingSafeEqual(hashedInputBuffer, suppliedInputBuffer)) {
+          return res.status(401).json({ message: "Current password is incorrect" });
+        }
+      }
+      
+      // Hash the new password
+      const { scrypt, randomBytes } = await import('crypto');
+      const { promisify } = await import('util');
+      const scryptAsync = promisify(scrypt);
+      
+      const salt = randomBytes(16).toString('hex');
+      const hashBuffer = await scryptAsync(newPassword, salt, 64) as Buffer;
+      const hashedPassword = `${hashBuffer.toString('hex')}.${salt}`;
+      
+      // Update the password
+      const updatedUser = await storage.updateUser(userId, { password: hashedPassword });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ message: "Password updated successfully" });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   // Create the HTTP server
   const httpServer = createServer(app);
 
