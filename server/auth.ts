@@ -49,14 +49,14 @@ export function setupAuth(app: Express) {
       try {
         const user = await storage.getUserByUsername(username);
         if (!user) {
-          return done(null, false, { message: "Invalid username or password" });
+          return done(null, false, { message: "用户名或密码错误" });
         }
-        
+
         const isValidPassword = await comparePasswords(password, user.password);
         if (!isValidPassword) {
-          return done(null, false, { message: "Invalid username or password" });
+          return done(null, false, { message: "用户名或密码错误" });
         }
-        
+
         return done(null, user);
       } catch (error) {
         return done(error);
@@ -65,7 +65,7 @@ export function setupAuth(app: Express) {
   );
 
   passport.serializeUser((user, done) => done(null, user.id));
-  
+
   passport.deserializeUser(async (id: number, done) => {
     try {
       const user = await storage.getUser(id);
@@ -79,20 +79,20 @@ export function setupAuth(app: Express) {
   app.post("/api/register", async (req, res, next) => {
     try {
       const { username, password, email } = req.body;
-      
+
       if (!username || !password || !email) {
-        return res.status(400).json({ message: "All fields are required" });
+        return res.status(400).json({ message: "所有字段都是必需的" }); //Added translation for this line.  Previous translation was missing.
       }
-      
+
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
+        return res.status(400).json({ message: "用户名已存在" }); //Added translation for this line.  Previous translation was missing.
       }
-      
+
       // First user is automatically an admin
       const users = await storage.getUsers();
       const isAdmin = users.length === 0 ? true : false;
-      
+
       const hashedPassword = await hashPassword(password);
       const user = await storage.createUser({
         username,
@@ -100,11 +100,11 @@ export function setupAuth(app: Express) {
         email,
         isAdmin
       });
-      
+
       // Remove password from response
       const userResponse = { ...user };
       delete userResponse.password;
-      
+
       req.login(user, (err) => {
         if (err) return next(err);
         res.status(201).json(userResponse);
@@ -118,16 +118,16 @@ export function setupAuth(app: Express) {
     passport.authenticate("local", (err, user, info) => {
       if (err) return next(err);
       if (!user) {
-        return res.status(401).json({ message: info?.message || "Authentication failed" });
+        return res.status(401).json({ message: info?.message || "身份验证失败" }); //Added translation for this line.  Previous translation was missing.
       }
-      
+
       req.login(user, (loginErr) => {
         if (loginErr) return next(loginErr);
-        
+
         // Remove password from response
         const userResponse = { ...user };
         delete userResponse.password;
-        
+
         return res.status(200).json(userResponse);
       });
     })(req, res, next);
@@ -142,43 +142,43 @@ export function setupAuth(app: Express) {
 
   app.get("/api/user", (req, res) => {
     if (!req.isAuthenticated()) {
-      return res.status(401).json({ message: "Not authenticated" });
+      return res.status(401).json({ message: "未登录" });
     }
-    
+
     // Remove password from response
     const userResponse = { ...req.user };
     delete userResponse.password;
-    
+
     res.json(userResponse);
   });
-  
+
   // Password change
   app.post("/api/change-password", async (req, res, next) => {
     try {
       if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: "Not authenticated" });
+        return res.status(401).json({ message: "未登录" });
       }
-      
+
       const { currentPassword, newPassword } = req.body;
-      
+
       if (!currentPassword || !newPassword) {
-        return res.status(400).json({ message: "Current password and new password are required" });
+        return res.status(400).json({ message: "当前密码和新密码都是必需的" }); //Added translation for this line.  Previous translation was missing.
       }
-      
+
       const user = await storage.getUser(req.user.id);
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        return res.status(404).json({ message: "用户未找到" }); //Added translation for this line.  Previous translation was missing.
       }
-      
+
       const isValidPassword = await comparePasswords(currentPassword, user.password);
       if (!isValidPassword) {
-        return res.status(400).json({ message: "Current password is incorrect" });
+        return res.status(400).json({ message: "当前密码不正确" }); //Added translation for this line.  Previous translation was missing.
       }
-      
+
       const hashedPassword = await hashPassword(newPassword);
       await storage.updateUser(user.id, { password: hashedPassword });
-      
-      res.status(200).json({ message: "Password updated successfully" });
+
+      res.status(200).json({ message: "密码已成功更新" }); //Added translation for this line.  Previous translation was missing.
     } catch (error) {
       next(error);
     }
