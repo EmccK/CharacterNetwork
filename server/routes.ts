@@ -254,12 +254,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let avatar = character.avatar;
       if (req.file) {
         avatar = `/uploads/${req.file.filename}`;
+      } else if (req.body.avatarUrl) {
+        // If avatarUrl is provided, use it directly
+        avatar = req.body.avatarUrl;
       }
       
       const characterData = {
         ...req.body,
         avatar
       };
+      
+      // Remove avatarUrl field as it's not in our schema
+      delete characterData.avatarUrl;
       
       const updatedCharacter = await storage.updateCharacter(parseInt(req.params.id), characterData);
       res.json(updatedCharacter);
