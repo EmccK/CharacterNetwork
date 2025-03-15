@@ -18,14 +18,30 @@ import AdminPanel from "@/pages/admin-panel";
 function Router() {
   return (
     <Switch>
-      <ProtectedRoute path="/" component={HomePage} />
-      <Route path="/auth" component={AuthPage} />
-      <ProtectedRoute path="/novels" component={NovelsPage} />
-      <ProtectedRoute path="/novels/:id" component={NovelDetail} />
-      <ProtectedRoute path="/characters" component={CharactersPage} />
-      <ProtectedRoute path="/relationships" component={RelationshipsPage} />
-      <ProtectedRoute path="/admin" component={AdminPanel} />
-      <Route component={NotFound} />
+      <Route path="/">
+        <HomePage />
+      </Route>
+      <Route path="/auth">
+        <AuthPage />
+      </Route>
+      <Route path="/novels">
+        <NovelsPage />
+      </Route>
+      <Route path="/novels/:id">
+        <NovelDetail />
+      </Route>
+      <Route path="/characters">
+        <CharactersPage />
+      </Route>
+      <Route path="/relationships">
+        <RelationshipsPage />
+      </Route>
+      <Route path="/admin">
+        <AdminPanel />
+      </Route>
+      <Route>
+        <NotFound />
+      </Route>
     </Switch>
   );
 }

@@ -12,6 +12,12 @@ export default function HomePage() {
   const { user } = useAuth();
   const [_, navigate] = useLocation();
   
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+    }
+  }, [user, navigate]);
+  
   // Get novels count
   const { data: novels = [] } = useQuery({
     queryKey: ["/api/novels"],

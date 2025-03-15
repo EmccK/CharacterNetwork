@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
@@ -34,6 +34,13 @@ export default function NovelsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
   const [_, navigate] = useLocation();
+  const { user } = useAuth();
+  
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+    }
+  }, [user, navigate]);
   
   // Fetch novels
   const { data: novels = [], isLoading, refetch } = useQuery({
