@@ -72,17 +72,17 @@ export default function AuthPage() {
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">
-              Novel Character Manager
+              小说角色管理器
             </CardTitle>
             <CardDescription className="text-center">
-              Manage your novel characters and their relationships
+              管理您的小说角色及其关系
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="register">Register</TabsTrigger>
+                <TabsTrigger value="login">登录</TabsTrigger>
+                <TabsTrigger value="register">注册</TabsTrigger>
               </TabsList>
               
               <TabsContent value="login">
@@ -93,9 +93,9 @@ export default function AuthPage() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>用户名</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your username" {...field} />
+                            <Input placeholder="请输入用户名" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -106,9 +106,9 @@ export default function AuthPage() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Password</FormLabel>
+                          <FormLabel>密码</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="Enter your password" {...field} />
+                            <Input type="password" placeholder="请输入密码" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -118,10 +118,10 @@ export default function AuthPage() {
                       {loginMutation.isPending ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Logging in...
+                          登录中...
                         </>
                       ) : (
-                        "Login"
+                        "登录"
                       )}
                     </Button>
                   </form>
@@ -136,9 +136,9 @@ export default function AuthPage() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>用户名</FormLabel>
                           <FormControl>
-                            <Input placeholder="Choose a username" {...field} />
+                            <Input placeholder="请选择用户名" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -149,9 +149,9 @@ export default function AuthPage() {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel>电子邮箱</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="Enter your email" {...field} />
+                            <Input type="email" placeholder="请输入您的电子邮箱" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -162,9 +162,9 @@ export default function AuthPage() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Password</FormLabel>
+                          <FormLabel>密码</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="Create a password" {...field} />
+                            <Input type="password" placeholder="请创建密码" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -175,9 +175,9 @@ export default function AuthPage() {
                       name="confirmPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Confirm Password</FormLabel>
+                          <FormLabel>确认密码</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="Confirm your password" {...field} />
+                            <Input type="password" placeholder="请确认您的密码" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -187,10 +187,10 @@ export default function AuthPage() {
                       {registerMutation.isPending ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Creating account...
+                          创建账户中...
                         </>
                       ) : (
-                        "Create Account"
+                        "创建账户"
                       )}
                     </Button>
                   </form>
