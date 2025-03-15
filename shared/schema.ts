@@ -20,7 +20,7 @@ export const novels = pgTable("novels", {
   coverImage: text("cover_image"),
   genre: text("genre"),
   status: text("status").default("In Progress"),
-  userId: integer("user_id").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -31,7 +31,7 @@ export const characters = pgTable("characters", {
   name: text("name").notNull(),
   description: text("description"),
   avatar: text("avatar"),
-  novelId: integer("novel_id").notNull(),
+  novelId: integer("novel_id").notNull().references(() => novels.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -40,17 +40,17 @@ export const relationshipTypes = pgTable("relationship_types", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   color: text("color").notNull(),
-  userId: integer("user_id").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
 });
 
 // Relationship Schema
 export const relationships = pgTable("relationships", {
   id: serial("id").primaryKey(),
-  sourceId: integer("source_id").notNull(),
-  targetId: integer("target_id").notNull(),
-  typeId: integer("type_id").notNull(),
+  sourceId: integer("source_id").notNull().references(() => characters.id, { onDelete: "cascade" }),
+  targetId: integer("target_id").notNull().references(() => characters.id, { onDelete: "cascade" }),
+  typeId: integer("type_id").notNull().references(() => relationshipTypes.id, { onDelete: "cascade" }),
   description: text("description"),
-  novelId: integer("novel_id").notNull(),
+  novelId: integer("novel_id").notNull().references(() => novels.id, { onDelete: "cascade" }),
 });
 
 // Insert schemas
