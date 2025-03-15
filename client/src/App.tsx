@@ -14,6 +14,7 @@ import NovelDetail from "@/pages/novel-detail";
 import CharactersPage from "@/pages/characters-page";
 import RelationshipsPage from "@/pages/relationships-page";
 import AdminPanel from "@/pages/admin-panel";
+import SettingsPage from "@/pages/settings-page";
 
 function Router() {
   return (
@@ -38,6 +39,9 @@ function Router() {
       </Route>
       <Route path="/admin">
         <AdminPanel />
+      </Route>
+      <Route path="/settings">
+        <SettingsPage />
       </Route>
       <Route>
         <NotFound />
