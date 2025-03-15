@@ -201,13 +201,13 @@ export default function AuthPage() {
           <CardFooter className="flex flex-col space-y-2">
             <div className="text-sm text-center text-gray-500">
               {activeTab === "login" 
-                ? "Don't have an account? " 
-                : "Already have an account? "}
+                ? "还没有账户？" 
+                : "已有账户？"}
               <button 
                 className="text-primary-600 hover:underline" 
                 onClick={() => setActiveTab(activeTab === "login" ? "register" : "login")}
               >
-                {activeTab === "login" ? "Sign up" : "Log in"}
+                {activeTab === "login" ? "注册" : "登录"}
               </button>
             </div>
           </CardFooter>
@@ -217,27 +217,27 @@ export default function AuthPage() {
       {/* Right side - Hero */}
       <div className="w-full md:w-1/2 bg-primary-600 text-white p-8 hidden md:flex flex-col justify-center items-center">
         <div className="max-w-md text-center">
-          <h1 className="text-3xl font-bold mb-4">Novel Character Relationship Manager</h1>
+          <h1 className="text-3xl font-bold mb-4">小说角色关系管理器</h1>
           <p className="mb-6">
-            Create, manage, and visualize characters and their relationships in your novels.
-            Organize your story's character interactions with beautiful visualizations.
+            创建、管理和可视化您小说中的角色及其关系。
+            通过精美的可视化图表组织故事角色之间的互动。
           </p>
           <div className="grid grid-cols-2 gap-4 text-left">
             <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-semibold mb-2">Character Management</h3>
-              <p className="text-sm">Create and organize characters for each of your novels</p>
+              <h3 className="font-semibold mb-2">角色管理</h3>
+              <p className="text-sm">为每部小说创建和组织角色</p>
             </div>
             <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-semibold mb-2">Relationship Mapping</h3>
-              <p className="text-sm">Visualize complex character relationships with interactive graphs</p>
+              <h3 className="font-semibold mb-2">关系映射</h3>
+              <p className="text-sm">通过交互式图表可视化复杂的角色关系</p>
             </div>
             <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-semibold mb-2">Novel Organization</h3>
-              <p className="text-sm">Organize your novels with covers, descriptions, and genres</p>
+              <h3 className="font-semibold mb-2">小说组织</h3>
+              <p className="text-sm">使用封面、描述和类型组织您的小说</p>
             </div>
             <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-semibold mb-2">Customizable</h3>
-              <p className="text-sm">Create custom relationship types for your unique story needs</p>
+              <h3 className="font-semibold mb-2">可定制化</h3>
+              <p className="text-sm">为您的独特故事需求创建自定义关系类型</p>
             </div>
           </div>
         </div>
