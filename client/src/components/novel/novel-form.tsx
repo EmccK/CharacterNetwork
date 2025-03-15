@@ -30,12 +30,13 @@ import { ImagePlus, Loader2 } from "lucide-react";
 
 const formSchema = insertNovelSchema.extend({
   coverImage: z.instanceof(File).optional().or(z.string().optional()),
+  id: z.number().optional(),
 });
 
 type NovelFormValues = z.infer<typeof formSchema>;
 
 interface NovelFormProps {
-  initialData?: Partial<NovelFormValues>;
+  initialData?: Partial<NovelFormValues & { id?: number }>;
   onSuccess?: () => void;
 }
 
@@ -59,8 +60,12 @@ export default function NovelForm({
       genre: initialData?.genre || "",
       status: initialData?.status || "In Progress",
       userId: user?.id,
+      id: initialData?.id,
     },
   });
+  
+  // Determine if we're editing or creating
+  const isEditing = !!initialData?.id;
   
   // Handle form submission
   const mutation = useMutation({
@@ -85,28 +90,39 @@ export default function NovelForm({
         formData.append("coverImage", selectedFile);
       }
       
-      const response = await fetch("/api/novels", {
-        method: "POST",
+      let url = "/api/novels";
+      let method = "POST";
+      
+      // If editing, use PUT and include the novel ID
+      if (isEditing && initialData.id) {
+        url = `/api/novels/${initialData.id}`;
+        method = "PUT";
+      }
+      
+      const response = await fetch(url, {
+        method: method,
         body: formData,
         credentials: "include"
       });
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create novel");
+        throw new Error(errorData.message || `Failed to ${isEditing ? 'update' : 'create'} novel`);
       }
       
       return await response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Novel created",
-        description: "Your novel has been successfully created",
+        title: isEditing ? "Novel updated" : "Novel created",
+        description: `Your novel has been successfully ${isEditing ? 'updated' : 'created'}`,
       });
       if (onSuccess) onSuccess();
-      form.reset();
-      setSelectedFile(null);
-      setPreviewUrl(null);
+      if (!isEditing) {
+        form.reset();
+        setSelectedFile(null);
+        setPreviewUrl(null);
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -295,10 +311,10 @@ export default function NovelForm({
             {mutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
+                {isEditing ? "Updating..." : "Creating..."}
               </>
             ) : (
-              "Create Novel"
+              isEditing ? "Update Novel" : "Create Novel"
             )}
           </Button>
         </div>
