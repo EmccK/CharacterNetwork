@@ -5,8 +5,12 @@ import {
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import pgSessionStore from "connect-pg-simple";
+import { db } from "./db";
+import { eq, and, or } from "drizzle-orm";
 
 const MemoryStore = createMemoryStore(session);
+const PgStore = pgSessionStore(session);
 
 // Interface for storage operations
 export interface IStorage {
@@ -47,7 +51,7 @@ export interface IStorage {
   deleteRelationship(id: number): Promise<boolean>;
 
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 }
 
 export class MemStorage implements IStorage {
@@ -322,6 +326,6 @@ export class MemStorage implements IStorage {
   }
 }
 
-import { SupabaseStorage } from './storage-supabase';
+import { DrizzleStorage } from './storage-drizzle';
 
-export const storage = new SupabaseStorage();
+export const storage = new DrizzleStorage();
