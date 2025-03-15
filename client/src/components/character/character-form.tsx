@@ -1,0 +1,266 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { insertCharacterSchema } from "@shared/schema";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { 
+  Form, 
+  FormControl, 
+  FormDescription, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ImagePlus, Loader2, User } from "lucide-react";
+
+const formSchema = insertCharacterSchema.extend({
+  avatar: z.instanceof(File).optional().or(z.string().optional()),
+});
+
+type CharacterFormValues = z.infer<typeof formSchema>;
+
+interface CharacterFormProps {
+  initialData?: Partial<CharacterFormValues>;
+  novelId?: number;
+  novels?: any[];
+  onSuccess?: () => void;
+}
+
+export default function CharacterForm({ 
+  initialData,
+  novelId,
+  novels = [],
+  onSuccess 
+}: CharacterFormProps) {
+  const { toast } = useToast();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    initialData?.avatar as string || null
+  );
+  
+  // Set up form with default values
+  const form = useForm<CharacterFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: initialData?.name || "",
+      description: initialData?.description || "",
+      novelId: novelId || initialData?.novelId || undefined,
+    },
+  });
+  
+  // Handle form submission
+  const mutation = useMutation({
+    mutationFn: async (values: CharacterFormValues) => {
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("novelId", String(values.novelId));
+      
+      if (values.description) {
+        formData.append("description", values.description);
+      }
+      
+      if (selectedFile) {
+        formData.append("avatar", selectedFile);
+      }
+      
+      const response = await fetch("/api/characters", {
+        method: "POST",
+        body: formData,
+        credentials: "include"
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create character");
+      }
+      
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Character created",
+        description: "Your character has been successfully created",
+      });
+      if (onSuccess) onSuccess();
+      form.reset();
+      setSelectedFile(null);
+      setPreviewUrl(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Handle file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      
+      // Create a preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  function onSubmit(values: CharacterFormValues) {
+    mutation.mutate(values);
+  }
+  
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Character Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter character name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Brief description of your character" 
+                  rows={3} 
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        {!novelId && novels.length > 0 && (
+          <FormField
+            control={form.control}
+            name="novelId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Novel</FormLabel>
+                <Select
+                  onValueChange={(value) => field.onChange(parseInt(value))}
+                  defaultValue={field.value?.toString()}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a novel" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {novels.map((novel) => (
+                      <SelectItem key={novel.id} value={novel.id.toString()}>
+                        {novel.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        
+        <div>
+          <FormLabel>Avatar</FormLabel>
+          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+            {previewUrl ? (
+              <div className="space-y-2 text-center">
+                <div className="w-32 h-32 mx-auto overflow-hidden rounded-full">
+                  <img 
+                    src={previewUrl} 
+                    alt="Avatar preview" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex text-sm">
+                  <label
+                    htmlFor="file-upload"
+                    className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500"
+                  >
+                    <span>Change file</span>
+                    <input 
+                      id="file-upload" 
+                      name="file-upload" 
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1 text-center">
+                <User className="mx-auto h-12 w-12 text-gray-400" />
+                <div className="flex text-sm text-gray-600">
+                  <label
+                    htmlFor="file-upload"
+                    className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500"
+                  >
+                    <span>Upload a file</span>
+                    <input 
+                      id="file-upload" 
+                      name="file-upload" 
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                  <p className="pl-1">or drag and drop</p>
+                </div>
+                <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex justify-end">
+          <Button type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              "Create Character"
+            )}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
