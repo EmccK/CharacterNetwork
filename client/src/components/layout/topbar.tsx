@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Menu, Bell, Search, X } from "lucide-react";
+import { Menu, Bell, Search, X, LayoutDashboard, Shield, BookOpen, Users, Link as LinkIcon, Settings, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ interface TopbarProps {
   title?: string;
 }
 
-export default function Topbar({ title = "Dashboard" }: TopbarProps) {
+export default function Topbar({ title = "控制面板" }: TopbarProps) {
   const { user, logoutMutation } = useAuth();
   const [_, navigate] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -65,7 +65,7 @@ export default function Topbar({ title = "Dashboard" }: TopbarProps) {
               <div className="flex items-center lg:hidden">
                 <Input 
                   type="text"
-                  placeholder="Search..."
+                  placeholder="搜索..."
                   className="w-full"
                   autoFocus
                 />
@@ -82,7 +82,7 @@ export default function Topbar({ title = "Dashboard" }: TopbarProps) {
             <div className="relative hidden lg:block">
               <Input 
                 type="text" 
-                placeholder="Search..." 
+                placeholder="搜索..." 
                 className="pl-10 pr-4 py-2 w-full max-w-xs"
               />
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -113,10 +113,10 @@ export default function Topbar({ title = "Dashboard" }: TopbarProps) {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/settings")}>
-                  Settings
+                  设置
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>
-                  Log out
+                  退出登录
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -185,7 +185,7 @@ export default function Topbar({ title = "Dashboard" }: TopbarProps) {
                   setMobileMenuOpen(false);
                 }}
               >
-                <Link className="mr-3 text-xl" />
+                <LinkIcon className="mr-3 text-xl" />
                 <span>Relationships</span>
               </a>
               
@@ -239,5 +239,4 @@ export default function Topbar({ title = "Dashboard" }: TopbarProps) {
   );
 }
 
-// Import needed for mobile menu
-import { LayoutDashboard, Shield } from "lucide-react";
+// No additional imports needed

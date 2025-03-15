@@ -49,7 +49,7 @@ export default function Sidebar() {
   return (
     <div className="bg-white w-64 hidden md:block shadow-md">
       <div className="p-4 bg-primary-600 text-white">
-        <h1 className="text-xl font-bold">Novel Character Manager</h1>
+        <h1 className="text-xl font-bold">小说人物关系管理</h1>
       </div>
       <nav className="mt-4">
         <SidebarLink 
@@ -58,7 +58,7 @@ export default function Sidebar() {
           active={location === "/"}
           onClick={() => navigate("/")}
         >
-          Dashboard
+          控制面板
         </SidebarLink>
         <SidebarLink 
           href="/novels" 
@@ -66,7 +66,7 @@ export default function Sidebar() {
           active={location === "/novels" || location.startsWith("/novels/")}
           onClick={() => navigate("/novels")}
         >
-          Novels
+          小说作品
         </SidebarLink>
         <SidebarLink 
           href="/characters" 
@@ -74,7 +74,7 @@ export default function Sidebar() {
           active={location === "/characters"}
           onClick={() => navigate("/characters")}
         >
-          Characters
+          人物角色
         </SidebarLink>
         <SidebarLink 
           href="/relationships" 
@@ -82,7 +82,7 @@ export default function Sidebar() {
           active={location === "/relationships"}
           onClick={() => navigate("/relationships")}
         >
-          Relationships
+          角色关系
         </SidebarLink>
         
         {/* Admin panel - only shown for admin users */}
@@ -93,7 +93,7 @@ export default function Sidebar() {
             active={location === "/admin"}
             onClick={() => navigate("/admin")}
           >
-            Admin Panel
+            管理员面板
           </SidebarLink>
         )}
         
@@ -105,14 +105,14 @@ export default function Sidebar() {
           active={location === "/settings"}
           onClick={() => navigate("/settings")}
         >
-          Settings
+          设置
         </SidebarLink>
         <SidebarLink 
           href="/logout" 
           icon={<LogOut className="text-xl" />}
           onClick={handleLogout}
         >
-          Logout
+          退出登录
         </SidebarLink>
       </nav>
     </div>
