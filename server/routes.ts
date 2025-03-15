@@ -1,4 +1,4 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
@@ -25,6 +25,9 @@ function isAdmin(req: Request, res: Response, next: NextFunction) {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
   setupAuth(app);
+
+  // Serve static files from the uploads directory
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
   
   // Configure multer for file uploads
   const multerStorage = multer.diskStorage({
@@ -86,13 +89,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let coverImage = null;
       if (req.file) {
         coverImage = `/uploads/${req.file.filename}`;
+      } else if (req.body.coverImageUrl) {
+        // Use provided URL directly
+        coverImage = req.body.coverImageUrl;
       }
       
       const novelData = {
         ...req.body,
         coverImage,
-        userId: req.user.id
+        userId: req.user!.id
       };
+      
+      // Remove coverImageUrl field as it's not in our schema
+      delete novelData.coverImageUrl;
       
       const validationResult = insertNovelSchema.safeParse(novelData);
       if (!validationResult.success) {
@@ -115,19 +124,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if user owns this novel
-      if (novel.userId !== req.user.id && !req.user.isAdmin) {
+      if (novel.userId !== req.user!.id && !req.user!.isAdmin) {
         return res.status(403).json({ message: "Forbidden" });
       }
       
       let coverImage = novel.coverImage;
       if (req.file) {
         coverImage = `/uploads/${req.file.filename}`;
+      } else if (req.body.coverImageUrl) {
+        // Use provided URL directly
+        coverImage = req.body.coverImageUrl;
       }
       
       const novelData = {
         ...req.body,
         coverImage
       };
+      
+      // Remove coverImageUrl field as it's not in our schema
+      delete novelData.coverImageUrl;
       
       const updatedNovel = await storage.updateNovel(parseInt(req.params.id), novelData);
       res.json(updatedNovel);
