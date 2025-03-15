@@ -129,7 +129,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden">
           <div className="bg-white w-64 h-full overflow-y-auto">
             <div className="p-4 bg-primary-600 text-white flex justify-between items-center">
-              <h1 className="text-xl font-bold">Novel Character Manager</h1>
+              <h1 className="text-xl font-bold">小说人物关系管理</h1>
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -150,7 +150,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
                 }}
               >
                 <LayoutDashboard className="mr-3 text-xl" />
-                <span>Dashboard</span>
+                <span>控制面板</span>
               </a>
               <a 
                 href="#" 
@@ -162,7 +162,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
                 }}
               >
                 <BookOpen className="mr-3 text-xl" />
-                <span>Novels</span>
+                <span>小说作品</span>
               </a>
               <a 
                 href="#" 
@@ -174,7 +174,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
                 }}
               >
                 <Users className="mr-3 text-xl" />
-                <span>Characters</span>
+                <span>人物角色</span>
               </a>
               <a 
                 href="#" 
@@ -186,7 +186,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
                 }}
               >
                 <LinkIcon className="mr-3 text-xl" />
-                <span>Relationships</span>
+                <span>角色关系</span>
               </a>
               
               {/* Admin panel - only shown for admin users */}
@@ -201,7 +201,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
                   }}
                 >
                   <Shield className="mr-3 text-xl" />
-                  <span>Admin Panel</span>
+                  <span>管理员面板</span>
                 </a>
               )}
               
@@ -217,7 +217,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
                 }}
               >
                 <Settings className="mr-3 text-xl" />
-                <span>Settings</span>
+                <span>设置</span>
               </a>
               <a 
                 href="#" 
@@ -229,7 +229,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
                 }}
               >
                 <LogOut className="mr-3 text-xl" />
-                <span>Logout</span>
+                <span>退出登录</span>
               </a>
             </nav>
           </div>

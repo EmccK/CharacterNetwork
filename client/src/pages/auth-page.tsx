@@ -13,16 +13,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
+  username: z.string().min(1, "用户名不能为空"),
+  password: z.string().min(1, "密码不能为空"),
 });
 
 const registerSchema = insertUserSchema.extend({
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(6, "密码长度至少为6个字符"),
   confirmPassword: z.string(),
-  email: z.string().email("Please enter a valid email"),
+  email: z.string().email("请输入有效的电子邮箱"),
 }).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
+  message: "两次输入的密码不一致",
   path: ["confirmPassword"],
 });
 
