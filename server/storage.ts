@@ -6,7 +6,7 @@ import {
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import pgSessionStore from "connect-pg-simple";
-import { db } from "./db";
+
 import { eq, and, or } from "drizzle-orm";
 
 const MemoryStore = createMemoryStore(session);
@@ -65,7 +65,7 @@ export class MemStorage implements IStorage {
   private characterIdCounter: number;
   private relationshipTypeIdCounter: number;
   private relationshipIdCounter: number;
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 
   constructor() {
     this.usersMap = new Map();
