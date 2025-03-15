@@ -25,7 +25,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ImagePlus, Loader2, User } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ImagePlus, Loader2, User, Link as LinkIcon } from "lucide-react";
 
 const formSchema = insertCharacterSchema.extend({
   avatar: z.instanceof(File).optional().or(z.string().optional()),
@@ -51,6 +52,10 @@ export default function CharacterForm({
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     initialData?.avatar as string || null
   );
+  const [avatarUrl, setAvatarUrl] = useState<string>(
+    initialData?.avatar as string || ""
+  );
+  const [activeTab, setActiveTab] = useState<string>("upload");
   
   // Set up form with default values
   const form = useForm<CharacterFormValues>({
@@ -73,8 +78,11 @@ export default function CharacterForm({
         formData.append("description", values.description);
       }
       
-      if (selectedFile) {
+      // Handle image based on active tab
+      if (activeTab === "upload" && selectedFile) {
         formData.append("avatar", selectedFile);
+      } else if (activeTab === "url" && avatarUrl) {
+        formData.append("avatarUrl", avatarUrl);
       }
       
       const response = await fetch("/api/characters", {
@@ -99,6 +107,8 @@ export default function CharacterForm({
       form.reset();
       setSelectedFile(null);
       setPreviewUrl(null);
+      setAvatarUrl("");
+      setActiveTab("upload");
     },
     onError: (error: Error) => {
       toast({
@@ -109,6 +119,27 @@ export default function CharacterForm({
     },
   });
   
+  // Handle URL input
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setAvatarUrl(url);
+    setPreviewUrl(url);
+    setSelectedFile(null);
+  };
+
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // Reset preview if switching to upload and no file is selected
+    if (value === "upload" && !selectedFile && avatarUrl) {
+      setPreviewUrl(null);
+    }
+    // Set preview to URL if switching to url tab and URL exists
+    if (value === "url" && avatarUrl) {
+      setPreviewUrl(avatarUrl);
+    }
+  };
+
   // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -195,57 +226,98 @@ export default function CharacterForm({
         
         <div>
           <FormLabel>Avatar</FormLabel>
-          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
-            {previewUrl ? (
-              <div className="space-y-2 text-center">
-                <div className="w-32 h-32 mx-auto overflow-hidden rounded-full">
-                  <img 
-                    src={previewUrl} 
-                    alt="Avatar preview" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex text-sm">
-                  <label
-                    htmlFor="file-upload"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500"
-                  >
-                    <span>Change file</span>
-                    <input 
-                      id="file-upload" 
-                      name="file-upload" 
-                      type="file"
-                      accept="image/*"
-                      className="sr-only"
-                      onChange={handleFileChange}
-                    />
-                  </label>
-                </div>
+          
+          <Tabs defaultValue={activeTab} onValueChange={handleTabChange} className="w-full">
+            <TabsList className="grid grid-cols-2 w-full">
+              <TabsTrigger value="upload" className="flex items-center gap-2">
+                <ImagePlus className="h-4 w-4" />
+                <span>Upload</span>
+              </TabsTrigger>
+              <TabsTrigger value="url" className="flex items-center gap-2">
+                <LinkIcon className="h-4 w-4" />
+                <span>URL</span>
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="upload">
+              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+                {previewUrl && activeTab === "upload" ? (
+                  <div className="space-y-2 text-center">
+                    <div className="w-32 h-32 mx-auto overflow-hidden rounded-full">
+                      <img 
+                        src={previewUrl} 
+                        alt="Avatar preview" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex text-sm">
+                      <label
+                        htmlFor="file-upload"
+                        className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500"
+                      >
+                        <span>Change file</span>
+                        <input 
+                          id="file-upload" 
+                          name="file-upload" 
+                          type="file"
+                          accept="image/*"
+                          className="sr-only"
+                          onChange={handleFileChange}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-1 text-center">
+                    <User className="mx-auto h-12 w-12 text-gray-400" />
+                    <div className="flex text-sm text-gray-600">
+                      <label
+                        htmlFor="file-upload"
+                        className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500"
+                      >
+                        <span>Upload a file</span>
+                        <input 
+                          id="file-upload" 
+                          name="file-upload" 
+                          type="file"
+                          accept="image/*"
+                          className="sr-only"
+                          onChange={handleFileChange}
+                        />
+                      </label>
+                      <p className="pl-1">or drag and drop</p>
+                    </div>
+                    <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="space-y-1 text-center">
-                <User className="mx-auto h-12 w-12 text-gray-400" />
-                <div className="flex text-sm text-gray-600">
-                  <label
-                    htmlFor="file-upload"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500"
-                  >
-                    <span>Upload a file</span>
-                    <input 
-                      id="file-upload" 
-                      name="file-upload" 
-                      type="file"
-                      accept="image/*"
-                      className="sr-only"
-                      onChange={handleFileChange}
-                    />
-                  </label>
-                  <p className="pl-1">or drag and drop</p>
-                </div>
-                <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+            </TabsContent>
+            
+            <TabsContent value="url">
+              <div className="space-y-4">
+                <Input 
+                  placeholder="Enter image URL"
+                  value={avatarUrl}
+                  onChange={handleUrlChange}
+                  className="w-full"
+                />
+                
+                {previewUrl && activeTab === "url" && (
+                  <div className="mt-2">
+                    <div className="w-32 h-32 mx-auto overflow-hidden rounded-full border border-gray-200">
+                      <img 
+                        src={previewUrl} 
+                        alt="Avatar preview from URL" 
+                        className="w-full h-full object-cover"
+                        onError={() => setPreviewUrl(null)}
+                      />
+                    </div>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500 italic">Paste a direct link to an image (JPG, PNG, or GIF)</p>
               </div>
-            )}
-          </div>
+            </TabsContent>
+          </Tabs>
         </div>
         
         <div className="flex justify-end">
