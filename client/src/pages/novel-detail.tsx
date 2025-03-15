@@ -18,6 +18,7 @@ import { ArrowLeft, Edit, Share, MoreHorizontal, BookOpen } from "lucide-react";
 import CharacterForm from "@/components/character/character-form";
 import CharacterList from "@/components/character/character-list";
 import RelationshipForm from "@/components/relationship/relationship-form";
+import NovelForm from "@/components/novel/novel-form";
 
 export default function NovelDetail() {
   const [match, params] = useRoute<{ id: string }>("/novels/:id");
@@ -26,6 +27,7 @@ export default function NovelDetail() {
   const [activeTab, setActiveTab] = useState("characters");
   const [isAddCharacterModalOpen, setIsAddCharacterModalOpen] = useState(false);
   const [isAddRelationshipModalOpen, setIsAddRelationshipModalOpen] = useState(false);
+  const [isEditNovelModalOpen, setIsEditNovelModalOpen] = useState(false);
   
   // Fetch novel data
   const { 
@@ -158,7 +160,7 @@ export default function NovelDetail() {
                     </span>
                   </div>
                   <div className="pt-2 flex gap-2">
-                    <Button className="flex-1">
+                    <Button className="flex-1" onClick={() => setIsEditNovelModalOpen(true)}>
                       <Edit className="mr-1 h-4 w-4" /> Edit
                     </Button>
                     <Button variant="outline" size="icon">
@@ -306,6 +308,34 @@ export default function NovelDetail() {
               toast({
                 title: "Relationship added",
                 description: "Relationship has been successfully added",
+              });
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Novel Modal */}
+      <Dialog open={isEditNovelModalOpen} onOpenChange={setIsEditNovelModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Novel</DialogTitle>
+          </DialogHeader>
+          <NovelForm 
+            initialData={{
+              id: parseInt(params?.id || "0"),
+              title: novel.title,
+              description: novel.description,
+              genre: novel.genre,
+              status: novel.status,
+              coverImage: novel.coverImage
+            }}
+            onSuccess={() => {
+              setIsEditNovelModalOpen(false);
+              // Refetch novel data to update the UI
+              queryClient.invalidateQueries({ queryKey: [`/api/novels/${params?.id}`] });
+              toast({
+                title: "Novel updated",
+                description: "Your novel has been successfully updated",
               });
             }}
           />
