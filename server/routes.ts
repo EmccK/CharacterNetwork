@@ -153,7 +153,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.delete("/api/novels/:id", isAuthenticated, async (req, res, next) => {
     try {
-      const novel = await storage.getNovel(parseInt(req.params.id));
+      const novelId = parseInt(req.params.id);
+      const novel = await storage.getNovel(novelId);
       
       if (!novel) {
         return res.status(404).json({ message: "Novel not found" });
@@ -164,7 +165,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Forbidden" });
       }
       
-      await storage.deleteNovel(parseInt(req.params.id));
+      // Get all characters for this novel
+      const characters = await storage.getCharacters(novelId);
+      
+      // Delete all relationships for this novel
+      const relationships = await storage.getRelationships(novelId);
+      for (const relationship of relationships) {
+        await storage.deleteRelationship(relationship.id);
+      }
+      
+      // Delete all characters for this novel
+      for (const character of characters) {
+        await storage.deleteCharacter(character.id);
+      }
+      
+      // Finally delete the novel
+      await storage.deleteNovel(novelId);
       res.status(204).end();
     } catch (error) {
       next(error);

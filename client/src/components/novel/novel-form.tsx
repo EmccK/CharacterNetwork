@@ -128,11 +128,8 @@ export default function NovelForm({
         method = "PUT";
       }
 
-      const response = await fetch(url, {
-        method: method,
-        body: formData,
-        credentials: "include"
-      });
+      // Use apiRequest which handles all the proper error handling
+      const response = await apiRequest(method, url, formData, true);
 
       if (!response.ok) {
         const errorData = await response.json();
