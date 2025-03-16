@@ -173,17 +173,29 @@ export default function NovelsPage() {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
               </div>
             ) : filteredNovels.length > 0 ? (
-              <div className="waterfall-grid">
-                {filteredNovels.map((novel: any) => (
-                  <NovelCard 
-                    key={novel.id} 
-                    novel={novel} 
-                    onView={() => navigate(`/novels/${novel.id}`)}
-                    onEdit={() => navigate(`/novels/${novel.id}`)}
-                    onDelete={() => handleDeleteNovel(novel.id)}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="waterfall-grid mb-6">
+                  {/* 添加小说卡片 */}
+                  <div className="flex flex-col items-center justify-center h-full min-h-[300px] border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-primary-500 transition-colors cursor-pointer"
+                      onClick={() => setIsCreateModalOpen(true)}>
+                    <div className="w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center mb-4">
+                      <Plus className="h-8 w-8 text-primary-600" />
+                    </div>
+                    <p className="text-gray-600 text-center font-medium">添加新小说</p>
+                  </div>
+                  
+                  {/* 现有小说卡片 */}
+                  {filteredNovels.map((novel: any) => (
+                    <NovelCard 
+                      key={novel.id} 
+                      novel={novel} 
+                      onView={() => navigate(`/novels/${novel.id}`)}
+                      onEdit={() => navigate(`/novels/${novel.id}`)}
+                      onDelete={() => handleDeleteNovel(novel.id)}
+                    />
+                  ))}
+                </div>
+              </>
             ) : (
               <div className="text-center py-12 bg-white rounded-lg shadow-sm">
                 <div className="flex justify-center">
