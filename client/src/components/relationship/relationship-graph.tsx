@@ -1,12 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Character, Relationship, RelationshipType } from "@shared/schema";
-import { 
-  Button,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ZoomIn, ZoomOut, RefreshCw, Download } from "lucide-react";
 
@@ -46,7 +40,7 @@ export default function RelationshipGraph({
   const [isDragging, setIsDragging] = useState(false);
   const [draggedNodeId, setDraggedNodeId] = useState<number | null>(null);
   const [tooltipNode, setTooltipNode] = useState<Node | null>(null);
-  
+
   // Generate random colors for nodes
   const getNodeColor = (index: number) => {
     const colors = [
@@ -60,11 +54,11 @@ export default function RelationshipGraph({
     ];
     return colors[index % colors.length];
   };
-  
+
   // Initialize graph data when characters and relationships change
   useEffect(() => {
     if (isLoading || !characters.length) return;
-    
+
     // Create nodes (characters)
     const graphNodes = characters.map((character, index) => {
       // Calculate positions in a circle
@@ -72,7 +66,7 @@ export default function RelationshipGraph({
       const radius = 150;
       const x = 200 + radius * Math.cos(angle);
       const y = 200 + radius * Math.sin(angle);
-      
+
       return {
         id: character.id,
         name: character.name,
@@ -82,7 +76,7 @@ export default function RelationshipGraph({
         color: getNodeColor(index),
       };
     });
-    
+
     // Create edges (relationships)
     const graphEdges = relationships.map((relationship) => {
       const relType = relationshipTypes.find(type => type.id === relationship.typeId);
@@ -93,27 +87,27 @@ export default function RelationshipGraph({
         color: relType?.color || "#94a3b8",
       };
     });
-    
+
     setNodes(graphNodes);
     setEdges(graphEdges);
   }, [characters, relationships, relationshipTypes, isLoading]);
-  
+
   // Handle mouse events for dragging nodes
   const handleMouseDown = (nodeId: number) => {
     setIsDragging(true);
     setDraggedNodeId(nodeId);
   };
-  
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isDragging || draggedNodeId === null) return;
-    
+
     const container = containerRef.current;
     if (!container) return;
-    
+
     const rect = container.getBoundingClientRect();
     const x = (e.clientX - rect.left) / scale;
     const y = (e.clientY - rect.top) / scale;
-    
+
     setNodes(prev => 
       prev.map(node => 
         node.id === draggedNodeId 
@@ -122,12 +116,12 @@ export default function RelationshipGraph({
       )
     );
   };
-  
+
   const handleMouseUp = () => {
     setIsDragging(false);
     setDraggedNodeId(null);
   };
-  
+
   // Reset graph positions
   const handleReset = () => {
     setNodes(prev => 
@@ -141,24 +135,24 @@ export default function RelationshipGraph({
     );
     setScale(1);
   };
-  
+
   // Zoom in/out functionality
   const handleZoomIn = () => {
     setScale(prev => Math.min(prev + 0.1, 2));
   };
-  
+
   const handleZoomOut = () => {
     setScale(prev => Math.max(prev - 0.1, 0.5));
   };
-  
+
   // Export graph as SVG
   const handleExport = () => {
     if (!containerRef.current) return;
-    
+
     const svgData = containerRef.current.innerHTML;
     const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
     const svgUrl = URL.createObjectURL(svgBlob);
-    
+
     const downloadLink = document.createElement('a');
     downloadLink.href = svgUrl;
     downloadLink.download = 'character-relationship-graph.svg';
@@ -166,7 +160,7 @@ export default function RelationshipGraph({
     downloadLink.click();
     document.body.removeChild(downloadLink);
   };
-  
+
   if (isLoading) {
     return (
       <div className="network-graph flex justify-center items-center">
@@ -174,7 +168,7 @@ export default function RelationshipGraph({
       </div>
     );
   }
-  
+
   return (
     <div>
       <div 
@@ -189,19 +183,19 @@ export default function RelationshipGraph({
         {edges.map((edge, index) => {
           const source = nodes.find(n => n.id === edge.source);
           const target = nodes.find(n => n.id === edge.target);
-          
+
           if (!source || !target) return null;
-          
+
           // Calculate edge position and rotation
           const dx = target.x - source.x;
           const dy = target.y - source.y;
           const angle = Math.atan2(dy, dx) * (180 / Math.PI);
           const length = Math.sqrt(dx * dx + dy * dy);
-          
+
           // Position the edge label
           const labelX = source.x + dx/2;
           const labelY = source.y + dy/2 - 10;
-          
+
           return (
             <div key={`edge-${index}`}>
               {/* Edge line */}
@@ -215,7 +209,7 @@ export default function RelationshipGraph({
                   backgroundColor: edge.color,
                 }}
               />
-              
+
               {/* Edge label */}
               <div
                 className="edge-label"
@@ -229,7 +223,7 @@ export default function RelationshipGraph({
             </div>
           );
         })}
-        
+
         {/* Draw nodes (characters) */}
         {nodes.map((node) => (
           <div key={`node-${node.id}`}>
@@ -257,7 +251,7 @@ export default function RelationshipGraph({
                 node.name.substring(0, 2).toUpperCase()
               )}
             </div>
-            
+
             {/* Tooltip */}
             {tooltipNode && tooltipNode.id === node.id && (
               <div
@@ -275,7 +269,7 @@ export default function RelationshipGraph({
           </div>
         ))}
       </div>
-      
+
       {/* Legend & Controls */}
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-gray-50 p-3 rounded-lg">

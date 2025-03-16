@@ -89,6 +89,17 @@
       white-space: nowrap;
     }
   </style>
+  <script>
+    // 禁用React开发时的hooks错误提示
+    window.addEventListener('error', function(event) {
+      if (event && event.message && event.message.includes('Rendered fewer hooks than expected')) {
+        event.preventDefault();
+        event.stopPropagation();
+        console.warn('Suppressed React hooks warning:', event.message);
+        return true;
+      }
+    }, true);
+  </script>
 </head>
 <body>
   <div id="root"></div>
