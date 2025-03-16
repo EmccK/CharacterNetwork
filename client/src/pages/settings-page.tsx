@@ -21,16 +21,16 @@ import Topbar from "@/components/layout/topbar";
 import { ArrowRight, Mail, User, Lock, BellRing, Save, Trash2, AlertCircle } from "lucide-react";
 
 const profileSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  email: z.string().email("Please enter a valid email"),
+  username: z.string().min(1, "用户名是必填项"),
+  email: z.string().email("请输入有效的电子邮箱"),
 });
 
 const passwordSchema = z.object({
-  currentPassword: z.string().min(1, "Current password is required"),
-  newPassword: z.string().min(6, "New password must be at least 6 characters"),
+  currentPassword: z.string().min(1, "当前密码是必填项"),
+  newPassword: z.string().min(6, "新密码必须至少6个字符"),
   confirmPassword: z.string(),
 }).refine(data => data.newPassword === data.confirmPassword, {
-  message: "Passwords do not match",
+  message: "两次输入的密码不匹配",
   path: ["confirmPassword"],
 });
 
@@ -74,13 +74,13 @@ export default function SettingsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated",
+        title: "个人资料已更新",
+        description: "您的个人资料已成功更新",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to update profile",
+        title: "更新个人资料失败",
         description: error.message,
         variant: "destructive",
       });
@@ -97,8 +97,8 @@ export default function SettingsPage() {
     },
     onSuccess: () => {
       toast({
-        title: "Password updated",
-        description: "Your password has been successfully updated",
+        title: "密码已更新",
+        description: "您的密码已成功更新",
       });
       passwordForm.reset({
         currentPassword: "",
@@ -108,7 +108,7 @@ export default function SettingsPage() {
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to update password",
+        title: "更新密码失败",
         description: error.message,
         variant: "destructive",
       });
@@ -117,17 +117,17 @@ export default function SettingsPage() {
 
   const saveNotificationSettings = () => {
     toast({
-      title: "Notification settings saved",
-      description: "Your notification preferences have been updated",
+      title: "通知设置已保存",
+      description: "您的通知偏好已更新",
     });
   };
 
   const handleDeleteAccount = () => {
-    // This is a dangerous action, so we require confirmation
-    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+    // 这是一个危险操作，所以需要确认
+    if (window.confirm("您确定要删除您的账户吗？此操作无法撤消。")) {
       toast({
-        title: "Account deletion",
-        description: "Please contact the administrator to delete your account.",
+        title: "账户删除",
+        description: "请联系管理员删除您的账户。",
       });
     }
   };
@@ -145,30 +145,30 @@ export default function SettingsPage() {
       <Sidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Topbar title="Settings" />
+        <Topbar title="设置" />
         
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
           <div className="max-w-5xl mx-auto">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full md:w-auto grid-cols-3 mb-6">
                 <TabsTrigger value="profile" className="flex items-center">
-                  <User className="mr-2 h-4 w-4" /> Profile
+                  <User className="mr-2 h-4 w-4" /> 个人资料
                 </TabsTrigger>
                 <TabsTrigger value="security" className="flex items-center">
-                  <Lock className="mr-2 h-4 w-4" /> Security
+                  <Lock className="mr-2 h-4 w-4" /> 安全
                 </TabsTrigger>
                 <TabsTrigger value="notifications" className="flex items-center">
-                  <BellRing className="mr-2 h-4 w-4" /> Notifications
+                  <BellRing className="mr-2 h-4 w-4" /> 通知
                 </TabsTrigger>
               </TabsList>
               
-              {/* Profile Tab */}
+              {/* 个人资料选项卡 */}
               <TabsContent value="profile">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Profile Settings</CardTitle>
+                    <CardTitle>个人资料设置</CardTitle>
                     <CardDescription>
-                      Manage your user profile information
+                      管理您的用户个人资料信息
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -179,11 +179,11 @@ export default function SettingsPage() {
                           name="username"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Username</FormLabel>
+                              <FormLabel>用户名</FormLabel>
                               <FormControl>
                                 <div className="relative">
                                   <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                  <Input placeholder="Enter your username" className="pl-10" {...field} />
+                                  <Input placeholder="输入您的用户名" className="pl-10" {...field} />
                                 </div>
                               </FormControl>
                               <FormMessage />
@@ -195,11 +195,11 @@ export default function SettingsPage() {
                           name="email"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Email</FormLabel>
+                              <FormLabel>电子邮箱</FormLabel>
                               <FormControl>
                                 <div className="relative">
                                   <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                  <Input type="email" placeholder="Enter your email" className="pl-10" {...field} />
+                                  <Input type="email" placeholder="输入您的电子邮箱" className="pl-10" {...field} />
                                 </div>
                               </FormControl>
                               <FormMessage />
@@ -210,11 +210,11 @@ export default function SettingsPage() {
                           {updateProfileMutation.isPending ? (
                             <>
                               <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                              Saving...
+                              保存中...
                             </>
                           ) : (
                             <>
-                              <Save className="h-4 w-4" /> Save Changes
+                              <Save className="h-4 w-4" /> 保存更改
                             </>
                           )}
                         </Button>
@@ -225,9 +225,9 @@ export default function SettingsPage() {
                 
                 <Card className="mt-6">
                   <CardHeader>
-                    <CardTitle className="text-red-600">Danger Zone</CardTitle>
+                    <CardTitle className="text-red-600">危险区域</CardTitle>
                     <CardDescription>
-                      Actions in this area can lead to permanent data loss
+                      此区域的操作可能导致永久数据丢失
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -235,10 +235,10 @@ export default function SettingsPage() {
                       <div className="flex gap-3">
                         <AlertCircle className="h-5 w-5 text-red-600" />
                         <div>
-                          <h4 className="font-medium text-red-800">Warning: Account Deletion</h4>
+                          <h4 className="font-medium text-red-800">警告：账户删除</h4>
                           <p className="text-sm text-red-700 mt-1">
-                            Deleting your account will remove all your novels, characters, and relationships. 
-                            This action cannot be undone.
+                            删除您的账户将移除所有您的小说、角色和关系。
+                            此操作无法撤消。
                           </p>
                         </div>
                       </div>
@@ -248,19 +248,19 @@ export default function SettingsPage() {
                       className="flex gap-2" 
                       onClick={handleDeleteAccount}
                     >
-                      <Trash2 className="h-4 w-4" /> Delete Account
+                      <Trash2 className="h-4 w-4" /> 删除账户
                     </Button>
                   </CardContent>
                 </Card>
               </TabsContent>
               
-              {/* Security Tab */}
+              {/* 安全选项卡 */}
               <TabsContent value="security">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Change Password</CardTitle>
+                    <CardTitle>修改密码</CardTitle>
                     <CardDescription>
-                      Update your password to maintain account security
+                      更新您的密码以保持账户安全
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -271,9 +271,9 @@ export default function SettingsPage() {
                           name="currentPassword"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Current Password</FormLabel>
+                              <FormLabel>当前密码</FormLabel>
                               <FormControl>
-                                <Input type="password" placeholder="Enter your current password" {...field} />
+                                <Input type="password" placeholder="输入您当前的密码" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -284,12 +284,12 @@ export default function SettingsPage() {
                           name="newPassword"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>New Password</FormLabel>
+                              <FormLabel>新密码</FormLabel>
                               <FormControl>
-                                <Input type="password" placeholder="Enter your new password" {...field} />
+                                <Input type="password" placeholder="输入您的新密码" {...field} />
                               </FormControl>
                               <FormDescription>
-                                Password must be at least 6 characters long
+                                密码必须至少6个字符长
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -300,9 +300,9 @@ export default function SettingsPage() {
                           name="confirmPassword"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Confirm New Password</FormLabel>
+                              <FormLabel>确认新密码</FormLabel>
                               <FormControl>
-                                <Input type="password" placeholder="Confirm your new password" {...field} />
+                                <Input type="password" placeholder="确认您的新密码" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -312,11 +312,11 @@ export default function SettingsPage() {
                           {updatePasswordMutation.isPending ? (
                             <>
                               <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                              Updating...
+                              更新中...
                             </>
                           ) : (
                             <>
-                              <Lock className="h-4 w-4" /> Update Password
+                              <Lock className="h-4 w-4" /> 更新密码
                             </>
                           )}
                         </Button>
@@ -326,25 +326,25 @@ export default function SettingsPage() {
                 </Card>
               </TabsContent>
               
-              {/* Notifications Tab */}
+              {/* 通知选项卡 */}
               <TabsContent value="notifications">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Notification Preferences</CardTitle>
+                    <CardTitle>通知偏好设置</CardTitle>
                     <CardDescription>
-                      Customize how and when you receive notifications
+                      自定义接收通知的方式和时间
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium">Email Notifications</h3>
+                      <h3 className="text-lg font-medium">电子邮件通知</h3>
                       <div className="flex items-center justify-between">
                         <div>
                           <Label htmlFor="email-notifications" className="font-medium">
-                            Email Notifications
+                            电子邮件通知
                           </Label>
                           <p className="text-sm text-gray-500">
-                            Receive general email notifications about your account
+                            接收关于您账户的常规电子邮件通知
                           </p>
                         </div>
                         <Switch
@@ -358,15 +358,15 @@ export default function SettingsPage() {
                     <Separator />
                     
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium">Application Notifications</h3>
+                      <h3 className="text-lg font-medium">应用通知</h3>
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <div>
                             <Label htmlFor="novel-updates" className="font-medium">
-                              Novel Updates
+                              小说更新
                             </Label>
                             <p className="text-sm text-gray-500">
-                              Get notified when updates are made to your novels
+                              当您的小说进行更新时获得通知
                             </p>
                           </div>
                           <Switch
@@ -379,10 +379,10 @@ export default function SettingsPage() {
                         <div className="flex items-center justify-between">
                           <div>
                             <Label htmlFor="character-updates" className="font-medium">
-                              Character Updates
+                              角色更新
                             </Label>
                             <p className="text-sm text-gray-500">
-                              Get notified about character changes and additions
+                              获取关于角色变更和添加的通知
                             </p>
                           </div>
                           <Switch
@@ -396,7 +396,7 @@ export default function SettingsPage() {
                   </CardContent>
                   <CardFooter>
                     <Button onClick={saveNotificationSettings} className="ml-auto flex gap-2">
-                      <Save className="h-4 w-4" /> Save Preferences
+                      <Save className="h-4 w-4" /> 保存偏好设置
                     </Button>
                   </CardFooter>
                 </Card>

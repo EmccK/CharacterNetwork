@@ -29,7 +29,7 @@ export default function NovelDetail() {
   const [isAddRelationshipModalOpen, setIsAddRelationshipModalOpen] = useState(false);
   const [isEditNovelModalOpen, setIsEditNovelModalOpen] = useState(false);
   
-  // Fetch novel data
+  // 获取小说数据
   const { 
     data: novel,
     isLoading: isNovelLoading,
@@ -39,7 +39,7 @@ export default function NovelDetail() {
     enabled: !!params?.id,
   });
   
-  // Fetch characters for this novel
+  // 获取该小说的角色
   const { 
     data: characters = [],
     isLoading: isCharactersLoading,
@@ -49,7 +49,7 @@ export default function NovelDetail() {
     enabled: !!params?.id,
   });
   
-  // Fetch relationships for this novel
+  // 获取该小说的角色关系
   const { 
     data: relationships = [],
     isLoading: isRelationshipsLoading,
@@ -59,7 +59,7 @@ export default function NovelDetail() {
     enabled: !!params?.id,
   });
   
-  // Fetch relationship types
+  // 获取关系类型
   const { 
     data: relationshipTypes = [],
     isLoading: isRelationshipTypesLoading
@@ -67,7 +67,7 @@ export default function NovelDetail() {
     queryKey: ["/api/relationship-types"],
   });
   
-  // If no match, redirect to novels page
+  // 如果没有匹配，重定向到小说页面
   useEffect(() => {
     if (!match) {
       navigate("/novels");
@@ -79,7 +79,7 @@ export default function NovelDetail() {
       <div className="flex h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
-          <Topbar title="Novel Details" />
+          <Topbar title="小说详情" />
           <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -95,16 +95,16 @@ export default function NovelDetail() {
       <div className="flex h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
-          <Topbar title="Novel Details" />
+          <Topbar title="小说详情" />
           <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
             <div className="text-center py-12">
-              <h3 className="text-lg font-medium text-gray-900">Novel not found</h3>
+              <h3 className="text-lg font-medium text-gray-900">未找到小说</h3>
               <p className="mt-2 text-sm text-gray-500">
-                The novel you're looking for doesn't exist or you don't have permission to view it.
+                您查找的小说不存在或您没有查看权限。
               </p>
               <div className="mt-6">
                 <Button onClick={() => navigate("/novels")}>
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Back to Novels
+                  <ArrowLeft className="mr-2 h-4 w-4" /> 返回小说列表
                 </Button>
               </div>
             </div>
@@ -136,32 +136,32 @@ export default function NovelDetail() {
                 </div>
                 <div className="mt-4 space-y-3">
                   <div className="flex justify-between items-center">
-                    <h4 className="text-sm font-medium text-gray-500">Genre</h4>
+                    <h4 className="text-sm font-medium text-gray-500">类型</h4>
                     {novel.genre ? (
                       <span className="bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded">
                         {novel.genre}
                       </span>
                     ) : (
-                      <span className="text-gray-400 text-xs">Not specified</span>
+                      <span className="text-gray-400 text-xs">未指定</span>
                     )}
                   </div>
                   <div className="flex justify-between items-center">
-                    <h4 className="text-sm font-medium text-gray-500">Characters</h4>
-                    <span className="text-gray-800 font-medium">{characters.length} characters</span>
+                    <h4 className="text-sm font-medium text-gray-500">角色</h4>
+                    <span className="text-gray-800 font-medium">{characters.length} 个角色</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <h4 className="text-sm font-medium text-gray-500">Relationships</h4>
-                    <span className="text-gray-800 font-medium">{relationships.length} connections</span>
+                    <h4 className="text-sm font-medium text-gray-500">关系</h4>
+                    <span className="text-gray-800 font-medium">{relationships.length} 个连接</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <h4 className="text-sm font-medium text-gray-500">Last Updated</h4>
+                    <h4 className="text-sm font-medium text-gray-500">最后更新</h4>
                     <span className="text-gray-800 font-medium">
                       {new Date(novel.updatedAt).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="pt-2 flex gap-2">
                     <Button className="flex-1" onClick={() => setIsEditNovelModalOpen(true)}>
-                      <Edit className="mr-1 h-4 w-4" /> Edit
+                      <Edit className="mr-1 h-4 w-4" /> 编辑
                     </Button>
                     <Button variant="outline" size="icon">
                       <Share className="h-4 w-4" />
@@ -178,7 +178,7 @@ export default function NovelDetail() {
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900">{novel.title}</h2>
                     <p className="mt-1 text-gray-600">
-                      {novel.description || "No description provided."}
+                      {novel.description || "暂无描述。"}
                     </p>
                   </div>
                   <Button variant="outline" size="icon" onClick={() => navigate("/novels")}>
@@ -186,19 +186,19 @@ export default function NovelDetail() {
                   </Button>
                 </div>
                 
-                {/* Tabs */}
+                {/* 选项卡 */}
                 <div className="mt-6 border-b border-gray-200">
                   <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList className="border-b-0">
-                      <TabsTrigger value="characters">Characters</TabsTrigger>
-                      <TabsTrigger value="relationships">Relationship Map</TabsTrigger>
-                      <TabsTrigger value="notes">Notes</TabsTrigger>
-                      <TabsTrigger value="timeline">Timeline</TabsTrigger>
+                      <TabsTrigger value="characters">角色</TabsTrigger>
+                      <TabsTrigger value="relationships">关系图</TabsTrigger>
+                      <TabsTrigger value="notes">笔记</TabsTrigger>
+                      <TabsTrigger value="timeline">时间线</TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
                 
-                {/* Tab Content */}
+                {/* 选项卡内容 */}
                 <div className="mt-6">
                   {activeTab === "characters" && (
                     <CharacterList 
@@ -213,7 +213,7 @@ export default function NovelDetail() {
                   {activeTab === "relationships" && (
                     <div>
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800">Character Relationship Map</h3>
+                        <h3 className="text-lg font-semibold text-gray-800">角色关系图</h3>
                         <div className="flex space-x-2">
                           <Button 
                             variant="outline" 
@@ -223,7 +223,7 @@ export default function NovelDetail() {
                             <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg> 
-                            Add Character
+                            添加角色
                           </Button>
                           <Button 
                             variant="outline" 
@@ -234,7 +234,7 @@ export default function NovelDetail() {
                             <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                             </svg> 
-                            Add Relationship
+                            添加关系
                           </Button>
                         </div>
                       </div>
@@ -250,18 +250,18 @@ export default function NovelDetail() {
                   
                   {activeTab === "notes" && (
                     <div className="text-center py-12">
-                      <h3 className="text-lg font-medium text-gray-400">Notes Feature Coming Soon</h3>
+                      <h3 className="text-lg font-medium text-gray-400">笔记功能即将推出</h3>
                       <p className="mt-1 text-sm text-gray-500">
-                        This feature is currently under development.
+                        该功能正在开发中。
                       </p>
                     </div>
                   )}
                   
                   {activeTab === "timeline" && (
                     <div className="text-center py-12">
-                      <h3 className="text-lg font-medium text-gray-400">Timeline Feature Coming Soon</h3>
+                      <h3 className="text-lg font-medium text-gray-400">时间线功能即将推出</h3>
                       <p className="mt-1 text-sm text-gray-500">
-                        This feature is currently under development.
+                        该功能正在开发中。
                       </p>
                     </div>
                   )}
@@ -272,11 +272,11 @@ export default function NovelDetail() {
         </main>
       </div>
       
-      {/* Add Character Modal */}
+      {/* 添加角色弹窗 */}
       <Dialog open={isAddCharacterModalOpen} onOpenChange={setIsAddCharacterModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New Character</DialogTitle>
+            <DialogTitle>添加新角色</DialogTitle>
           </DialogHeader>
           <CharacterForm 
             novelId={parseInt(params?.id || "0")}
@@ -284,19 +284,19 @@ export default function NovelDetail() {
               setIsAddCharacterModalOpen(false);
               refetchCharacters();
               toast({
-                title: "Character added",
-                description: "Character has been successfully added to your novel",
+                title: "角色已添加",
+                description: "角色已成功添加到您的小说中",
               });
             }}
           />
         </DialogContent>
       </Dialog>
       
-      {/* Add Relationship Modal */}
+      {/* 添加关系弹窗 */}
       <Dialog open={isAddRelationshipModalOpen} onOpenChange={setIsAddRelationshipModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New Relationship</DialogTitle>
+            <DialogTitle>添加新关系</DialogTitle>
           </DialogHeader>
           <RelationshipForm 
             novelId={parseInt(params?.id || "0")}
@@ -306,19 +306,19 @@ export default function NovelDetail() {
               setIsAddRelationshipModalOpen(false);
               refetchRelationships();
               toast({
-                title: "Relationship added",
-                description: "Relationship has been successfully added",
+                title: "关系已添加",
+                description: "关系已成功添加",
               });
             }}
           />
         </DialogContent>
       </Dialog>
       
-      {/* Edit Novel Modal */}
+      {/* 编辑小说弹窗 */}
       <Dialog open={isEditNovelModalOpen} onOpenChange={setIsEditNovelModalOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Novel</DialogTitle>
+            <DialogTitle>编辑小说</DialogTitle>
           </DialogHeader>
           <NovelForm 
             initialData={{
@@ -331,11 +331,11 @@ export default function NovelDetail() {
             }}
             onSuccess={() => {
               setIsEditNovelModalOpen(false);
-              // Refetch novel data to update the UI
+              // 重新获取小说数据以更新UI
               queryClient.invalidateQueries({ queryKey: [`/api/novels/${params?.id}`] });
               toast({
-                title: "Novel updated",
-                description: "Your novel has been successfully updated",
+                title: "小说已更新",
+                description: "您的小说已成功更新",
               });
             }}
           />
