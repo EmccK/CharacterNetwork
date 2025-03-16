@@ -39,13 +39,17 @@ interface CharacterFormProps {
   novelId?: number;
   novels?: any[];
   onSuccess?: () => void;
+  mode?: 'create' | 'update';
+  characterId?: number;
 }
 
 export default function CharacterForm({ 
   initialData,
   novelId,
   novels = [],
-  onSuccess 
+  onSuccess,
+  mode = 'create',
+  characterId
 }: CharacterFormProps) {
   const { toast } = useToast();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -85,8 +89,12 @@ export default function CharacterForm({
         formData.append("avatarUrl", avatarUrl);
       }
 
-      const response = await fetch("/api/characters", {
-        method: "POST",
+      // Different API endpoint and method based on create/update mode
+      const endpoint = mode === 'create' ? "/api/characters" : `/api/characters/${characterId}`;
+      const method = mode === 'create' ? "POST" : "PUT";
+
+      const response = await fetch(endpoint, {
+        method: method,
         body: formData,
         credentials: "include"
       });
@@ -100,8 +108,8 @@ export default function CharacterForm({
     },
     onSuccess: () => {
       toast({
-        title: "角色已创建",
-        description: "您的角色已成功创建",
+        title: mode === 'create' ? "角色已创建" : "角色已更新",
+        description: mode === 'create' ? "您的角色已成功创建" : "您的角色已成功更新",
       });
       if (onSuccess) onSuccess();
       form.reset();
@@ -325,10 +333,10 @@ export default function CharacterForm({
             {mutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                创建中...
+                {mode === 'create' ? '创建中...' : '更新中...'}
               </>
             ) : (
-              "创建角色"
+              mode === 'create' ? "创建角色" : "更新角色"
             )}
           </Button>
         </div>

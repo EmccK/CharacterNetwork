@@ -279,6 +279,7 @@ export default function NovelDetail() {
             <DialogTitle>添加新角色</DialogTitle>
           </DialogHeader>
           <CharacterForm 
+            mode="create"
             novelId={parseInt(params?.id || "0")}
             onSuccess={() => {
               setIsAddCharacterModalOpen(false);

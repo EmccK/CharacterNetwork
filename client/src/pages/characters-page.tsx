@@ -33,6 +33,8 @@ import { useLocation } from "wouter";
 export default function CharactersPage() {
   const [selectedNovelId, setSelectedNovelId] = useState<string>("all");
   const [isAddCharacterModalOpen, setIsAddCharacterModalOpen] = useState(false);
+  const [isEditCharacterModalOpen, setIsEditCharacterModalOpen] = useState(false);
+  const [selectedCharacter, setSelectedCharacter] = useState<any>(null);
   const { toast } = useToast();
   const [_, navigate] = useLocation();
 
@@ -152,7 +154,14 @@ export default function CharactersPage() {
                       <Button variant="ghost" size="sm" onClick={() => navigate(`/novels/${character.novelId}`)}>
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => {
+                          setSelectedCharacter(character);
+                          setIsEditCharacterModalOpen(true);
+                        }}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="sm">
@@ -193,6 +202,7 @@ export default function CharactersPage() {
             <DialogTitle>添加新角色</DialogTitle>
           </DialogHeader>
           <CharacterForm 
+            mode="create"
             novelId={selectedNovelId !== "all" ? parseInt(selectedNovelId) : undefined}
             novels={novels}
             onSuccess={() => {
@@ -208,6 +218,42 @@ export default function CharactersPage() {
               });
             }}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Character Dialog */}
+      <Dialog open={isEditCharacterModalOpen} onOpenChange={setIsEditCharacterModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>编辑角色</DialogTitle>
+          </DialogHeader>
+          {selectedCharacter && (
+            <CharacterForm 
+              mode="update"
+              characterId={selectedCharacter.id}
+              initialData={{
+                name: selectedCharacter.name,
+                description: selectedCharacter.description,
+                novelId: selectedCharacter.novelId,
+                avatar: selectedCharacter.avatar
+              }}
+              novelId={selectedCharacter.novelId}
+              novels={novels}
+              onSuccess={() => {
+                setIsEditCharacterModalOpen(false);
+                setSelectedCharacter(null);
+                if (selectedNovelId !== "all") {
+                  queryClient.invalidateQueries({ queryKey: [`/api/novels/${selectedNovelId}/characters`] });
+                } else {
+                  queryClient.invalidateQueries({ queryKey: ["allCharacters"] });
+                }
+                toast({
+                  title: "角色已更新",
+                  description: "角色信息已成功更新",
+                });
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
