@@ -51,7 +51,7 @@ export default function NovelCard({ novel, onView, onEdit, onDelete }: NovelCard
   }));
   
   return (
-    <Card className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow h-full group">
+    <Card className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow h-full group cursor-pointer" onClick={onView}>
       <div className="relative aspect-[2/3] bg-gray-100">
         {novel.coverImage ? (
           <img 
@@ -80,7 +80,7 @@ export default function NovelCard({ novel, onView, onEdit, onDelete }: NovelCard
             size="icon"
             variant="ghost"
             className="h-7 w-7 p-0 text-white rounded-full bg-black/30 hover:bg-black/50"
-            onClick={onView}
+            onClick={(e) => { e.stopPropagation(); onView(); }}
           >
             <Eye className="h-3.5 w-3.5" />
           </Button>
@@ -88,7 +88,7 @@ export default function NovelCard({ novel, onView, onEdit, onDelete }: NovelCard
             size="icon"
             variant="ghost"
             className="h-7 w-7 p-0 text-white rounded-full bg-black/30 hover:bg-black/50"
-            onClick={onEdit}
+            onClick={(e) => { e.stopPropagation(); onEdit(); }}
           >
             <Edit className="h-3.5 w-3.5" />
           </Button>
@@ -96,7 +96,7 @@ export default function NovelCard({ novel, onView, onEdit, onDelete }: NovelCard
             size="icon"
             variant="ghost"
             className="h-7 w-7 p-0 text-white rounded-full bg-black/30 hover:bg-red-500/70"
-            onClick={onDelete}
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
