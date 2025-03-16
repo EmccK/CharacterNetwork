@@ -11,31 +11,31 @@ import { BookOpen, Users, Link, BookMarked, ArrowRight } from "lucide-react";
 export default function HomePage() {
   const { user } = useAuth();
   const [_, navigate] = useLocation();
-  
+
   useEffect(() => {
     if (!user) {
       navigate('/auth');
     }
   }, [user, navigate]);
-  
+
   // Get novels count
   const { data: novels = [] } = useQuery({
     queryKey: ["/api/novels"],
   });
-  
+
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Topbar title="Dashboard" />
-        
+        <Topbar title="仪表盘" />
+
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-2">Welcome, {user?.username}!</h1>
-            <p className="text-gray-600">Manage your novels, characters, and their relationships all in one place.</p>
+            <h1 className="text-2xl font-bold mb-2">欢迎，{user?.username}！</h1>
+            <p className="text-gray-600">在一处管理您的小说、角色和它们的关系。</p>
           </div>
-          
+
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <Card>
@@ -44,72 +44,72 @@ export default function HomePage() {
                   <BookOpen className="h-6 w-6 text-primary-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Total Novels</p>
+                  <p className="text-sm text-gray-500">小说总数</p>
                   <h3 className="text-2xl font-bold">{novels.length}</h3>
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-6 flex items-center">
                 <div className="bg-blue-100 p-3 rounded-full mr-4">
                   <Users className="h-6 w-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Characters</p>
+                  <p className="text-sm text-gray-500">角色</p>
                   <h3 className="text-2xl font-bold">-</h3>
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-6 flex items-center">
                 <div className="bg-green-100 p-3 rounded-full mr-4">
                   <Link className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Relationships</p>
+                  <p className="text-sm text-gray-500">关系</p>
                   <h3 className="text-2xl font-bold">-</h3>
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-6 flex items-center">
                 <div className="bg-amber-100 p-3 rounded-full mr-4">
                   <BookMarked className="h-6 w-6 text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">In Progress</p>
+                  <p className="text-sm text-gray-500">进行中</p>
                   <h3 className="text-2xl font-bold">-</h3>
                 </div>
               </CardContent>
             </Card>
           </div>
-          
+
           {/* Quick Actions */}
           <div className="mb-8">
-            <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+            <h2 className="text-lg font-semibold mb-4">快捷操作</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Create New Novel</CardTitle>
-                  <CardDescription>Add a new novel to your collection</CardDescription>
+                  <CardTitle className="text-lg">创建新小说</CardTitle>
+                  <CardDescription>在您的收藏中添加新小说</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button 
                     className="w-full" 
                     onClick={() => navigate("/novels")}
                   >
-                    Create Novel <ArrowRight className="h-4 w-4 ml-2" />
+                    创建小说 <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </CardContent>
               </Card>
-              
+
               <Card className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Manage Characters</CardTitle>
-                  <CardDescription>View and edit your character roster</CardDescription>
+                  <CardTitle className="text-lg">管理角色</CardTitle>
+                  <CardDescription>查看和编辑您的角色名单</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button 
@@ -117,15 +117,15 @@ export default function HomePage() {
                     variant="secondary"
                     onClick={() => navigate("/characters")}
                   >
-                    View Characters <ArrowRight className="h-4 w-4 ml-2" />
+                    查看角色 <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </CardContent>
               </Card>
-              
+
               <Card className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Visualize Relationships</CardTitle>
-                  <CardDescription>Explore character connections</CardDescription>
+                  <CardTitle className="text-lg">可视化关系</CardTitle>
+                  <CardDescription>探索角色联系</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button 
@@ -133,16 +133,16 @@ export default function HomePage() {
                     variant="outline"
                     onClick={() => navigate("/relationships")}
                   >
-                    View Relationships <ArrowRight className="h-4 w-4 ml-2" />
+                    查看关系 <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </CardContent>
               </Card>
             </div>
           </div>
-          
+
           {/* Recent Novels */}
           <div>
-            <h2 className="text-lg font-semibold mb-4">Recent Novels</h2>
+            <h2 className="text-lg font-semibold mb-4">最近的小说</h2>
             {novels.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {novels.slice(0, 3).map((novel: any) => (
@@ -163,7 +163,7 @@ export default function HomePage() {
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg">{novel.title}</CardTitle>
                       <CardDescription className="line-clamp-2">
-                        {novel.description || "No description provided"}
+                        {novel.description || "未提供描述"}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -172,7 +172,7 @@ export default function HomePage() {
                         className="w-full"
                         onClick={() => navigate(`/novels/${novel.id}`)}
                       >
-                        View Details
+                        查看详情
                       </Button>
                     </CardContent>
                   </Card>
@@ -181,9 +181,9 @@ export default function HomePage() {
             ) : (
               <Card>
                 <CardContent className="p-6 text-center">
-                  <p className="text-gray-500 mb-4">You haven't created any novels yet.</p>
+                  <p className="text-gray-500 mb-4">您还没有创建任何小说。</p>
                   <Button onClick={() => navigate("/novels")}>
-                    Create Your First Novel
+                  创建您的第一部小说
                   </Button>
                 </CardContent>
               </Card>

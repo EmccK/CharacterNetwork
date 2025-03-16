@@ -35,18 +35,18 @@ export default function NovelsPage() {
   const { toast } = useToast();
   const [_, navigate] = useLocation();
   const { user } = useAuth();
-  
+
   useEffect(() => {
     if (!user) {
       navigate('/auth');
     }
   }, [user, navigate]);
-  
+
   // Fetch novels
   const { data: novels = [], isLoading, refetch } = useQuery({
     queryKey: ["/api/novels"],
   });
-  
+
   // Delete novel mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -67,20 +67,20 @@ export default function NovelsPage() {
       });
     },
   });
-  
+
   // Filter and sort novels
   const filteredNovels = novels
     .filter((novel: any) => {
       // Apply genre filter
       if (genreFilter !== "all" && novel.genre !== genreFilter) return false;
-      
+
       // Apply search query
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return novel.title.toLowerCase().includes(query) || 
                (novel.description && novel.description.toLowerCase().includes(query));
       }
-      
+
       return true;
     })
     .sort((a: any, b: any) => {
@@ -95,54 +95,54 @@ export default function NovelsPage() {
           return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
       }
     });
-  
+
   // Get unique genres for filter dropdown
   const uniqueGenres = Array.from(new Set(novels.map((novel: any) => novel.genre).filter(Boolean)));
-  
+
   const handleDeleteNovel = (id: number) => {
     if (window.confirm("Are you sure you want to delete this novel? This action cannot be undone.")) {
       deleteMutation.mutate(id);
     }
   };
-  
+
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Topbar title="Novels" />
-        
+        <Topbar title="小说" />
+
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">My Novels</h3>
+              <h3 className="text-lg font-semibold text-gray-800">我的小说</h3>
               <Button
                 className="bg-primary-600 hover:bg-primary-700"
                 onClick={() => setIsCreateModalOpen(true)}
               >
-                <Plus className="mr-1 h-4 w-4" /> Add Novel
+                <Plus className="mr-1 h-4 w-4" /> 添加小说
               </Button>
             </div>
-            
+
             {/* Search and Filters */}
             <div className="flex flex-wrap gap-2 mb-4">
               <div className="relative flex-1 min-w-[200px]">
                 <Input 
                   type="text" 
-                  placeholder="Search novels..." 
+                  placeholder="搜索小说..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
                 />
                 <FilterIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
-              
+
               <Select value={genreFilter} onValueChange={setGenreFilter}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="All Genres" />
+                  <SelectValue placeholder="所有类型" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Genres</SelectItem>
+                  <SelectItem value="all">所有类型</SelectItem>
                   {uniqueGenres.map((genre: string) => (
                     <SelectItem key={genre} value={genre}>
                       {genre}
@@ -150,23 +150,23 @@ export default function NovelsPage() {
                   ))}
                 </SelectContent>
               </Select>
-              
+
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Sort by" />
+                  <SelectValue placeholder="排序方式" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="updated">Recently Updated</SelectItem>
-                  <SelectItem value="created">Recently Created</SelectItem>
-                  <SelectItem value="title">Alphabetical</SelectItem>
+                  <SelectItem value="updated">最近更新</SelectItem>
+                  <SelectItem value="created">最近创建</SelectItem>
+                  <SelectItem value="title">按字母排序</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <Button variant="outline" size="icon" onClick={() => refetch()}>
                 <RefreshCcw className="h-4 w-4" />
               </Button>
             </div>
-            
+
             {/* Novel Waterfall Grid */}
             {isLoading ? (
               <div className="flex justify-center items-center h-64">
@@ -193,20 +193,20 @@ export default function NovelsPage() {
                     </svg>
                   </div>
                 </div>
-                <h3 className="mt-4 text-lg font-medium text-gray-900">No novels found</h3>
+                <h3 className="mt-4 text-lg font-medium text-gray-900">未找到小说</h3>
                 <p className="mt-1 text-sm text-gray-500">
                   {searchQuery || genreFilter !== "all" 
-                    ? "Try changing your search or filter criteria"
-                    : "Start by adding your first novel"}
+                    ? "尝试改变您的搜索或过滤条件"
+                    : "从添加您的第一部小说开始"}
                 </p>
                 <div className="mt-6">
                   <Button onClick={() => setIsCreateModalOpen(true)}>
-                    <Plus className="mr-1 h-4 w-4" /> Add Novel
+                    <Plus className="mr-1 h-4 w-4" /> 添加小说
                   </Button>
                 </div>
               </div>
             )}
-            
+
             {/* Pagination (simplified) */}
             {filteredNovels.length > 0 && (
               <div className="mt-6 flex justify-center">
@@ -226,27 +226,27 @@ export default function NovelsPage() {
           </div>
         </main>
       </div>
-      
+
       {/* Create Novel Dialog */}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Add New Novel</DialogTitle>
+            <DialogTitle>添加新小说</DialogTitle>
             <DialogDescription>
-              Create a new novel to start tracking characters and their relationships.
+              创建一部新小说以开始跟踪角色及其关系。
             </DialogDescription>
           </DialogHeader>
-          
+
           <NovelForm 
             onSuccess={() => {
               setIsCreateModalOpen(false);
               queryClient.invalidateQueries({ queryKey: ["/api/novels"] });
             }}
           />
-          
+
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
-              Cancel
+              取消
             </Button>
           </DialogFooter>
         </DialogContent>

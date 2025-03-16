@@ -35,18 +35,18 @@ export default function CharactersPage() {
   const [isAddCharacterModalOpen, setIsAddCharacterModalOpen] = useState(false);
   const { toast } = useToast();
   const [_, navigate] = useLocation();
-  
+
   // Fetch novels
   const { data: novels = [] } = useQuery({
     queryKey: ["/api/novels"],
   });
-  
+
   // Fetch characters for selected novel
   const { data: characters = [], isLoading } = useQuery({
     queryKey: [`/api/novels/${selectedNovelId}/characters`],
     enabled: selectedNovelId !== "all",
   });
-  
+
   // Get all characters across all novels
   const { data: allCharacters = [] } = useQuery({
     queryKey: ["allCharacters"],
@@ -62,37 +62,37 @@ export default function CharactersPage() {
     },
     enabled: selectedNovelId === "all" && novels.length > 0,
   });
-  
+
   // Display characters based on novel selection
   const displayedCharacters = selectedNovelId === "all" ? allCharacters : characters;
-  
+
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Topbar title="Characters" />
-        
+        <Topbar title="角色" />
+
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Character Management</h3>
+              <h3 className="text-lg font-semibold text-gray-800">角色管理</h3>
               <Button
                 onClick={() => setIsAddCharacterModalOpen(true)}
                 disabled={novels.length === 0}
               >
-                Add Character
+                添加角色
               </Button>
             </div>
-            
+
             {/* Novel selector */}
             <div className="mb-6">
               <Select value={selectedNovelId} onValueChange={setSelectedNovelId}>
                 <SelectTrigger className="w-full max-w-xs">
-                  <SelectValue placeholder="Select a novel" />
+                  <SelectValue placeholder="选择小说" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Novels</SelectItem>
+                  <SelectItem value="all">所有小说</SelectItem>
                   {novels.map((novel: any) => (
                     <SelectItem key={novel.id} value={novel.id.toString()}>
                       {novel.title}
@@ -101,14 +101,14 @@ export default function CharactersPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             {/* Characters Grid */}
             {novels.length === 0 ? (
               <Card>
                 <CardContent className="p-6 text-center">
-                  <p className="text-gray-500 mb-4">You need to create a novel first before adding characters.</p>
+                  <p className="text-gray-500 mb-4">您需要先创建小说再添加角色。</p>
                   <Button onClick={() => navigate("/novels")}>
-                    Create a Novel
+                    创建小说
                   </Button>
                 </CardContent>
               </Card>
@@ -138,7 +138,7 @@ export default function CharactersPage() {
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
                       <p className="text-sm text-gray-500 line-clamp-2">
-                        {character.description || "No description provided"}
+                        {character.description || "未提供描述"}
                       </p>
                       {selectedNovelId === "all" && (
                         <div className="mt-2">
@@ -169,15 +169,15 @@ export default function CharactersPage() {
                     <User className="h-10 w-10 text-gray-400" />
                   </div>
                 </div>
-                <h3 className="mt-4 text-lg font-medium text-gray-900">No characters found</h3>
+                <h3 className="mt-4 text-lg font-medium text-gray-900">未找到角色</h3>
                 <p className="mt-1 text-sm text-gray-500">
                   {selectedNovelId === "all" 
-                    ? "You haven't created any characters in any of your novels yet." 
-                    : "This novel doesn't have any characters yet."}
+                    ? "您在任何小说中都还没有创建角色。" 
+                    : "这部小说还没有任何角色。"}
                 </p>
                 <div className="mt-6">
                   <Button onClick={() => setIsAddCharacterModalOpen(true)}>
-                    Add Character
+                    添加角色
                   </Button>
                 </div>
               </div>
@@ -185,12 +185,12 @@ export default function CharactersPage() {
           </div>
         </main>
       </div>
-      
+
       {/* Add Character Dialog */}
       <Dialog open={isAddCharacterModalOpen} onOpenChange={setIsAddCharacterModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New Character</DialogTitle>
+            <DialogTitle>添加新角色</DialogTitle>
           </DialogHeader>
           <CharacterForm 
             novelId={selectedNovelId !== "all" ? parseInt(selectedNovelId) : undefined}

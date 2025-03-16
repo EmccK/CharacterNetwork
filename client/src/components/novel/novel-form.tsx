@@ -55,7 +55,7 @@ export default function NovelForm({
     initialData?.coverImage as string || ""
   );
   const [activeTab, setActiveTab] = useState<string>("upload");
-  
+
   // Set up form with default values
   const form = useForm<NovelFormValues>({
     resolver: zodResolver(formSchema),
@@ -68,10 +68,10 @@ export default function NovelForm({
       id: initialData?.id,
     },
   });
-  
+
   // Determine if we're editing or creating
   const isEditing = !!initialData?.id;
-  
+
   // Handle URL input
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
@@ -99,53 +99,53 @@ export default function NovelForm({
       const formData = new FormData();
       formData.append("title", values.title);
       formData.append("userId", String(user?.id));
-      
+
       if (values.description) {
         formData.append("description", values.description);
       }
-      
+
       if (values.genre) {
         formData.append("genre", values.genre);
       }
-      
+
       if (values.status) {
         formData.append("status", values.status);
       }
-      
+
       // Handle image based on active tab
       if (activeTab === "upload" && selectedFile) {
         formData.append("coverImage", selectedFile);
       } else if (activeTab === "url" && coverImageUrl) {
         formData.append("coverImageUrl", coverImageUrl);
       }
-      
+
       let url = "/api/novels";
       let method = "POST";
-      
+
       // If editing, use PUT and include the novel ID
       if (isEditing && initialData.id) {
         url = `/api/novels/${initialData.id}`;
         method = "PUT";
       }
-      
+
       const response = await fetch(url, {
         method: method,
         body: formData,
         credentials: "include"
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `Failed to ${isEditing ? 'update' : 'create'} novel`);
       }
-      
+
       return await response.json();
     },
     onSuccess: () => {
-      toast({
-        title: isEditing ? "Novel updated" : "Novel created",
-        description: `Your novel has been successfully ${isEditing ? 'updated' : 'created'}`,
-      });
+    toast({
+    title: isEditing ? "小说已更新" : "小说已创建",
+    description: `您的小说已成功${isEditing ? '更新' : '创建'}`,
+    });
       if (onSuccess) onSuccess();
       if (!isEditing) {
         form.reset();
@@ -155,19 +155,19 @@ export default function NovelForm({
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
+        title: "错误",
         description: error.message,
         variant: "destructive",
       });
     },
   });
-  
+
   // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setSelectedFile(file);
-      
+
       // Create a preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -176,11 +176,11 @@ export default function NovelForm({
       reader.readAsDataURL(file);
     }
   };
-  
+
   function onSubmit(values: NovelFormValues) {
     mutation.mutate(values);
   }
-  
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -191,26 +191,26 @@ export default function NovelForm({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Novel Title</FormLabel>
+                  <FormLabel>小说标题</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter novel title" {...field} />
+                    <Input placeholder="输入小说标题" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-          
+
           <div className="md:col-span-2">
             <FormField
               control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>描述</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Brief description of your novel" 
+                      placeholder="小说简介" 
                       rows={3} 
                       {...field} 
                     />
@@ -220,67 +220,67 @@ export default function NovelForm({
               )}
             />
           </div>
-          
+
           <FormField
             control={form.control}
             name="genre"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Genre</FormLabel>
+                <FormLabel>类型</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a genre" />
+                      <SelectValue placeholder="选择类型" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Fantasy">Fantasy</SelectItem>
-                    <SelectItem value="Science Fiction">Science Fiction</SelectItem>
-                    <SelectItem value="Mystery">Mystery</SelectItem>
-                    <SelectItem value="Romance">Romance</SelectItem>
-                    <SelectItem value="Historical">Historical</SelectItem>
-                    <SelectItem value="Thriller">Thriller</SelectItem>
-                    <SelectItem value="Horror">Horror</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="Fantasy">奇幻</SelectItem>
+                    <SelectItem value="Science Fiction">科幻</SelectItem>
+                    <SelectItem value="Mystery">悬疑</SelectItem>
+                    <SelectItem value="Romance">爱情</SelectItem>
+                    <SelectItem value="Historical">历史</SelectItem>
+                    <SelectItem value="Thriller">惊悚</SelectItem>
+                    <SelectItem value="Horror">恐怖</SelectItem>
+                    <SelectItem value="Other">其他</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Status</FormLabel>
+                <FormLabel>状态</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
+                      <SelectValue placeholder="选择状态" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                    <SelectItem value="Planning">Planning</SelectItem>
-                    <SelectItem value="On Hold">On Hold</SelectItem>
+                    <SelectItem value="In Progress">进行中</SelectItem>
+                    <SelectItem value="Completed">已完成</SelectItem>
+                    <SelectItem value="Planning">计划中</SelectItem>
+                    <SelectItem value="On Hold">暂停</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
-          
+
           <div className="md:col-span-2">
-            <FormLabel>Cover Image</FormLabel>
+            <FormLabel>封面图片</FormLabel>
             <Tabs 
               defaultValue={activeTab} 
               className="mt-2" 
@@ -289,14 +289,14 @@ export default function NovelForm({
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="upload">
                   <ImagePlus className="w-4 h-4 mr-2" />
-                  Upload Image
+                  上传图片
                 </TabsTrigger>
                 <TabsTrigger value="url">
                   <LinkIcon className="w-4 h-4 mr-2" />
-                  Image URL
+                  图片链接
                 </TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="upload" className="mt-4">
                 <div className="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
                   {previewUrl && activeTab === "upload" ? (
@@ -313,7 +313,7 @@ export default function NovelForm({
                           htmlFor="file-upload"
                           className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500"
                         >
-                          <span>Change file</span>
+                          <span>更改文件</span>
                           <input 
                             id="file-upload" 
                             name="file-upload" 
@@ -333,7 +333,7 @@ export default function NovelForm({
                           htmlFor="file-upload"
                           className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500"
                         >
-                          <span>Upload a file</span>
+                          <span>上传文件</span>
                           <input 
                             id="file-upload" 
                             name="file-upload" 
@@ -343,28 +343,28 @@ export default function NovelForm({
                             onChange={handleFileChange}
                           />
                         </label>
-                        <p className="pl-1">or drag and drop</p>
+                        <p className="pl-1">或拖放至此处</p>
                       </div>
-                      <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                      <p className="text-xs text-gray-500">PNG, JPG, GIF 格式，最大 10MB</p>
                     </div>
                   )}
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="url" className="mt-4">
                 <div className="space-y-4">
                   <div className="flex flex-col">
                     <Input 
                       type="text" 
-                      placeholder="Enter image URL" 
+                      placeholder="输入图片链接" 
                       value={coverImageUrl}
                       onChange={handleUrlChange}
                     />
                     <p className="mt-1 text-xs text-gray-500">
-                      Enter a direct URL to an image (.jpg, .png, .gif)
+                      输入图片的直接链接（.jpg，.png，.gif）
                     </p>
                   </div>
-                  
+
                   {previewUrl && activeTab === "url" && (
                     <div className="aspect-[3/4] w-40 mx-auto overflow-hidden rounded-md">
                       <img 
@@ -380,16 +380,16 @@ export default function NovelForm({
             </Tabs>
           </div>
         </div>
-        
+
         <div className="flex justify-end">
           <Button type="submit" disabled={mutation.isPending}>
             {mutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {isEditing ? "Updating..." : "Creating..."}
+                {isEditing ? "更新中..." : "创建中..."}
               </>
             ) : (
-              isEditing ? "Update Novel" : "Create Novel"
+              isEditing ? "更新小说" : "创建小说"
             )}
           </Button>
         </div>

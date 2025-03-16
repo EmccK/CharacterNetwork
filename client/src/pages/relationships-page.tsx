@@ -36,37 +36,37 @@ export default function RelationshipsPage() {
   const [isAddRelationshipTypeModalOpen, setIsAddRelationshipTypeModalOpen] = useState(false);
   const { toast } = useToast();
   const [_, navigate] = useLocation();
-  
+
   // Fetch novels
   const { data: novels = [] } = useQuery({
     queryKey: ["/api/novels"],
   });
-  
+
   // Fetch relationship types
   const { data: relationshipTypes = [] } = useQuery({
     queryKey: ["/api/relationship-types"],
   });
-  
+
   // Fetch characters and relationships for selected novel
   const { data: characters = [], isLoading: isCharactersLoading } = useQuery({
     queryKey: [`/api/novels/${selectedNovelId}/characters`],
     enabled: !!selectedNovelId,
   });
-  
+
   const { data: relationships = [], isLoading: isRelationshipsLoading } = useQuery({
     queryKey: [`/api/novels/${selectedNovelId}/relationships`],
     enabled: !!selectedNovelId,
   });
-  
+
   const isLoading = isCharactersLoading || isRelationshipsLoading;
-  
+
   const handleRelationshipTypeSubmit = async (data: any) => {
     try {
       await apiRequest("POST", "/api/relationship-types", {
         name: data.name,
         color: data.color,
       });
-      
+
       queryClient.invalidateQueries({ queryKey: ["/api/relationship-types"] });
       setIsAddRelationshipTypeModalOpen(false);
       toast({
@@ -81,39 +81,39 @@ export default function RelationshipsPage() {
       });
     }
   };
-  
+
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Topbar title="Relationships" />
-        
+        <Topbar title="关系" />
+
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Character Relationships</h3>
+              <h3 className="text-lg font-semibold text-gray-800">角色关系</h3>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   onClick={() => setIsAddRelationshipTypeModalOpen(true)}
                 >
-                  <PenSquare className="h-4 w-4 mr-2" /> Add Relationship Type
+                  <PenSquare className="h-4 w-4 mr-2" /> 添加关系类型
                 </Button>
                 <Button
                   onClick={() => setIsAddRelationshipModalOpen(true)}
                   disabled={!selectedNovelId || characters.length < 2}
                 >
-                  <Plus className="h-4 w-4 mr-2" /> Add Relationship
+                  <Plus className="h-4 w-4 mr-2" /> 添加关系
                 </Button>
               </div>
             </div>
-            
+
             {/* Novel selector */}
             <div className="mb-6">
               <Select value={selectedNovelId} onValueChange={setSelectedNovelId}>
                 <SelectTrigger className="w-full max-w-xs">
-                  <SelectValue placeholder="Select a novel to view relationships" />
+                  <SelectValue placeholder="选择小说查看关系" />
                 </SelectTrigger>
                 <SelectContent>
                   {novels.map((novel: any) => (
@@ -124,10 +124,10 @@ export default function RelationshipsPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             {/* Relationship Types */}
             <div className="mb-6">
-              <h4 className="text-md font-medium mb-2">Relationship Types</h4>
+              <h4 className="text-md font-medium mb-2">关系类型</h4>
               <div className="flex flex-wrap gap-2 mb-4">
                 {relationshipTypes.map((type: any) => (
                   <div 
@@ -139,11 +139,11 @@ export default function RelationshipsPage() {
                   </div>
                 ))}
                 {relationshipTypes.length === 0 && (
-                  <p className="text-sm text-gray-500">No custom relationship types defined.</p>
+                  <p className="text-sm text-gray-500">没有定义自定义关系类型。</p>
                 )}
               </div>
             </div>
-            
+
             {/* Relationship Graph */}
             {!selectedNovelId ? (
               <Card>
@@ -153,9 +153,9 @@ export default function RelationshipsPage() {
                       <Link className="h-10 w-10 text-gray-400" />
                     </div>
                   </div>
-                  <CardTitle className="mb-2">Select a Novel</CardTitle>
+                  <CardTitle className="mb-2">选择小说</CardTitle>
                   <CardDescription>
-                    Choose a novel from the dropdown above to view its character relationships.
+                    从上面的下拉菜单中选择一部小说来查看其角色关系。
                   </CardDescription>
                 </CardContent>
               </Card>
@@ -171,12 +171,12 @@ export default function RelationshipsPage() {
                       <Link className="h-10 w-10 text-gray-400" />
                     </div>
                   </div>
-                  <CardTitle className="mb-2">No Relationships Available</CardTitle>
+                  <CardTitle className="mb-2">没有可用的关系</CardTitle>
                   <CardDescription className="mb-4">
-                    You need at least two characters to create relationships. This novel has {characters.length} character(s).
+                    您需要至少两个角色才能创建关系。这部小说有 {characters.length} 个角色。
                   </CardDescription>
                   <Button onClick={() => navigate(`/novels/${selectedNovelId}`)}>
-                    Go to Novel
+                    前往小说
                   </Button>
                 </CardContent>
               </Card>
@@ -193,12 +193,12 @@ export default function RelationshipsPage() {
           </div>
         </main>
       </div>
-      
+
       {/* Add Relationship Dialog */}
       <Dialog open={isAddRelationshipModalOpen} onOpenChange={setIsAddRelationshipModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New Relationship</DialogTitle>
+            <DialogTitle>添加新关系</DialogTitle>
           </DialogHeader>
           <RelationshipForm 
             novelId={parseInt(selectedNovelId)}
@@ -215,12 +215,12 @@ export default function RelationshipsPage() {
           />
         </DialogContent>
       </Dialog>
-      
+
       {/* Add Relationship Type Dialog */}
       <Dialog open={isAddRelationshipTypeModalOpen} onOpenChange={setIsAddRelationshipTypeModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Relationship Type</DialogTitle>
+            <DialogTitle>添加关系类型</DialogTitle>
           </DialogHeader>
           <form className="space-y-4" onSubmit={(e) => {
             e.preventDefault();
@@ -230,17 +230,17 @@ export default function RelationshipsPage() {
             handleRelationshipTypeSubmit({ name, color });
           }}>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Name</label>
+              <label className="text-sm font-medium">名称</label>
               <input 
                 name="name"
                 type="text" 
                 required
                 className="w-full p-2 border rounded-md"
-                placeholder="e.g., Rivals, Colleagues, etc."
+                placeholder="例如：竞争对手、同事等。"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Color</label>
+              <label className="text-sm font-medium">颜色</label>
               <div className="flex gap-3">
                 <input 
                   name="color"
@@ -263,10 +263,10 @@ export default function RelationshipsPage() {
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="outline" onClick={() => setIsAddRelationshipTypeModalOpen(false)}>
-                Cancel
+                取消
               </Button>
               <Button type="submit">
-                Add Type
+                添加类型
               </Button>
             </div>
           </form>
