@@ -96,7 +96,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary-600 text-white">
+                    <AvatarFallback className="bg-red-500 text-white font-bold">
                       {user?.username ? getInitials(user.username) : "U"}
                     </AvatarFallback>
                   </Avatar>
