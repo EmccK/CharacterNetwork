@@ -353,11 +353,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Relationship type not found" });
       }
       
-      // Check if user owns this relationship type or if it's a system default
-      if (relationshipType.userId === 0) {
-        return res.status(403).json({ message: "Cannot modify system default relationship types" });
-      }
-      
+      // 检查用户权限
       if (relationshipType.userId !== req.user.id && !req.user.isAdmin) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -377,11 +373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Relationship type not found" });
       }
       
-      // Check if user owns this relationship type or if it's a system default
-      if (relationshipType.userId === 0) {
-        return res.status(403).json({ message: "Cannot delete system default relationship types" });
-      }
-      
+      // 检查用户权限
       if (relationshipType.userId !== req.user.id && !req.user.isAdmin) {
         return res.status(403).json({ message: "Forbidden" });
       }

@@ -31,41 +31,8 @@ export class DrizzleStorage implements IStorage {
   }
 
   private async initializeDefaultRelationshipTypes() {
-    // 由于数据库外键约束，我们需要创建一个系统管理员用户来关联默认关系类型
-    // 首先，检查是否已经存在系统管理员用户
-    const adminUserResults = await db.select().from(users).where(eq(users.username, 'system')).limit(1);
-    
-    let adminUserId: number;
-    if (adminUserResults.length === 0) {
-      // 创建系统管理员用户
-      const adminUser = {
-        username: '系统',
-        password: '系统账号请勿登录', // 不会被用于登录
-        email: 'system@example.com',
-        isAdmin: true
-      };
-      
-      const result = await db.insert(users).values(adminUser).returning();
-      adminUserId = result[0].id;
-    } else {
-      adminUserId = adminUserResults[0].id;
-    }
-    
-    const defaultTypes = [
-      { name: "家人", color: "#3B82F6", userId: adminUserId },
-      { name: "朋友", color: "#10B981", userId: adminUserId },
-      { name: "敌人", color: "#EF4444", userId: adminUserId },
-      { name: "情侣", color: "#8B5CF6", userId: adminUserId },
-      { name: "师徒", color: "#F59E0B", userId: adminUserId }
-    ];
-
-    for (const type of defaultTypes) {
-      const existingType = await db.select().from(relationshipTypes).where(eq(relationshipTypes.name, type.name)).limit(1);
-      
-      if (existingType.length === 0) {
-        await db.insert(relationshipTypes).values(type);
-      }
-    }
+    // 由于不再需要默认关系类型，这里仅仅保留初始化方法
+    // 如果需要可以在这里添加自定义初始化逻辑
   }
 
   // User operations
@@ -161,12 +128,9 @@ export class DrizzleStorage implements IStorage {
 
   // Relationship Type operations
   async getRelationshipTypes(userId: number): Promise<RelationshipType[]> {
-    // 获取系统默认的关系类型和用户自定义的关系类型
-    const systemUser = await db.select().from(users).where(eq(users.username, 'system')).limit(1);
-    const systemUserId = systemUser.length > 0 ? systemUser[0].id : -1;
-    
+    // 只获取用户自定义的关系类型
     return await db.select().from(relationshipTypes)
-      .where(or(eq(relationshipTypes.userId, userId), eq(relationshipTypes.userId, systemUserId)));
+      .where(eq(relationshipTypes.userId, userId));
   }
 
   async getRelationshipType(id: number): Promise<RelationshipType | undefined> {
@@ -180,36 +144,18 @@ export class DrizzleStorage implements IStorage {
   }
 
   async updateRelationshipType(id: number, relationshipTypeData: Partial<RelationshipType>): Promise<RelationshipType | undefined> {
-    // 检查是否为系统默认关系类型
+    // 检查关系类型是否存在
     const existing = await this.getRelationshipType(id);
     if (!existing) return undefined;
-    
-    // 获取系统用户ID
-    const systemUser = await db.select().from(users).where(eq(users.username, 'system')).limit(1);
-    const systemUserId = systemUser.length > 0 ? systemUser[0].id : -1;
-    
-    // 如果是系统默认类型，不允许更新
-    if (existing.userId === systemUserId) {
-      return existing; // 不更新系统默认类型
-    }
     
     const result = await db.update(relationshipTypes).set(relationshipTypeData).where(eq(relationshipTypes.id, id)).returning();
     return result.length > 0 ? result[0] : undefined;
   }
 
   async deleteRelationshipType(id: number): Promise<boolean> {
-    // 检查是否为系统默认关系类型
+    // 检查关系类型是否存在
     const existing = await this.getRelationshipType(id);
     if (!existing) return false;
-    
-    // 获取系统用户ID
-    const systemUser = await db.select().from(users).where(eq(users.username, 'system')).limit(1);
-    const systemUserId = systemUser.length > 0 ? systemUser[0].id : -1;
-    
-    // 如果是系统默认类型，不允许删除
-    if (existing.userId === systemUserId) {
-      return false; // 不删除系统默认类型
-    }
     
     const result = await db.delete(relationshipTypes).where(eq(relationshipTypes.id, id)).returning();
     return result.length > 0;

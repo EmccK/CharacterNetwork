@@ -34,6 +34,8 @@ export default function RelationshipsPage() {
   const [selectedNovelId, setSelectedNovelId] = useState<string>("");
   const [isAddRelationshipModalOpen, setIsAddRelationshipModalOpen] = useState(false);
   const [isAddRelationshipTypeModalOpen, setIsAddRelationshipTypeModalOpen] = useState(false);
+  const [isEditRelationshipTypeModalOpen, setIsEditRelationshipTypeModalOpen] = useState(false);
+  const [selectedRelationshipType, setSelectedRelationshipType] = useState<any>(null);
   const { toast } = useToast();
   const [_, navigate] = useLocation();
 
@@ -70,12 +72,64 @@ export default function RelationshipsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/relationship-types"] });
       setIsAddRelationshipTypeModalOpen(false);
       toast({
-        title: "Relationship type added",
-        description: "The relationship type has been successfully added",
+        title: "关系类型已添加",
+        description: "关系类型已成功添加",
       });
     } catch (error: any) {
       toast({
-        title: "Failed to add relationship type",
+        title: "添加关系类型失败",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRelationshipTypeEdit = async (data: any) => {
+    try {
+      await apiRequest("PUT", `/api/relationship-types/${selectedRelationshipType.id}`, {
+        name: data.name,
+        color: data.color,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["/api/relationship-types"] });
+      setIsEditRelationshipTypeModalOpen(false);
+      setSelectedRelationshipType(null);
+      toast({
+        title: "关系类型已更新",
+        description: "关系类型已成功更新",
+      });
+    } catch (error: any) {
+      toast({
+        title: "更新关系类型失败",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRelationshipTypeDelete = async (typeId: number) => {
+    // 检查是否有使用此关系类型的关系
+    const relationshipsUsingType = relationships.filter((rel: any) => rel.typeId === typeId);
+    
+    if (relationshipsUsingType.length > 0) {
+      toast({
+        title: "无法删除关系类型",
+        description: `有 ${relationshipsUsingType.length} 个关系正在使用此类型。请先删除这些关系。`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      await apiRequest("DELETE", `/api/relationship-types/${typeId}`, {});
+      queryClient.invalidateQueries({ queryKey: ["/api/relationship-types"] });
+      toast({
+        title: "关系类型已删除",
+        description: "关系类型已成功删除",
+      });
+    } catch (error: any) {
+      toast({
+        title: "删除关系类型失败",
         description: error.message,
         variant: "destructive",
       });
@@ -129,15 +183,40 @@ export default function RelationshipsPage() {
             <div className="mb-6">
               <h4 className="text-md font-medium mb-2">关系类型</h4>
               <div className="flex flex-wrap gap-2 mb-4">
-                {relationshipTypes.map((type: any) => (
-                  <div 
-                    key={type.id}
-                    className="flex items-center px-3 py-1.5 rounded-full text-white"
-                    style={{ backgroundColor: type.color }}
-                  >
-                    <span className="text-sm">{type.name}</span>
-                  </div>
-                ))}
+                {relationshipTypes.map((type: any) => {
+                  // 检查是否有使用此关系类型的关系
+                  const isUsedInRelationships = relationships.some((rel: any) => rel.typeId === type.id);
+                  
+                  return (
+                    <div 
+                      key={type.id}
+                      className="group flex items-center px-3 py-1.5 rounded-full text-white relative"
+                      style={{ backgroundColor: type.color }}
+                    >
+                      <span className="text-sm">{type.name}</span>
+                      <div className="absolute right-[-6px] top-[-6px] opacity-0 group-hover:opacity-100 flex bg-white rounded-full shadow-sm">
+                        <button 
+                          onClick={() => {
+                            setSelectedRelationshipType(type);
+                            setIsEditRelationshipTypeModalOpen(true);
+                          }}
+                          className="p-1 hover:bg-gray-100 rounded-l-full"
+                          title="编辑关系类型"
+                        >
+                          <PenSquare className="h-3 w-3 text-gray-600" />
+                        </button>
+                        <button 
+                          onClick={() => handleRelationshipTypeDelete(type.id)}
+                          className={`p-1 hover:bg-gray-100 rounded-r-full ${isUsedInRelationships ? 'cursor-not-allowed opacity-50' : ''}`}
+                          title={isUsedInRelationships ? "此类型正在被使用，无法删除" : "删除关系类型"}
+                          disabled={isUsedInRelationships}
+                        >
+                          <Trash className="h-3 w-3 text-gray-600" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
                 {relationshipTypes.length === 0 && (
                   <p className="text-sm text-gray-500">没有定义自定义关系类型。</p>
                 )}
@@ -270,6 +349,72 @@ export default function RelationshipsPage() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Relationship Type Dialog */}
+      <Dialog open={isEditRelationshipTypeModalOpen} onOpenChange={(open) => {
+        setIsEditRelationshipTypeModalOpen(open);
+        if (!open) setSelectedRelationshipType(null);
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>编辑关系类型</DialogTitle>
+          </DialogHeader>
+          {selectedRelationshipType && (
+            <form className="space-y-4" onSubmit={(e) => {
+              e.preventDefault();
+              const form = e.target as HTMLFormElement;
+              const name = (form.elements.namedItem('name') as HTMLInputElement).value;
+              const color = (form.elements.namedItem('color') as HTMLInputElement).value;
+              handleRelationshipTypeEdit({ name, color });
+            }}>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">名称</label>
+                <input 
+                  name="name"
+                  type="text" 
+                  required
+                  defaultValue={selectedRelationshipType.name}
+                  className="w-full p-2 border rounded-md"
+                  placeholder="例如：竞争对手、同事等。"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">颜色</label>
+                <div className="flex gap-3">
+                  <input 
+                    name="color"
+                    type="color" 
+                    defaultValue={selectedRelationshipType.color}
+                    className="h-10 w-10 border rounded p-1"
+                  />
+                  <input 
+                    name="colorText"
+                    type="text" 
+                    defaultValue={selectedRelationshipType.color}
+                    className="flex-1 p-2 border rounded-md"
+                    onChange={(e) => {
+                      const form = e.target.form as HTMLFormElement;
+                      const colorInput = form.elements.namedItem('color') as HTMLInputElement;
+                      colorInput.value = e.target.value;
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="outline" onClick={() => {
+                  setIsEditRelationshipTypeModalOpen(false);
+                  setSelectedRelationshipType(null);
+                }}>
+                  取消
+                </Button>
+                <Button type="submit">
+                  保存修改
+                </Button>
+              </div>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>
