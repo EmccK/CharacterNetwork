@@ -50,19 +50,20 @@ export default function CharacterList({
   // Delete character mutation
   const deleteCharacterMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/characters/${id}`);
+      const response = await apiRequest("DELETE", `/api/characters/${id}`);
+      return response;
     },
     onSuccess: () => {
       toast({
-        title: "Character deleted",
-        description: "The character has been successfully deleted",
+        title: "角色已删除",
+        description: "角色已成功删除",
       });
       setCharacterToDelete(null);
       onUpdate();
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to delete character",
+        title: "删除角色失败",
         description: error.message,
         variant: "destructive",
       });
@@ -91,9 +92,9 @@ export default function CharacterList({
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">Characters</h3>
+        <h3 className="text-lg font-semibold text-gray-800">角色</h3>
         <Button variant="outline" size="sm" onClick={onAddCharacter}>
-          <Plus className="h-4 w-4 mr-1" /> Add Character
+          <Plus className="h-4 w-4 mr-1" /> 添加角色
         </Button>
       </div>
       
@@ -102,45 +103,46 @@ export default function CharacterList({
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-4">
             <User className="h-6 w-6 text-gray-500" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-1">No characters yet</h3>
-          <p className="text-gray-500 mb-4">Start by adding characters to your novel</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-1">暂无角色</h3>
+          <p className="text-gray-500 mb-4">开始为您的小说添加角色</p>
           <Button onClick={onAddCharacter}>
-            <Plus className="h-4 w-4 mr-1" /> Add Character
+            <Plus className="h-4 w-4 mr-1" /> 添加角色
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {characters.map((character) => (
             <Card key={character.id} className="overflow-hidden hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2 flex flex-row items-center gap-4">
-                <Avatar className="h-12 w-12">
-                  {character.avatar ? (
-                    <AvatarImage src={character.avatar} alt={character.name} />
-                  ) : (
-                    <AvatarFallback className="bg-primary-100 text-primary-800">
-                      {character.name.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <div>
-                  <CardTitle className="text-lg">{character.name}</CardTitle>
+              <CardHeader className="pb-1 pt-3 px-3">
+                <div className="flex flex-col items-center text-center">
+                  <Avatar className="h-10 w-10 mb-2">
+                    {character.avatar ? (
+                      <AvatarImage src={character.avatar} alt={character.name} />
+                    ) : (
+                      <AvatarFallback className="bg-primary-100 text-primary-800">
+                        {character.name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <CardTitle className="text-sm font-medium">{character.name}</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="pb-2">
-                <p className="text-sm text-gray-600">
-                  {character.description || "No description provided."}
+              <CardContent className="pb-1 px-3">
+                <p className="text-xs text-gray-600 line-clamp-2">
+                  {character.description || "暂无描述。"}
                 </p>
               </CardContent>
-              <CardFooter className="flex justify-end gap-1 pt-0">
-                <Button variant="ghost" size="sm" onClick={() => handleEditClick(character)}>
-                  <EditIcon className="h-4 w-4" />
+              <CardFooter className="flex justify-center gap-1 pt-1 pb-2 px-3">
+                <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleEditClick(character)}>
+                  <EditIcon className="h-3.5 w-3.5" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="h-7 w-7 p-0"
                   onClick={() => setCharacterToDelete(character)}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </CardFooter>
             </Card>
@@ -152,17 +154,17 @@ export default function CharacterList({
       <Dialog open={!!characterToDelete} onOpenChange={(open) => !open && setCharacterToDelete(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogTitle>确认删除</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete the character "{characterToDelete?.name}"? This action cannot be undone.
+              您确定要删除角色 "{characterToDelete?.name}" 吗？此操作无法撤消。
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCharacterToDelete(null)}>
-              Cancel
+              取消
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
-              Delete
+              删除
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -172,7 +174,7 @@ export default function CharacterList({
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Character</DialogTitle>
+            <DialogTitle>编辑角色</DialogTitle>
           </DialogHeader>
           {characterToEdit && (
             <CharacterForm
@@ -182,8 +184,8 @@ export default function CharacterList({
                 setIsEditDialogOpen(false);
                 onUpdate();
                 toast({
-                  title: "Character updated",
-                  description: "Character has been successfully updated",
+                  title: "角色已更新",
+                  description: "角色已成功更新",
                 });
               }}
             />
