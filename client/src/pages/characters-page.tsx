@@ -136,7 +136,7 @@ export default function CharactersPage() {
                       )}
                     </div>
                     <CardHeader className="p-2 pb-1">
-                      <CardTitle className="text-sm">{character.name}</CardTitle>
+                      <CardTitle className="text-sm whitespace-normal break-words">{character.name}</CardTitle>
                     </CardHeader>
                     <CardContent className="p-2 pt-0">
                       <p className="text-xs text-gray-500 line-clamp-1">

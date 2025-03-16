@@ -202,9 +202,9 @@ export default function RelationshipGraph({
               <div
                 className="edge"
                 style={{
-                  left: `${source.x + 30}px`,
-                  top: `${source.y + 30}px`,
-                  width: `${length - 60}px`,
+                  left: `${source.x + 40}px`,
+                  top: `${source.y + 40}px`,
+                  width: `${length - 80}px`,
                   transform: `rotate(${angle}deg)`,
                   backgroundColor: edge.color,
                 }}
@@ -248,7 +248,7 @@ export default function RelationshipGraph({
                   draggable={false}
                 />
               ) : (
-                node.name.substring(0, 2).toUpperCase()
+                node.name
               )}
             </div>
 
@@ -257,7 +257,7 @@ export default function RelationshipGraph({
               <div
                 className="node-tooltip"
                 style={{
-                  left: `${node.x + 70}px`,
+                  left: `${node.x + 90}px`,
                   top: `${node.y}px`,
                   opacity: 1,
                 }}

@@ -110,11 +110,11 @@ export default function CharacterList({
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {characters.map((character) => (
-            <Card key={character.id} className="overflow-hidden hover:shadow-md transition-shadow">
+            <Card key={character.id} className="overflow-hidden hover:shadow-md transition-shadow min-h-[120px]">
               <CardHeader className="pb-0 pt-2 px-2">
-                <div className="flex flex-col items-center text-center">
+                <div className="flex flex-col items-center text-center w-full">
                   <Avatar className="h-8 w-8 mb-1">
                     {character.avatar ? (
                       <AvatarImage src={character.avatar} alt={character.name} />
@@ -124,11 +124,11 @@ export default function CharacterList({
                       </AvatarFallback>
                     )}
                   </Avatar>
-                  <CardTitle className="text-xs font-medium">{character.name}</CardTitle>
+                  <CardTitle className="text-xs font-medium w-full px-1 whitespace-normal break-words min-h-[32px]" title={character.name}>{character.name}</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="pb-0 px-2">
-                <p className="text-[10px] text-gray-600 line-clamp-1">
+                <p className="text-[10px] text-gray-600 line-clamp-2 text-center">
                   {character.description || "暂无描述。"}
                 </p>
               </CardContent>
