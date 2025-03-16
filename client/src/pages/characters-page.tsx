@@ -119,10 +119,10 @@ export default function CharactersPage() {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
               </div>
             ) : displayedCharacters.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
                 {displayedCharacters.map((character: any) => (
                   <Card key={character.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                    <div className="aspect-[1/1] relative bg-gray-100">
+                    <div className="aspect-[1/1] relative bg-gray-100 max-h-24">
                       {character.avatar ? (
                         <img 
                           src={character.avatar} 
@@ -131,41 +131,41 @@ export default function CharactersPage() {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <User className="h-16 w-16 text-gray-300" />
+                          <User className="h-10 w-10 text-gray-300" />
                         </div>
                       )}
                     </div>
-                    <CardHeader className="p-4 pb-2">
-                      <CardTitle className="text-lg">{character.name}</CardTitle>
+                    <CardHeader className="p-2 pb-1">
+                      <CardTitle className="text-sm">{character.name}</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-4 pt-0">
-                      <p className="text-sm text-gray-500 line-clamp-2">
+                    <CardContent className="p-2 pt-0">
+                      <p className="text-xs text-gray-500 line-clamp-1">
                         {character.description || "未提供描述"}
                       </p>
-                      {selectedNovelId === "all" && (
-                        <div className="mt-2">
-                          <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                      {selectedNovelId === "all" && character.novelTitle && (
+                        <div className="mt-1">
+                          <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded-full">
                             {character.novelTitle}
                           </span>
                         </div>
                       )}
                     </CardContent>
-                    <CardFooter className="p-4 pt-0 flex justify-end gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => navigate(`/novels/${character.novelId}`)}>
-                        <Eye className="h-4 w-4" />
+                    <CardFooter className="p-2 pt-0 flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => navigate(`/novels/${character.novelId}`)}>
+                        <Eye className="h-3 w-3" />
                       </Button>
                       <Button 
                         variant="ghost" 
-                        size="sm" 
+                        size="icon" className="h-6 w-6" 
                         onClick={() => {
                           setSelectedCharacter(character);
                           setIsEditCharacterModalOpen(true);
                         }}
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3 w-3" />
                       </Button>
-                      <Button variant="ghost" size="sm">
-                        <Trash2 className="h-4 w-4" />
+                      <Button variant="ghost" size="icon" className="h-6 w-6">
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </CardFooter>
                   </Card>

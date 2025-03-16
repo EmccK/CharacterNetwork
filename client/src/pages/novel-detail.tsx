@@ -151,7 +151,7 @@ export default function NovelDetail() {
                   </div>
                   <div className="flex justify-between items-center">
                     <h4 className="text-sm font-medium text-gray-500">关系</h4>
-                    <span className="text-gray-800 font-medium">{relationships.length} 个连接</span>
+                    <span className="text-gray-800 font-medium">{relationships.length} 个关系</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <h4 className="text-sm font-medium text-gray-500">最后更新</h4>

@@ -110,12 +110,12 @@ export default function CharacterList({
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
           {characters.map((character) => (
             <Card key={character.id} className="overflow-hidden hover:shadow-md transition-shadow">
-              <CardHeader className="pb-1 pt-3 px-3">
+              <CardHeader className="pb-0 pt-2 px-2">
                 <div className="flex flex-col items-center text-center">
-                  <Avatar className="h-10 w-10 mb-2">
+                  <Avatar className="h-8 w-8 mb-1">
                     {character.avatar ? (
                       <AvatarImage src={character.avatar} alt={character.name} />
                     ) : (
@@ -124,25 +124,25 @@ export default function CharacterList({
                       </AvatarFallback>
                     )}
                   </Avatar>
-                  <CardTitle className="text-sm font-medium">{character.name}</CardTitle>
+                  <CardTitle className="text-xs font-medium">{character.name}</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="pb-1 px-3">
-                <p className="text-xs text-gray-600 line-clamp-2">
+              <CardContent className="pb-0 px-2">
+                <p className="text-[10px] text-gray-600 line-clamp-1">
                   {character.description || "暂无描述。"}
                 </p>
               </CardContent>
-              <CardFooter className="flex justify-center gap-1 pt-1 pb-2 px-3">
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleEditClick(character)}>
-                  <EditIcon className="h-3.5 w-3.5" />
+              <CardFooter className="flex justify-center gap-1 pt-0 pb-1 px-2">
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => handleEditClick(character)}>
+                  <EditIcon className="h-3 w-3" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 w-7 p-0"
+                  className="h-6 w-6 p-0"
                   onClick={() => setCharacterToDelete(character)}
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="h-3 w-3" />
                 </Button>
               </CardFooter>
             </Card>
