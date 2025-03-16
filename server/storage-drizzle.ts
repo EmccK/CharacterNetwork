@@ -39,8 +39,8 @@ export class DrizzleStorage implements IStorage {
     if (adminUserResults.length === 0) {
       // 创建系统管理员用户
       const adminUser = {
-        username: 'system',
-        password: 'system_password_not_for_login', // 不会被用于登录
+        username: '系统',
+        password: '系统账号请勿登录', // 不会被用于登录
         email: 'system@example.com',
         isAdmin: true
       };
@@ -52,11 +52,11 @@ export class DrizzleStorage implements IStorage {
     }
     
     const defaultTypes = [
-      { name: "Family", color: "#3B82F6", userId: adminUserId },
-      { name: "Friends", color: "#10B981", userId: adminUserId },
-      { name: "Enemies", color: "#EF4444", userId: adminUserId },
-      { name: "Romantic", color: "#8B5CF6", userId: adminUserId },
-      { name: "Mentorship", color: "#F59E0B", userId: adminUserId }
+      { name: "家人", color: "#3B82F6", userId: adminUserId },
+      { name: "朋友", color: "#10B981", userId: adminUserId },
+      { name: "敌人", color: "#EF4444", userId: adminUserId },
+      { name: "情侣", color: "#8B5CF6", userId: adminUserId },
+      { name: "师徒", color: "#F59E0B", userId: adminUserId }
     ];
 
     for (const type of defaultTypes) {
