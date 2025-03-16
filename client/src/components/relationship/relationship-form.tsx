@@ -70,15 +70,15 @@ export default function RelationshipForm({
     },
     onSuccess: () => {
       toast({
-        title: "Relationship created",
-        description: "The character relationship has been successfully created",
+        title: "关系已创建",
+        description: "角色关系已成功创建",
       });
       if (onSuccess) onSuccess();
       form.reset();
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
+        title: "错误",
         description: error.message,
         variant: "destructive",
       });
@@ -112,14 +112,14 @@ export default function RelationshipForm({
           name="sourceId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Source Character</FormLabel>
+              <FormLabel>源角色</FormLabel>
               <Select
                 onValueChange={(value) => field.onChange(parseInt(value))}
                 defaultValue={field.value?.toString()}
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select source character" />
+                    <SelectValue placeholder="选择源角色" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -155,14 +155,14 @@ export default function RelationshipForm({
           name="targetId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Target Character</FormLabel>
+              <FormLabel>目标角色</FormLabel>
               <Select
                 onValueChange={(value) => field.onChange(parseInt(value))}
                 defaultValue={field.value?.toString()}
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select target character" />
+                    <SelectValue placeholder="选择目标角色" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -198,14 +198,14 @@ export default function RelationshipForm({
           name="typeId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Relationship Type</FormLabel>
+              <FormLabel>关系类型</FormLabel>
               <Select
                 onValueChange={(value) => field.onChange(parseInt(value))}
                 defaultValue={field.value?.toString()}
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select relationship type" />
+                    <SelectValue placeholder="选择关系类型" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -232,10 +232,10 @@ export default function RelationshipForm({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description (Optional)</FormLabel>
+              <FormLabel>关系描述（可选）</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Details about this relationship" 
+                  placeholder="关于这段关系的详细信息" 
                   rows={3} 
                   {...field} 
                 />
@@ -248,7 +248,7 @@ export default function RelationshipForm({
         {/* Preview of relationship */}
         {sourceId && targetId && typeId && (
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="text-sm font-medium mb-2">Relationship Preview</h4>
+            <h4 className="text-sm font-medium mb-2">关系预览</h4>
             <div className="flex items-center">
               <div className="font-medium">{getCharacterName(sourceId)}</div>
               <div 
@@ -267,10 +267,10 @@ export default function RelationshipForm({
             {mutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
+                创建中...
               </>
             ) : (
-              "Create Relationship"
+              "创建关系"
             )}
           </Button>
         </div>

@@ -263,7 +263,7 @@ export default function RelationshipGraph({
                 }}
               >
                 <div className="font-medium">{node.name}</div>
-                <div className="text-xs text-gray-500">Character</div>
+                <div className="text-xs text-gray-500">角色</div>
               </div>
             )}
           </div>
@@ -273,7 +273,7 @@ export default function RelationshipGraph({
       {/* Legend & Controls */}
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-gray-50 p-3 rounded-lg">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Relationship Types</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">关系类型</h4>
           <div className="flex flex-wrap gap-2">
             {relationshipTypes.map((type) => (
               <div key={type.id} className="flex items-center">
@@ -287,35 +287,35 @@ export default function RelationshipGraph({
           </div>
         </div>
         <div className="bg-gray-50 p-3 rounded-lg">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Graph Controls</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">图表控制</h4>
           <div className="flex space-x-2">
             <Button 
               variant="outline" 
               size="sm"
               onClick={handleZoomIn}
             >
-              <ZoomIn className="h-3 w-3 mr-1" /> Zoom In
+              <ZoomIn className="h-3 w-3 mr-1" /> 放大
             </Button>
             <Button 
               variant="outline" 
               size="sm"
               onClick={handleZoomOut}
             >
-              <ZoomOut className="h-3 w-3 mr-1" /> Zoom Out
+              <ZoomOut className="h-3 w-3 mr-1" /> 缩小
             </Button>
             <Button 
               variant="outline" 
               size="sm"
               onClick={handleReset}
             >
-              <RefreshCw className="h-3 w-3 mr-1" /> Reset
+              <RefreshCw className="h-3 w-3 mr-1" /> 重置
             </Button>
             <Button 
               variant="outline" 
               size="sm"
               onClick={handleExport}
             >
-              <Download className="h-3 w-3 mr-1" /> Export
+              <Download className="h-3 w-3 mr-1" /> 导出
             </Button>
           </div>
         </div>
