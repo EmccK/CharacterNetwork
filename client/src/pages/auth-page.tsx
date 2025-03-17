@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -31,10 +31,18 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [activeTab, setActiveTab] = useState<string>("login");
 
-  // If user is already logged in, redirect to home
+  // 使用 useEffect 进行重定向，而不是在渲染期间
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
+  // 如果用户已登录，显示加载状态而不是立即返回 null
   if (user) {
-    navigate("/");
-    return null;
+    return <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>;
   }
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
@@ -206,6 +214,7 @@ export default function AuthPage() {
               <button 
                 className="text-primary-600 hover:underline" 
                 onClick={() => setActiveTab(activeTab === "login" ? "register" : "login")}
+                type="button"
               >
                 {activeTab === "login" ? "注册" : "登录"}
               </button>

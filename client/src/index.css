@@ -36,4 +36,49 @@
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     }
   }
+
+  /* 关系图谱容器样式 */
+  .graph-container {
+    @apply overflow-hidden;
+  }
+
+  /* 节点样式 */
+  .graph-node {
+    @apply cursor-pointer transition-opacity duration-200;
+  }
+
+  .graph-node circle {
+    @apply transition-all duration-200;
+  }
+
+  .graph-node:hover circle {
+    @apply stroke-white stroke-2;
+  }
+
+  .node-label {
+    @apply fill-white font-semibold select-none;
+  }
+
+  .node-name {
+    @apply fill-gray-100 font-medium drop-shadow-md text-xs select-none;
+  }
+
+  /* 连接线样式 */
+  .graph-link line {
+    @apply transition-opacity duration-200;
+  }
+
+  .link-label {
+    @apply fill-gray-200 text-xs font-medium select-none drop-shadow-sm;
+  }
+
+  /* 节点信息面板 */
+  .node-info-panel {
+    @apply bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-3 max-w-xs;
+  }
+
+  /* 工具栏样式 */
+  .graph-toolbar {
+    @apply bg-gray-100 rounded-lg p-2 flex flex-wrap gap-2 items-center mb-4;
+  }
 }

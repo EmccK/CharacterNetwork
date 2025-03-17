@@ -26,7 +26,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import RelationshipForm from "@/components/relationship/relationship-form";
-import RelationshipGraph from "@/components/relationship/relationship-graph";
+import { ObsidianRelationshipGraph } from "@/components/relationship";
 import { Link, Plus, PenSquare, Trash } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -261,12 +261,22 @@ export default function RelationshipsPage() {
               </Card>
             ) : (
               <div className="bg-white rounded-xl shadow-sm p-6">
-                <RelationshipGraph 
-                  characters={characters}
-                  relationships={relationships}
-                  relationshipTypes={relationshipTypes}
-                  isLoading={isLoading}
-                />
+                <>
+                  <div className="bg-red-100 p-2 mb-4 rounded">
+                    <p className="text-sm font-semibold">数据状态信息</p>
+                    <p className="text-xs">角色数量: {characters.length}</p>
+                    <p className="text-xs">关系数量: {relationships.length}</p>
+                    <p className="text-xs">关系类型数量: {relationshipTypes.length}</p>
+                    <p className="text-xs">是否加载中: {isLoading ? '是' : '否'}</p>
+                  </div>
+                  
+                  <ObsidianRelationshipGraph 
+                    characters={characters}
+                    relationships={relationships}
+                    relationshipTypes={relationshipTypes}
+                    isLoading={isLoading}
+                  />
+                </>
               </div>
             )}
           </div>

@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import Sidebar from "@/components/layout/sidebar";
 import Topbar from "@/components/layout/topbar";
-import RelationshipGraph from "@/components/relationship/relationship-graph";
+import { ObsidianRelationshipGraph } from "@/components/relationship";
 import { Button } from "@/components/ui/button";
 import { 
   Dialog, 
@@ -239,7 +239,7 @@ export default function NovelDetail() {
                         </div>
                       </div>
                       
-                      <RelationshipGraph 
+                      <ObsidianRelationshipGraph 
                         characters={characters}
                         relationships={relationships}
                         relationshipTypes={relationshipTypes}
