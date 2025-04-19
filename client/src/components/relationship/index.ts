@@ -1,5 +1,14 @@
 import ObsidianRelationshipGraph from './obsidian-relationship-graph';
 import RelationshipGraph from './relationship-graph';
+import CharacterNetworkGraph from './CharacterNetworkGraph';
 
-export { ObsidianRelationshipGraph, RelationshipGraph };
+// 导出组件
+export { ObsidianRelationshipGraph, RelationshipGraph, CharacterNetworkGraph };
+
+// 从 graph 中导出组件
+export { GraphVisualization, GraphNode, GraphLink, useGraphStore } from './graph';
+
+// 导出类型
+export type { GraphNodeType, GraphLinkType, GraphData, GraphProps } from './graph';
+
 export default ObsidianRelationshipGraph;
