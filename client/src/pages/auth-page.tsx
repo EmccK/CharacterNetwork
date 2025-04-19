@@ -30,21 +30,7 @@ export default function AuthPage() {
   const [location, navigate] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
   const [activeTab, setActiveTab] = useState<string>("login");
-
-  // 使用 useEffect 进行重定向，而不是在渲染期间
-  useEffect(() => {
-    if (user) {
-      navigate("/");
-    }
-  }, [user, navigate]);
-
-  // 如果用户已登录，显示加载状态而不是立即返回 null
-  if (user) {
-    return <div className="min-h-screen flex items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-    </div>;
-  }
-
+  
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -71,6 +57,20 @@ export default function AuthPage() {
   function onRegisterSubmit(data: z.infer<typeof registerSchema>) {
     const { confirmPassword, ...registerData } = data;
     registerMutation.mutate(registerData);
+  }
+  
+  // 使用 useEffect 进行重定向，而不是在渲染期间
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
+  // 如果用户已登录，显示加载状态而不是立即返回 null
+  if (user) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>;
   }
 
   return (
@@ -116,7 +116,7 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>密码</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="请输入密码" {...field} />
+                            <Input type="password" placeholder="请输入密码" autocomplete="current-password" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -172,7 +172,7 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>密码</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="请创建密码" {...field} />
+                            <Input type="password" placeholder="请创建密码" autocomplete="new-password" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -185,7 +185,7 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>确认密码</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="请确认您的密码" {...field} />
+                            <Input type="password" placeholder="请确认您的密码" autocomplete="new-password" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

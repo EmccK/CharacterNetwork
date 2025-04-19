@@ -16,7 +16,11 @@ const PgStore = pgSessionStore(session);
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  // 只有在生产环境或明确指定时才启用 SSL
+  ssl: process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('sslmode=require') 
+    ? { rejectUnauthorized: false } 
+    : false,
+  password: process.env.PGPASSWORD // Explicitly set password
 });
 
 export class DrizzleStorage implements IStorage {
