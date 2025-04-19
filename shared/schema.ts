@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -10,6 +10,20 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   isAdmin: boolean("is_admin").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Novel Genre Schema
+export const novelGenres = pgTable("novel_genres", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  isPublic: boolean("is_public").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (novelGenres) => {
+  return {
+    nameUserIdUnique: unique().on(novelGenres.name, novelGenres.userId),
+  };
 });
 
 // Novel Schema
@@ -61,6 +75,13 @@ export const insertUserSchema = createInsertSchema(users).pick({
   isAdmin: true,
 });
 
+export const insertNovelGenreSchema = createInsertSchema(novelGenres).pick({
+  name: true,
+  description: true,
+  userId: true,
+  isPublic: true,
+});
+
 export const insertNovelSchema = createInsertSchema(novels).pick({
   title: true,
   description: true,
@@ -94,6 +115,9 @@ export const insertRelationshipSchema = createInsertSchema(relationships).pick({
 // Types for validation and type safety
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+export type InsertNovelGenre = z.infer<typeof insertNovelGenreSchema>;
+export type NovelGenre = typeof novelGenres.$inferSelect;
 
 export type InsertNovel = z.infer<typeof insertNovelSchema>;
 export type Novel = typeof novels.$inferSelect;

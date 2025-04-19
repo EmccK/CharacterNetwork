@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { insertNovelSchema } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -22,9 +22,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { 
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectLabel,
+  SelectSeparator,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImagePlus, Loader2, Link as LinkIcon } from "lucide-react";
@@ -55,6 +58,12 @@ export default function NovelForm({
     initialData?.coverImage as string || ""
   );
   const [activeTab, setActiveTab] = useState<string>("upload");
+  const [customGenre, setCustomGenre] = useState<string>("");
+
+  // 获取用户的小说类型列表
+  const { data: genreList = [] } = useQuery({
+    queryKey: ["/api/novel-genres"],
+  });
 
   // Set up form with default values
   const form = useForm<NovelFormValues>({
@@ -238,14 +247,29 @@ export default function NovelForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Fantasy">奇幻</SelectItem>
-                    <SelectItem value="Science Fiction">科幻</SelectItem>
-                    <SelectItem value="Mystery">悬疑</SelectItem>
-                    <SelectItem value="Romance">爱情</SelectItem>
-                    <SelectItem value="Historical">历史</SelectItem>
-                    <SelectItem value="Thriller">惊悚</SelectItem>
-                    <SelectItem value="Horror">恐怖</SelectItem>
-                    <SelectItem value="Other">其他</SelectItem>
+                    {/* 用户自定义类型 */}
+                    {Array.isArray(genreList) && genreList.length > 0 && (
+                      <SelectGroup>
+                        <SelectLabel>自定义类型</SelectLabel>
+                        {genreList.map((genre: any, index: number) => (
+                          <SelectItem key={genre.id || index} value={genre.name || `自定义类型${index+1}`}>
+                            {genre.name || `自定义类型${index+1}`}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    )}
+                    <SelectSeparator />
+                    <SelectGroup>
+                      <SelectLabel>默认类型</SelectLabel>
+                      <SelectItem value="Fantasy">奇幻</SelectItem>
+                      <SelectItem value="Science Fiction">科幻</SelectItem>
+                      <SelectItem value="Mystery">悬疑</SelectItem>
+                      <SelectItem value="Romance">爱情</SelectItem>
+                      <SelectItem value="Historical">历史</SelectItem>
+                      <SelectItem value="Thriller">惊悚</SelectItem>
+                      <SelectItem value="Horror">恐怖</SelectItem>
+                      <SelectItem value="Other">其他</SelectItem>
+                    </SelectGroup>
                   </SelectContent>
                 </Select>
                 <FormMessage />

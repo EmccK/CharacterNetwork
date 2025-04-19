@@ -2,7 +2,7 @@ import express, { type Express, Request, Response, NextFunction } from "express"
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { insertNovelSchema, insertCharacterSchema, insertRelationshipTypeSchema, insertRelationshipSchema } from "@shared/schema";
+import { insertNovelSchema, insertCharacterSchema, insertRelationshipTypeSchema, insertRelationshipSchema, insertNovelGenreSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import { randomBytes } from "crypto";
@@ -55,6 +55,128 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Novel Genre routes
+  app.get("/api/novel-genres", isAuthenticated, async (req, res, next) => {
+    try {
+      const genres = await storage.getNovelGenres(req.user.id);
+      res.json(genres);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/novel-genres/public", async (req, res, next) => {
+    try {
+      const genres = await storage.getPublicNovelGenres();
+      res.json(genres);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/novel-genres/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const genre = await storage.getNovelGenre(parseInt(req.params.id));
+      
+      if (!genre) {
+        return res.status(404).json({ message: "小说类型未找到" });
+      }
+      
+      // 检查访问权限
+      if (!genre.isPublic && genre.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "没有权限访问此小说类型" });
+      }
+      
+      res.json(genre);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.post("/api/novel-genres", isAuthenticated, async (req, res, next) => {
+    try {
+      const genreData = {
+        ...req.body,
+        userId: req.user.id
+      };
+      
+      const validationResult = insertNovelGenreSchema.safeParse(genreData);
+      if (!validationResult.success) {
+        return res.status(400).json({ message: "无效的小说类型数据", errors: validationResult.error.format() });
+      }
+      
+      // 检查名称是否已被该用户使用
+      const existingGenres = await storage.getNovelGenres(req.user.id);
+      const nameExists = existingGenres.some(g => g.name.toLowerCase() === genreData.name.toLowerCase() && g.userId === req.user.id);
+      
+      if (nameExists) {
+        return res.status(400).json({ message: "您已创建过相同名称的小说类型" });
+      }
+      
+      const genre = await storage.createNovelGenre(validationResult.data);
+      res.status(201).json(genre);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.put("/api/novel-genres/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const genre = await storage.getNovelGenre(parseInt(req.params.id));
+      
+      if (!genre) {
+        return res.status(404).json({ message: "小说类型未找到" });
+      }
+      
+      // 检查权限
+      if (genre.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "没有权限修改此小说类型" });
+      }
+      
+      // 检查名称是否与其他类型冲突
+      if (req.body.name && req.body.name !== genre.name) {
+        const existingGenres = await storage.getNovelGenres(req.user.id);
+        const nameExists = existingGenres.some(
+          g => g.name.toLowerCase() === req.body.name.toLowerCase() && 
+               g.userId === req.user.id && 
+               g.id !== genre.id
+        );
+        
+        if (nameExists) {
+          return res.status(400).json({ message: "您已创建过相同名称的小说类型" });
+        }
+      }
+      
+      const updatedGenre = await storage.updateNovelGenre(parseInt(req.params.id), req.body);
+      res.json(updatedGenre);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.delete("/api/novel-genres/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const genre = await storage.getNovelGenre(parseInt(req.params.id));
+      
+      if (!genre) {
+        return res.status(404).json({ message: "小说类型未找到" });
+      }
+      
+      // 检查权限
+      if (genre.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "没有权限删除此小说类型" });
+      }
+      
+      // 此处可以添加检查此类型是否被使用中的逻辑
+      // 如果被使用中，可以返回错误或提供警告
+      
+      await storage.deleteNovelGenre(parseInt(req.params.id));
+      res.status(204).end();
+    } catch (error) {
+      next(error);
+    }
+  });
+
   // Novel routes
   app.get("/api/novels", isAuthenticated, async (req, res, next) => {
     try {

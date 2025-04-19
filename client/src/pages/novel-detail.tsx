@@ -65,6 +65,7 @@ export default function NovelDetail() {
     isLoading: isRelationshipTypesLoading
   } = useQuery({
     queryKey: ["/api/relationship-types"],
+    enabled: !!params?.id,
   });
   
   // 如果没有匹配，重定向到小说页面
@@ -119,7 +120,7 @@ export default function NovelDetail() {
       <Sidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Topbar title={novel.title} />
+        <Topbar title={novel?.title || "小说详情"} />
         
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
           <div className="mb-6 bg-white rounded-xl shadow-sm p-6">
@@ -137,7 +138,7 @@ export default function NovelDetail() {
                 <div className="mt-4 space-y-3">
                   <div className="flex justify-between items-center">
                     <h4 className="text-sm font-medium text-gray-500">类型</h4>
-                    {novel.genre ? (
+                    {novel && novel.genre ? (
                       <span className="bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded">
                         {novel.genre}
                       </span>
@@ -147,16 +148,16 @@ export default function NovelDetail() {
                   </div>
                   <div className="flex justify-between items-center">
                     <h4 className="text-sm font-medium text-gray-500">角色</h4>
-                    <span className="text-gray-800 font-medium">{characters.length} 个角色</span>
+                    <span className="text-gray-800 font-medium">{Array.isArray(characters) ? characters.length : 0} 个角色</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <h4 className="text-sm font-medium text-gray-500">关系</h4>
-                    <span className="text-gray-800 font-medium">{relationships.length} 个关系</span>
+                    <span className="text-gray-800 font-medium">{Array.isArray(relationships) ? relationships.length : 0} 个关系</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <h4 className="text-sm font-medium text-gray-500">最后更新</h4>
                     <span className="text-gray-800 font-medium">
-                      {new Date(novel.updatedAt).toLocaleDateString()}
+                      {novel && novel.updatedAt ? new Date(novel.updatedAt).toLocaleDateString() : "-"}
                     </span>
                   </div>
                   <div className="pt-2 flex gap-2">
@@ -176,9 +177,9 @@ export default function NovelDetail() {
               <div className="flex-1">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">{novel.title}</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">{novel?.title || "小说"}</h2>
                     <p className="mt-1 text-gray-600">
-                      {novel.description || "暂无描述。"}
+                      {novel?.description || "暂无描述。"}
                     </p>
                   </div>
                   <Button variant="outline" size="icon" onClick={() => navigate("/novels")}>
@@ -324,11 +325,11 @@ export default function NovelDetail() {
           <NovelForm 
             initialData={{
               id: parseInt(params?.id || "0"),
-              title: novel.title,
-              description: novel.description,
-              genre: novel.genre,
-              status: novel.status,
-              coverImage: novel.coverImage
+              title: novel?.title || "",
+              description: novel?.description || "",
+              genre: novel?.genre || "",
+              status: novel?.status || "In Progress",
+              coverImage: novel?.coverImage || ""
             }}
             onSuccess={() => {
               setIsEditNovelModalOpen(false);

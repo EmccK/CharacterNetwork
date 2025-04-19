@@ -7,7 +7,8 @@ import {
   Settings, 
   LogOut, 
   LayoutDashboard, 
-  Shield
+  Shield,
+  BookType
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -83,6 +84,14 @@ export default function Sidebar() {
           onClick={() => navigate("/relationships")}
         >
           角色关系
+        </SidebarLink>
+        <SidebarLink 
+          href="/novel-genres" 
+          icon={<BookType className="text-xl" />}
+          active={location === "/novel-genres"}
+          onClick={() => navigate("/novel-genres")}
+        >
+          小说类型
         </SidebarLink>
         
         {/* Admin panel - only shown for admin users */}

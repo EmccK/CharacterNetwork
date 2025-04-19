@@ -3,9 +3,9 @@ import session from 'express-session';
 import pgSessionStore from 'connect-pg-simple';
 import pg from 'pg';
 import {
-  users, novels, characters, relationshipTypes, relationships,
-  type User, type Novel, type Character, type RelationshipType, type Relationship,
-  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship
+  users, novels, characters, relationshipTypes, relationships, novelGenres,
+  type User, type Novel, type Character, type RelationshipType, type Relationship, type NovelGenre,
+  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre
 } from '@shared/schema';
 import { db } from './db';
 import { eq, and, or, desc } from 'drizzle-orm';
@@ -37,6 +37,40 @@ export class DrizzleStorage implements IStorage {
   private async initializeDefaultRelationshipTypes() {
     // 由于不再需要默认关系类型，这里仅仅保留初始化方法
     // 如果需要可以在这里添加自定义初始化逻辑
+  }
+
+  // Novel Genre operations
+  async getNovelGenres(userId: number): Promise<NovelGenre[]> {
+    return await db.select().from(novelGenres).where(
+      or(
+        eq(novelGenres.userId, userId),
+        eq(novelGenres.isPublic, true)
+      )
+    );
+  }
+
+  async getPublicNovelGenres(): Promise<NovelGenre[]> {
+    return await db.select().from(novelGenres).where(eq(novelGenres.isPublic, true));
+  }
+
+  async getNovelGenre(id: number): Promise<NovelGenre | undefined> {
+    const results = await db.select().from(novelGenres).where(eq(novelGenres.id, id)).limit(1);
+    return results.length > 0 ? results[0] : undefined;
+  }
+
+  async createNovelGenre(novelGenre: InsertNovelGenre): Promise<NovelGenre> {
+    const result = await db.insert(novelGenres).values(novelGenre).returning();
+    return result[0];
+  }
+
+  async updateNovelGenre(id: number, novelGenreData: Partial<NovelGenre>): Promise<NovelGenre | undefined> {
+    const result = await db.update(novelGenres).set(novelGenreData).where(eq(novelGenres.id, id)).returning();
+    return result.length > 0 ? result[0] : undefined;
+  }
+
+  async deleteNovelGenre(id: number): Promise<boolean> {
+    const result = await db.delete(novelGenres).where(eq(novelGenres.id, id)).returning();
+    return result.length > 0;
   }
 
   // User operations

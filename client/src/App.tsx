@@ -11,6 +11,7 @@ import AuthPage from "@/pages/auth-page";
 import HomePage from "@/pages/home-page";
 import NovelsPage from "@/pages/novels-page";
 import NovelDetail from "@/pages/novel-detail";
+import NovelGenresPage from "@/pages/novel-genres-page";
 import CharactersPage from "@/pages/characters-page";
 import RelationshipsPage from "@/pages/relationships-page";
 import AdminPanel from "@/pages/admin-panel";
@@ -36,6 +37,9 @@ function Router() {
       </Route>
       <Route path="/relationships">
         <RelationshipsPage />
+      </Route>
+      <Route path="/novel-genres">
+        <NovelGenresPage />
       </Route>
       <Route path="/admin">
         <AdminPanel />

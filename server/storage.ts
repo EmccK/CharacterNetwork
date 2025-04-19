@@ -1,7 +1,7 @@
 import {
-  users, novels, characters, relationshipTypes, relationships,
-  type User, type Novel, type Character, type RelationshipType, type Relationship,
-  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship
+  users, novels, characters, relationshipTypes, relationships, novelGenres,
+  type User, type Novel, type Character, type RelationshipType, type Relationship, type NovelGenre,
+  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -21,6 +21,14 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<User>): Promise<User | undefined>;
   deleteUser(id: number): Promise<boolean>;
+
+  // Novel Genre operations
+  getNovelGenres(userId: number): Promise<NovelGenre[]>;
+  getPublicNovelGenres(): Promise<NovelGenre[]>;
+  getNovelGenre(id: number): Promise<NovelGenre | undefined>;
+  createNovelGenre(novelGenre: InsertNovelGenre): Promise<NovelGenre>;
+  updateNovelGenre(id: number, novelGenre: Partial<NovelGenre>): Promise<NovelGenre | undefined>;
+  deleteNovelGenre(id: number): Promise<boolean>;
 
   // Novel operations
   getNovels(userId?: number): Promise<Novel[]>;
@@ -57,11 +65,13 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private usersMap: Map<number, User>;
   private novelsMap: Map<number, Novel>;
+  private novelGenresMap: Map<number, NovelGenre>;
   private charactersMap: Map<number, Character>;
   private relationshipTypesMap: Map<number, RelationshipType>;
   private relationshipsMap: Map<number, Relationship>;
   private userIdCounter: number;
   private novelIdCounter: number;
+  private novelGenreIdCounter: number;
   private characterIdCounter: number;
   private relationshipTypeIdCounter: number;
   private relationshipIdCounter: number;
@@ -70,11 +80,13 @@ export class MemStorage implements IStorage {
   constructor() {
     this.usersMap = new Map();
     this.novelsMap = new Map();
+    this.novelGenresMap = new Map();
     this.charactersMap = new Map();
     this.relationshipTypesMap = new Map();
     this.relationshipsMap = new Map();
     this.userIdCounter = 1;
     this.novelIdCounter = 1;
+    this.novelGenreIdCounter = 1;
     this.characterIdCounter = 1;
     this.relationshipTypeIdCounter = 1;
     this.relationshipIdCounter = 1;
@@ -148,6 +160,48 @@ export class MemStorage implements IStorage {
 
   async deleteUser(id: number): Promise<boolean> {
     return this.usersMap.delete(id);
+  }
+  
+  // Novel Genre operations
+  async getNovelGenres(userId: number): Promise<NovelGenre[]> {
+    return Array.from(this.novelGenresMap.values()).filter(
+      genre => genre.userId === userId || (genre.isPublic)
+    );
+  }
+  
+  async getPublicNovelGenres(): Promise<NovelGenre[]> {
+    return Array.from(this.novelGenresMap.values()).filter(
+      genre => genre.isPublic
+    );
+  }
+  
+  async getNovelGenre(id: number): Promise<NovelGenre | undefined> {
+    return this.novelGenresMap.get(id);
+  }
+  
+  async createNovelGenre(novelGenre: InsertNovelGenre): Promise<NovelGenre> {
+    const id = this.novelGenreIdCounter++;
+    const timestamp = new Date();
+    const newNovelGenre = {
+      ...novelGenre,
+      id,
+      createdAt: timestamp
+    };
+    this.novelGenresMap.set(id, newNovelGenre);
+    return newNovelGenre;
+  }
+  
+  async updateNovelGenre(id: number, novelGenreData: Partial<NovelGenre>): Promise<NovelGenre | undefined> {
+    const novelGenre = this.novelGenresMap.get(id);
+    if (!novelGenre) return undefined;
+    
+    const updatedNovelGenre = { ...novelGenre, ...novelGenreData };
+    this.novelGenresMap.set(id, updatedNovelGenre);
+    return updatedNovelGenre;
+  }
+  
+  async deleteNovelGenre(id: number): Promise<boolean> {
+    return this.novelGenresMap.delete(id);
   }
 
   // Novel operations

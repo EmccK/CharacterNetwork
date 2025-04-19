@@ -66,13 +66,14 @@ export default function NovelCard({ novel, onView, onEdit, onDelete }: NovelCard
             </svg>
           </div>
         )}
-        {novel.genre && (
+        {/* 小说类型放在右上角 */}
+        {/* {novel.genre && (
           <div className="absolute top-2 right-2">
             <div className="bg-primary-600 text-white text-xs px-2 py-0.5 rounded-md font-medium">
               {novel.genre}
             </div>
           </div>
-        )}
+        )} */}
         
         {/* Quick action buttons as overlay */}
         <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-2 flex justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -103,7 +104,7 @@ export default function NovelCard({ novel, onView, onEdit, onDelete }: NovelCard
         </div>
       </div>
       
-      <CardContent className="p-3">
+      <CardContent className="p-3 relative">
         <div className="flex justify-between items-start mb-1">
           <h4 className="text-sm font-semibold line-clamp-1">{novel.title}</h4>
           <span className="text-[10px] text-gray-500 whitespace-nowrap ml-1">
@@ -115,21 +116,32 @@ export default function NovelCard({ novel, onView, onEdit, onDelete }: NovelCard
           {novel.description || "No description provided."}
         </p>
         
-        {/* Character avatars - simplified */}
-        <div className="flex -space-x-1.5">
-          {characterPlaceholders.slice(0, 3).map((char) => (
-            <Avatar key={char.id} className={`w-6 h-6 border-2 border-white ${char.color}`}>
-              <AvatarFallback className="text-white text-[10px] font-medium">
-                {char.initials}
-              </AvatarFallback>
-            </Avatar>
-          ))}
-          {characterPlaceholders.length > 3 && (
-            <Avatar className="w-6 h-6 border-2 border-white bg-gray-400">
-              <AvatarFallback className="text-white text-[10px] font-medium">
-                +{characterPlaceholders.length - 3}
-              </AvatarFallback>
-            </Avatar>
+        <div className="flex justify-between items-end">
+          {/* Character avatars - simplified */}
+          <div className="flex -space-x-1.5">
+            {characterPlaceholders.slice(0, 3).map((char) => (
+              <Avatar key={char.id} className={`w-6 h-6 border-2 border-white ${char.color}`}>
+                <AvatarFallback className="text-white text-[10px] font-medium">
+                  {char.initials}
+                </AvatarFallback>
+              </Avatar>
+            ))}
+            {characterPlaceholders.length > 3 && (
+              <Avatar className="w-6 h-6 border-2 border-white bg-gray-400">
+                <AvatarFallback className="text-white text-[10px] font-medium">
+                  +{characterPlaceholders.length - 3}
+                </AvatarFallback>
+              </Avatar>
+            )}
+          </div>
+          
+          {/* 小说类型放在右下角 */}
+          {novel.genre && (
+            <div className="ml-1">
+              <div className="bg-primary-100 text-primary-800 text-xs px-2 py-0.5 rounded-md font-medium">
+                {novel.genre}
+              </div>
+            </div>
           )}
         </div>
       </CardContent>
