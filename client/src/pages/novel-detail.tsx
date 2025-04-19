@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import Sidebar from "@/components/layout/sidebar";
 import Topbar from "@/components/layout/topbar";
-import { ObsidianRelationshipGraph } from "@/components/relationship";
+import { CharacterNetworkGraph } from "@/components/relationship";
 import { Button } from "@/components/ui/button";
 import { 
   Dialog, 
@@ -257,11 +257,19 @@ export default function NovelDetail() {
                         </div>
                         
                         <div className="bg-gray-50 rounded-lg border border-gray-100 overflow-hidden p-1">
-                          <ObsidianRelationshipGraph 
+                          <CharacterNetworkGraph 
                             characters={characters}
                             relationships={relationships}
                             relationshipTypes={relationshipTypes}
                             isLoading={isCharactersLoading || isRelationshipsLoading || isRelationshipTypesLoading}
+                            onSelectCharacter={(character) => {
+                              if (character) {
+                                // 使用非弹出的方式显示角色信息，
+                                // 如切换到角色信息页面或更新状态栏
+                                // 这里可以不显示任何通知
+                                console.log(`已选择角色：${character.name}`);
+                              }
+                            }}
                           />
                         </div>
                       </div>

@@ -3,7 +3,6 @@ import type { Character, Relationship, RelationshipType } from '@shared/schema';
 import GraphVisualization from './graph/GraphVisualization';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, User, UsersRound, Network } from 'lucide-react';
 
@@ -26,12 +25,24 @@ export default function CharacterNetworkGraph({
 }: CharacterNetworkGraphProps) {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [selectedTab, setSelectedTab] = useState('graph');
+  const [notifiedCharacterIds, setNotifiedCharacterIds] = useState<Set<number>>(new Set());
 
   // 处理节点选择
   const handleNodeSelect = (character: Character | null) => {
     setSelectedCharacter(character);
-    if (onSelectCharacter) {
+    
+    if (character && onSelectCharacter && !notifiedCharacterIds.has(character.id)) {
+      // 只有当这个角色第一次被选中时才触发回调
       onSelectCharacter(character);
+      
+      // 添加到已通知集合
+      setNotifiedCharacterIds(prev => {
+        const newSet = new Set(prev);
+        newSet.add(character.id);
+        return newSet;
+      });
+    } else if (!character && onSelectCharacter) {
+      onSelectCharacter(null);
     }
   };
 
@@ -92,128 +103,139 @@ export default function CharacterNetworkGraph({
           <h2 className="text-xl font-bold">角色关系网络</h2>
         </div>
         
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-auto">
-          <TabsList>
-            <TabsTrigger value="graph">
-              <Network className="h-4 w-4 mr-1" />
-              图谱视图
-            </TabsTrigger>
-            <TabsTrigger value="info">
-              <User className="h-4 w-4 mr-1" />
-              角色信息
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="w-auto">
+          <Button
+            variant={selectedTab === 'graph' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedTab('graph')}
+            className="mr-2"
+          >
+            <Network className="h-4 w-4 mr-1" />
+            图谱视图
+          </Button>
+          <Button
+            variant={selectedTab === 'info' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedTab('info')}
+          >
+            <User className="h-4 w-4 mr-1" />
+            角色信息
+          </Button>
+        </div>
       </div>
 
-      <TabsContent value="graph" className="mt-0 flex-grow">
-        <Card className="border rounded-lg shadow-sm overflow-hidden">
-          <CardContent className="p-0">
-            <GraphVisualization
-              characters={characters}
-              relationships={relationships}
-              relationshipTypes={relationshipTypes}
-              isLoading={isLoading}
-              onNodeSelect={handleNodeSelect}
-            />
-          </CardContent>
-        </Card>
-      </TabsContent>
+      {selectedTab === 'graph' && (
+        <div className="mt-0 flex-grow">
+          <Card className="border rounded-lg shadow-sm overflow-hidden">
+            <CardContent className="p-0">
+              <GraphVisualization
+                characters={characters}
+                relationships={relationships}
+                relationshipTypes={relationshipTypes}
+                isLoading={isLoading}
+                onNodeSelect={handleNodeSelect}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-      <TabsContent value="info" className="mt-0">
-        {selectedCharacter ? (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-start">
-                <div className="flex-shrink-0 mr-4">
-                  {selectedCharacter.avatar ? (
-                    <img 
-                      src={selectedCharacter.avatar} 
-                      alt={selectedCharacter.name} 
-                      className="w-24 h-24 rounded-full object-cover border-2 border-primary/20"
-                    />
-                  ) : (
-                    <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
-                      <User className="h-12 w-12 text-gray-400" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-grow">
-                  <h3 className="text-xl font-bold mb-1">{selectedCharacter.name}</h3>
-                  {selectedCharacter.title && (
-                    <p className="text-sm text-gray-500 mb-2">{selectedCharacter.title}</p>
-                  )}
-                  
-                  {selectedCharacter.description && (
-                    <p className="text-gray-700 mb-4">{selectedCharacter.description}</p>
-                  )}
-                  
-                  <div className="mt-4">
-                    <h4 className="font-medium text-sm text-gray-500 mb-2 flex items-center">
-                      <UsersRound className="h-4 w-4 mr-1" />
-                      关系网络
-                    </h4>
-                    <div className="space-y-3">
-                      {getRelatedRelationships(selectedCharacter.id).map(rel => {
-                        const relType = relationshipTypes.find(type => type.id === rel.typeId);
-                        const otherCharId = rel.sourceId === selectedCharacter.id ? rel.targetId : rel.sourceId;
-                        const otherChar = characters.find(c => c.id === otherCharId);
-                        
-                        if (!otherChar || !relType) return null;
-                        
-                        return (
-                          <div 
-                            key={`rel-${rel.id}`} 
-                            className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors"
-                          >
-                            <div className="flex-shrink-0 mr-3">
-                              {otherChar.avatar ? (
-                                <img 
-                                  src={otherChar.avatar} 
-                                  alt={otherChar.name} 
-                                  className="w-10 h-10 rounded-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                  <User className="h-5 w-5 text-gray-400" />
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex-grow">
-                              <div className="font-medium">{otherChar.name}</div>
-                              <div className="text-sm text-gray-500">{otherChar.title}</div>
-                            </div>
-                            <Badge 
-                              style={{backgroundColor: relType.color}}
-                              className="ml-2"
+      {selectedTab === 'info' && (
+        <div className="mt-0">
+          {selectedCharacter ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 mr-4">
+                    {selectedCharacter.avatar ? (
+                      <img 
+                        src={selectedCharacter.avatar} 
+                        alt={selectedCharacter.name} 
+                        className="w-24 h-24 rounded-full object-cover border-2 border-primary/20"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+                        <User className="h-12 w-12 text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-grow">
+                    <h3 className="text-xl font-bold mb-1">{selectedCharacter.name}</h3>
+                    {selectedCharacter.title && (
+                      <p className="text-sm text-gray-500 mb-2">{selectedCharacter.title}</p>
+                    )}
+                    
+                    {selectedCharacter.description && (
+                      <p className="text-gray-700 mb-4">{selectedCharacter.description}</p>
+                    )}
+                    
+                    <div className="mt-4">
+                      <h4 className="font-medium text-sm text-gray-500 mb-2 flex items-center">
+                        <UsersRound className="h-4 w-4 mr-1" />
+                        关系网络
+                      </h4>
+                      <div className="space-y-3">
+                        {getRelatedRelationships(selectedCharacter.id).map(rel => {
+                          const relType = relationshipTypes.find(type => type.id === rel.typeId);
+                          const otherCharId = rel.sourceId === selectedCharacter.id ? rel.targetId : rel.sourceId;
+                          const otherChar = characters.find(c => c.id === otherCharId);
+                          
+                          if (!otherChar || !relType) return null;
+                          
+                          return (
+                            <div 
+                              key={`rel-${rel.id}`} 
+                              className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors"
                             >
-                              {relType.name}
-                            </Badge>
-                          </div>
-                        );
-                      })}
-                      
-                      {getRelatedRelationships(selectedCharacter.id).length === 0 && (
-                        <p className="text-sm text-gray-500 italic">此角色暂无关系连接</p>
-                      )}
+                              <div className="flex-shrink-0 mr-3">
+                                {otherChar.avatar ? (
+                                  <img 
+                                    src={otherChar.avatar} 
+                                    alt={otherChar.name} 
+                                    className="w-10 h-10 rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                    <User className="h-5 w-5 text-gray-400" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-grow">
+                                <div className="font-medium">{otherChar.name}</div>
+                                <div className="text-sm text-gray-500">{otherChar.title}</div>
+                              </div>
+                              <Badge 
+                                style={{backgroundColor: relType.color}}
+                                className="ml-2"
+                              >
+                                {relType.name}
+                              </Badge>
+                            </div>
+                          );
+                        })}
+                        
+                        {getRelatedRelationships(selectedCharacter.id).length === 0 && (
+                          <p className="text-sm text-gray-500 italic">此角色暂无关系连接</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardContent className="py-8">
-              <div className="text-center text-gray-500">
-                <UsersRound className="mx-auto h-12 w-12 text-gray-300 mb-2" />
-                <h3 className="text-lg font-medium mb-1">未选择角色</h3>
-                <p className="text-sm">从图谱中选择一个角色以查看详细信息</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </TabsContent>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="py-8">
+                <div className="text-center text-gray-500">
+                  <UsersRound className="mx-auto h-12 w-12 text-gray-300 mb-2" />
+                  <h3 className="text-lg font-medium mb-1">未选择角色</h3>
+                  <p className="text-sm">从图谱中选择一个角色以查看详细信息</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
     </div>
   );
 }

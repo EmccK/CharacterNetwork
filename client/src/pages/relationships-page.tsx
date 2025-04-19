@@ -26,7 +26,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import RelationshipForm from "@/components/relationship/relationship-form";
-import { ObsidianRelationshipGraph } from "@/components/relationship";
+import { CharacterNetworkGraph } from "@/components/relationship";
 import { Link, Plus, PenSquare, Trash } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -262,19 +262,18 @@ export default function RelationshipsPage() {
             ) : (
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <>
-                  <div className="bg-red-100 p-2 mb-4 rounded">
-                    <p className="text-sm font-semibold">数据状态信息</p>
-                    <p className="text-xs">角色数量: {characters.length}</p>
-                    <p className="text-xs">关系数量: {relationships.length}</p>
-                    <p className="text-xs">关系类型数量: {relationshipTypes.length}</p>
-                    <p className="text-xs">是否加载中: {isLoading ? '是' : '否'}</p>
-                  </div>
-                  
-                  <ObsidianRelationshipGraph 
+                  <CharacterNetworkGraph 
                     characters={characters}
                     relationships={relationships}
                     relationshipTypes={relationshipTypes}
                     isLoading={isLoading}
+                    onSelectCharacter={(character) => {
+                      // 选中角色后可以在相应的信息区域显示角色信息
+                      // 而不是使用toast
+                      if (character) {
+                        console.log(`选中了角色：${character.name}`);
+                      }
+                    }}
                   />
                 </>
               </div>
