@@ -1,0 +1,33 @@
+services:
+  app:
+    build: .
+    container_name: character-network-app
+    restart: always
+    ports:
+      - "5001:5001"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/characternetwork?sslmode=disable
+      - PGDATABASE=characternetwork
+      - PGHOST=db
+      - PGPORT=5432
+      - PGUSER=postgres
+      - PGPASSWORD=postgres
+      - SESSION_SECRET=${SESSION_SECRET:-your-secure-session-secret-change-me}
+      - NODE_ENV=production
+    volumes:
+      - ./uploads:/app/uploads
+  
+  db:
+    image: postgres:17.2-alpine
+    container_name: character-network-db
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=characternetwork
+    volumes:
+      - ./db:/var/lib/postgresql/data
