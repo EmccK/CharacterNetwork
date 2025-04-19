@@ -51,13 +51,13 @@ export default function NovelCard({ novel, onView, onEdit, onDelete }: NovelCard
   }));
   
   return (
-    <Card className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow h-full group cursor-pointer" onClick={onView}>
-      <div className="relative aspect-[2/3] bg-gray-100">
+    <Card className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow h-full group cursor-pointer flex flex-col" onClick={onView}>
+      <div className="relative w-full bg-gray-100 flex-shrink-0" style={{ aspectRatio: '128/185' }}>
         {novel.coverImage ? (
           <img 
             src={novel.coverImage} 
             alt={novel.title} 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

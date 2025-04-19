@@ -302,11 +302,11 @@ export default function NovelForm({
                 <div className="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
                   {previewUrl && activeTab === "upload" ? (
                     <div className="space-y-2 text-center">
-                      <div className="aspect-[3/4] w-40 mx-auto overflow-hidden rounded-md">
+                      <div className="aspect-[128/185] w-40 mx-auto overflow-hidden rounded-md">
                         <img 
                           src={previewUrl} 
                           alt="Cover preview" 
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                         />
                       </div>
                       <div className="flex text-sm">
@@ -367,11 +367,11 @@ export default function NovelForm({
                   </div>
 
                   {previewUrl && activeTab === "url" && (
-                    <div className="aspect-[3/4] w-40 mx-auto overflow-hidden rounded-md">
+                    <div className="aspect-[128/185] w-40 mx-auto overflow-hidden rounded-md">
                       <img 
                         src={previewUrl} 
                         alt="Cover preview" 
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                         onError={() => setPreviewUrl(null)}
                       />
                     </div>

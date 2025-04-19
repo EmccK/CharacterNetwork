@@ -125,9 +125,9 @@ export default function NovelDetail() {
           <div className="mb-6 bg-white rounded-xl shadow-sm p-6">
             <div className="flex flex-col md:flex-row md:items-start gap-6">
               <div className="w-full md:w-1/3 lg:w-1/4">
-                <div className="aspect-[3/4] rounded-lg overflow-hidden bg-gray-200">
+                <div className="rounded-lg overflow-hidden bg-gray-200 w-full" style={{ aspectRatio: '128/185' }}>
                   {novel.coverImage ? (
-                    <img src={novel.coverImage} alt={novel.title} className="w-full h-full object-cover" />
+                    <img src={novel.coverImage} alt={novel.title} className="w-full h-full object-contain" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-100">
                       <BookOpen className="h-16 w-16 text-gray-400" />
