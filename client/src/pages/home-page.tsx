@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Sidebar from "@/components/layout/sidebar";
 import Topbar from "@/components/layout/topbar";
 import { useQuery } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { BookOpen, Users, Link, BookMarked, ArrowRight } from "lucide-react";
 
 export default function HomePage() {
@@ -22,6 +23,55 @@ export default function HomePage() {
   const { data: novels = [] } = useQuery({
     queryKey: ["/api/novels"],
   });
+
+  // 获取所有角色总数
+  const [charactersCount, setCharactersCount] = useState(0);
+  const [relationshipsCount, setRelationshipsCount] = useState(0);
+  const [inProgressCount, setInProgressCount] = useState(0);
+
+  // 获取每个小说的角色和关系
+  useEffect(() => {
+    if (novels.length > 0) {
+      let totalCharacters = 0;
+      let totalRelationships = 0;
+      let inProgressNovels = 0;
+
+      const fetchData = async () => {
+        for (const novel of novels) {
+          // 获取角色
+          try {
+            const characters = await queryClient.fetchQuery({
+              queryKey: [`/api/novels/${novel.id}/characters`],
+            });
+            if (Array.isArray(characters)) {
+              totalCharacters += characters.length;
+            }
+
+            // 获取关系
+            const relationships = await queryClient.fetchQuery({
+              queryKey: [`/api/novels/${novel.id}/relationships`],
+            });
+            if (Array.isArray(relationships)) {
+              totalRelationships += relationships.length;
+            }
+
+            // 检查小说状态
+            if (novel.status === "In Progress") {
+              inProgressNovels++;
+            }
+          } catch (error) {
+            console.error(`Error fetching data for novel ${novel.id}:`, error);
+          }
+        }
+
+        setCharactersCount(totalCharacters);
+        setRelationshipsCount(totalRelationships);
+        setInProgressCount(inProgressNovels);
+      };
+
+      fetchData();
+    }
+  }, [novels, queryClient]);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -57,7 +107,7 @@ export default function HomePage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">角色</p>
-                  <h3 className="text-2xl font-bold">-</h3>
+                  <h3 className="text-2xl font-bold">{charactersCount}</h3>
                 </div>
               </CardContent>
             </Card>
@@ -69,7 +119,7 @@ export default function HomePage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">关系</p>
-                  <h3 className="text-2xl font-bold">-</h3>
+                  <h3 className="text-2xl font-bold">{relationshipsCount}</h3>
                 </div>
               </CardContent>
             </Card>
@@ -81,7 +131,7 @@ export default function HomePage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">进行中</p>
-                  <h3 className="text-2xl font-bold">-</h3>
+                  <h3 className="text-2xl font-bold">{inProgressCount}</h3>
                 </div>
               </CardContent>
             </Card>
