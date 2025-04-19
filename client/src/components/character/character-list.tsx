@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -81,6 +81,16 @@ export default function CharacterList({
     setIsEditDialogOpen(true);
   };
   
+  // 调试日志，查看角色头像数据
+  React.useEffect(() => {
+    if (characters && characters.length > 0) {
+      console.log('Character avatars:', characters.map(c => ({ 
+        name: c.name, 
+        avatar: c.avatar ? (c.avatar.length > 100 ? `${c.avatar.substring(0, 100)}...` : c.avatar) : null 
+      })));
+    }
+  }, [characters]);
+  
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -117,7 +127,13 @@ export default function CharacterList({
                 <div className="flex flex-col items-center text-center w-full">
                   <Avatar className="h-8 w-8 mb-1">
                     {character.avatar ? (
-                      <AvatarImage src={character.avatar} alt={character.name} />
+                      character.avatar.startsWith('data:image/svg+xml;base64,') ? (
+                        <div className="w-full h-full">
+                          <img src={character.avatar} alt={character.name} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <AvatarImage src={character.avatar} alt={character.name} />
+                      )
                     ) : (
                       <AvatarFallback className="bg-primary-100 text-primary-800">
                         {character.name.substring(0, 2).toUpperCase()}

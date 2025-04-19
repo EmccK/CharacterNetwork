@@ -26,7 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ImagePlus, Loader2, User, Link as LinkIcon } from "lucide-react";
+import { ImagePlus, Loader2, User, Link as LinkIcon, Grid } from "lucide-react";
+import { avatarIcons, generateColoredAvatar, utf8ToBase64 } from "@/assets/avatars";
 
 const formSchema = insertCharacterSchema.extend({
   avatar: z.instanceof(File).optional().or(z.string().optional()),
@@ -59,7 +60,8 @@ export default function CharacterForm({
   const [avatarUrl, setAvatarUrl] = useState<string>(
     initialData?.avatar as string || ""
   );
-  const [activeTab, setActiveTab] = useState<string>("upload");
+  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("preset");
 
   // Set up form with default values
   const form = useForm<CharacterFormValues>({
@@ -87,6 +89,17 @@ export default function CharacterForm({
         formData.append("avatar", selectedFile);
       } else if (activeTab === "url" && avatarUrl) {
         formData.append("avatarUrl", avatarUrl);
+      } else if (activeTab === "preset" && selectedIcon) {
+        // 如果选择了预设图标，将其添加为base64数据
+        const iconData = selectedIcon;
+        formData.append("avatarData", iconData);
+        console.log("Adding preset icon data:", iconData.substring(0, 50) + "...");
+      } else if (activeTab === "auto" && values.name) {
+        // 如果是自动生成，根据名称生成头像
+        const autoAvatar = generateColoredAvatar(values.name);
+        const dataUrl = `data:image/svg+xml;base64,${utf8ToBase64(autoAvatar)}`;
+        formData.append("avatarData", dataUrl);
+        console.log("Adding auto-generated avatar data:", dataUrl.substring(0, 50) + "...");
       }
 
       // Different API endpoint and method based on create/update mode
@@ -116,7 +129,8 @@ export default function CharacterForm({
       setSelectedFile(null);
       setPreviewUrl(null);
       setAvatarUrl("");
-      setActiveTab("upload");
+      setSelectedIcon(null);
+      setActiveTab("preset");
     },
     onError: (error: Error) => {
       toast({
@@ -146,6 +160,23 @@ export default function CharacterForm({
     if (value === "url" && avatarUrl) {
       setPreviewUrl(avatarUrl);
     }
+    // 如果选择预设图标并已经选择了图标
+    if (value === "preset" && selectedIcon) {
+      setPreviewUrl(selectedIcon);
+    }
+    // 如果是自动生成且有名字
+    if (value === "auto" && form.getValues("name")) {
+      const autoAvatar = generateColoredAvatar(form.getValues("name"));
+      const dataUrl = `data:image/svg+xml;base64,${utf8ToBase64(autoAvatar)}`;
+      setPreviewUrl(dataUrl);
+    }
+  };
+  
+  // 处理预设图标选择
+  const handleIconSelect = (icon: typeof avatarIcons[0]) => {
+    const dataUrl = `data:image/svg+xml;base64,${utf8ToBase64(icon.svg)}`;
+    setSelectedIcon(dataUrl);
+    setPreviewUrl(dataUrl);
   };
 
   // Handle file selection
@@ -236,16 +267,94 @@ export default function CharacterForm({
           <FormLabel>头像</FormLabel>
 
           <Tabs defaultValue={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid grid-cols-2 w-full">
-              <TabsTrigger value="upload" className="flex items-center gap-2">
+            <TabsList className="grid grid-cols-4 w-full">
+              <TabsTrigger value="preset" className="flex items-center gap-1">
+                <Grid className="h-4 w-4" />
+                <span>预设</span>
+              </TabsTrigger>
+              <TabsTrigger value="auto" className="flex items-center gap-1">
+                <User className="h-4 w-4" />
+                <span>自动</span>
+              </TabsTrigger>
+              <TabsTrigger value="upload" className="flex items-center gap-1">
                 <ImagePlus className="h-4 w-4" />
                 <span>上传</span>
               </TabsTrigger>
-              <TabsTrigger value="url" className="flex items-center gap-2">
+              <TabsTrigger value="url" className="flex items-center gap-1">
                 <LinkIcon className="h-4 w-4" />
                 <span>URL</span>
               </TabsTrigger>
             </TabsList>
+
+            <TabsContent value="preset">
+              <div className="mt-1 border-2 border-gray-300 rounded-lg p-3">
+                {previewUrl && activeTab === "preset" ? (
+                  <div className="space-y-2 text-center mb-3">
+                    <div className="w-24 h-24 mx-auto overflow-hidden rounded-full">
+                      <img 
+                        src={previewUrl} 
+                        alt="Avatar preview" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <p className="text-sm font-medium text-gray-700">已选择预设头像</p>
+                  </div>
+                ) : (
+                  <div className="mb-3 text-center">
+                    <p className="text-sm text-gray-600">选择一个预设头像</p>
+                  </div>
+                )}
+                
+                <div className="grid grid-cols-4 gap-2">
+                  {avatarIcons.map((icon) => (
+                    <div 
+                      key={icon.id} 
+                      className={`p-2 border rounded-lg cursor-pointer transition-all hover:bg-gray-50 ${selectedIcon && selectedIcon === `data:image/svg+xml;base64,${utf8ToBase64(icon.svg)}` ? 'border-primary-500 bg-primary-50' : 'border-gray-200'}`}
+                      onClick={() => handleIconSelect(icon)}
+                      title={icon.name}
+                    >
+                      <div className="w-full aspect-square" dangerouslySetInnerHTML={{ __html: icon.svg }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="auto">
+              <div className="mt-1 border-2 border-gray-300 rounded-lg p-4">
+                {form.getValues("name") ? (
+                  <div className="space-y-2 text-center">
+                    <div className="w-24 h-24 mx-auto overflow-hidden rounded-full">
+                      <img 
+                        src={`data:image/svg+xml;base64,${utf8ToBase64(generateColoredAvatar(form.getValues("name")))}`} 
+                        alt="Auto avatar preview" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <p className="text-sm text-gray-600">根据角色名称生成的头像</p>
+                    <p className="text-xs text-gray-500">如果修改了角色名称，请点击下面的按钮更新头像</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const autoAvatar = generateColoredAvatar(form.getValues("name"));
+                        const dataUrl = `data:image/svg+xml;base64,${utf8ToBase64(autoAvatar)}`;
+                        setPreviewUrl(dataUrl);
+                        setSelectedIcon(dataUrl);
+                      }}
+                    >
+                      更新头像
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <p className="text-gray-500 mb-2">请先填写角色名称</p>
+                    <p className="text-sm text-gray-400">系统将根据角色名称自动生成头像</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
 
             <TabsContent value="upload">
               <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">

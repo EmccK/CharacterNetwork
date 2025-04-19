@@ -350,6 +350,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else if (req.body.avatarUrl) {
         // If avatarUrl is provided, use it directly
         avatar = req.body.avatarUrl;
+      } else if (req.body.avatarData) {
+        // 处理 Base64 或 SVG 数据
+        avatar = req.body.avatarData;
       }
       
       const characterData = {
@@ -357,6 +360,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         avatar,
         novelId
       };
+      
+      // 删除临时字段
+      delete characterData.avatarUrl;
+      delete characterData.avatarData;
       
       const validationResult = insertCharacterSchema.safeParse(characterData);
       if (!validationResult.success) {
@@ -395,6 +402,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else if (req.body.avatarUrl) {
         // If avatarUrl is provided, use it directly
         avatar = req.body.avatarUrl;
+      } else if (req.body.avatarData) {
+        // 处理 Base64 或 SVG 数据
+        avatar = req.body.avatarData;
       }
       
       const characterData = {
@@ -402,8 +412,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         avatar
       };
       
-      // Remove avatarUrl field as it's not in our schema
+      // 删除临时字段
       delete characterData.avatarUrl;
+      delete characterData.avatarData;
       
       const updatedCharacter = await storage.updateCharacter(parseInt(req.params.id), characterData);
       res.json(updatedCharacter);
