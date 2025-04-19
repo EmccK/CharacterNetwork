@@ -138,7 +138,7 @@ export default function HomePage() {
                 </CardContent>
               </Card>
             </div>
-          </div>
+            </div>
 
           {/* Recent Novels */}
           <div>
@@ -154,36 +154,33 @@ export default function HomePage() {
               </Button>
             </div>
             {novels.length > 0 ? (
-              <div className="flex items-start overflow-x-auto pb-4 gap-4 hide-scrollbar">
+              <div className="flex items-start overflow-x-auto pb-6 pt-2 px-2 gap-4 hide-scrollbar -mx-2">
                 {novels.slice(0, 5).map((novel: any) => (
-                  <Card key={novel.id} className="hover:shadow-md transition-shadow flex-shrink-0 w-48">
-                    <div className="relative aspect-[2/3] bg-gray-100 rounded-t-lg overflow-hidden border-b">
-                      {novel.coverImage ? (
-                        <img 
-                          src={novel.coverImage} 
-                          alt={novel.title} 
-                          className="w-full h-full object-cover rounded-t-lg"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-50 rounded-t-lg">
-                          <BookOpen className="h-10 w-10 text-gray-300" />
-                        </div>
-                      )}
+                <div key={novel.id} className="flex-shrink-0 w-48 overflow-visible p-2 -m-2">
+                  <Card 
+                    className="h-full cursor-pointer group rounded-lg overflow-hidden transform transition-all duration-200 hover:scale-[1.03] hover:-translate-y-0.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]" 
+                    onClick={() => navigate(`/novels/${novel.id}`)}
+                  >
+                    <div className="relative" style={{ aspectRatio: '128/185' }}>
+                      <div className="absolute inset-0 bg-gray-100 overflow-hidden">
+                        {novel.coverImage ? (
+                          <img 
+                            src={novel.coverImage} 
+                            alt={novel.title} 
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                            <BookOpen className="h-10 w-10 text-gray-300" />
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <CardHeader className="py-2 px-3">
-                      <CardTitle className="text-sm font-medium truncate">{novel.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0 pb-2 px-3">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        className="w-full h-7 text-xs font-normal"
-                        onClick={() => navigate(`/novels/${novel.id}`)}
-                      >
-                        查看
-                      </Button>
-                    </CardContent>
+                    <div className="px-3 py-2 relative group">
+                      <h4 className="text-sm font-medium truncate group-hover:text-primary-600 transition-colors">{novel.title}</h4>
+                    </div>
                   </Card>
+                </div>
                 ))}
               </div>
             ) : (
