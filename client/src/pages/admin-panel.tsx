@@ -36,13 +36,13 @@ export default function AdminPanel() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       toast({
-        title: "User deleted",
-        description: "The user has been successfully deleted",
+        title: "用户已删除",
+        description: "用户已成功删除",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to delete user",
+        title: "删除用户失败",
         description: error.message,
         variant: "destructive",
       });
@@ -57,13 +57,13 @@ export default function AdminPanel() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       toast({
-        title: "User updated",
-        description: "The user has been successfully updated",
+        title: "用户已更新",
+        description: "用户已成功更新",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to update user",
+        title: "更新用户失败",
         description: error.message,
         variant: "destructive",
       });
@@ -77,22 +77,22 @@ export default function AdminPanel() {
         <Sidebar />
         
         <div className="flex-1 flex flex-col overflow-hidden">
-          <Topbar title="Admin Panel" />
+          <Topbar title="管理员面板" />
           
           <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
             <Card className="max-w-md mx-auto">
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-amber-500" />
-                  <CardTitle>Access Denied</CardTitle>
+                  <CardTitle>访问被拒绝</CardTitle>
                 </div>
                 <CardDescription>
-                  You need administrator privileges to access this page.
+                  您需要管理员权限才能访问此页面。
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button onClick={() => navigate("/")}>
-                  Return to Dashboard
+                  返回控制面板
                 </Button>
               </CardContent>
             </Card>
@@ -107,21 +107,21 @@ export default function AdminPanel() {
       <Sidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Topbar title="Admin Panel" />
-        
+        <Topbar title="管理员面板" />
+         
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-2">Admin Dashboard</h1>
-            <p className="text-gray-600">Manage users and system settings</p>
+            <h1 className="text-2xl font-bold mb-2">管理员控制面板</h1>
+            <p className="text-gray-600">管理用户和系统设置</p>
           </div>
-          
+           
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-4">
-              <TabsTrigger value="users">User Management</TabsTrigger>
-              <TabsTrigger value="settings">System Settings</TabsTrigger>
-              <TabsTrigger value="logs">Activity Logs</TabsTrigger>
+              <TabsTrigger value="users">用户管理</TabsTrigger>
+              <TabsTrigger value="settings">系统设置</TabsTrigger>
+              <TabsTrigger value="logs">活动日志</TabsTrigger>
             </TabsList>
-            
+             
             <TabsContent value="users">
               <UserManagement 
                 users={users}
@@ -135,30 +135,30 @@ export default function AdminPanel() {
             <TabsContent value="settings">
               <Card>
                 <CardHeader>
-                  <CardTitle>System Settings</CardTitle>
+                 <CardTitle>系统设置</CardTitle>
                   <CardDescription>
-                    Configure application-wide settings
+                   配置应用范围的设置
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-center py-8 text-gray-500">
-                    System settings functionality coming soon
+                   系统设置功能即将推出
                   </p>
                 </CardContent>
               </Card>
             </TabsContent>
-            
+           
             <TabsContent value="logs">
               <Card>
                 <CardHeader>
-                  <CardTitle>Activity Logs</CardTitle>
+                 <CardTitle>活动日志</CardTitle>
                   <CardDescription>
-                    View system activity and user actions
+                   查看系统活动和用户操作
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-center py-8 text-gray-500">
-                    Activity logs functionality coming soon
+                   活动日志功能即将推出
                   </p>
                 </CardContent>
               </Card>

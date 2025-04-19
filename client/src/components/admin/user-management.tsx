@@ -56,8 +56,8 @@ export default function UserManagement({
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  
-  // Get initials for avatar
+
+  // 获取头像首字母
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -65,20 +65,20 @@ export default function UserManagement({
       .join('')
       .toUpperCase();
   };
-  
-  // Format date for display
+
+  // 格式化日期以供显示
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', { 
+    return new Intl.DateTimeFormat('zh-CN', { // 改为中文日期格式
       year: 'numeric', 
       month: 'short', 
       day: 'numeric' 
     }).format(date);
   };
-  
-  // Filter users based on search and filters
+
+  // 根据搜索和筛选条件过滤用户
   const filteredUsers = users.filter(user => {
-    // Filter by search query
+    // 按搜索查询过滤
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       if (
@@ -88,39 +88,39 @@ export default function UserManagement({
         return false;
       }
     }
-    
-    // Filter by role
+
+    // 按角色过滤
     if (roleFilter !== "all") {
       const isAdmin = roleFilter === "admin";
       if (user.isAdmin !== isAdmin) {
         return false;
       }
     }
-    
-    // For status filter, we'd need a status field which isn't in our model
-    // This is a placeholder for demonstration
-    
+
+    // 对于状态筛选，我们需要一个状态字段，但我们的模型中没有
+    // 这只是一个演示占位符
+
     return true;
   });
-  
-  // Handle toggling admin status
+
+  // 处理切换管理员状态
   const handleToggleAdmin = (user: User) => {
     if (user.id === currentUserId) {
-      alert("You cannot change your own admin status");
+      alert("您不能更改自己的管理员状态");
       return;
     }
-    
+
     onUpdateUser(user.id, { isAdmin: !user.isAdmin });
   };
-  
-  // Handle user deletion
+
+  // 处理用户删除
   const handleDeleteUser = () => {
     if (userToDelete) {
       onDeleteUser(userToDelete.id);
       setUserToDelete(null);
     }
   };
-  
+
   if (isLoading) {
     return (
       <Card>
@@ -130,22 +130,22 @@ export default function UserManagement({
       </Card>
     );
   }
-  
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>User Management</CardTitle>
+        <CardTitle>用户管理</CardTitle>
         <CardDescription>
-          Manage user accounts and permissions
+          管理用户账户和权限
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {/* Search and Filter */}
+        {/* 搜索和筛选 */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="flex-1 relative">
             <Input 
               type="text" 
-              placeholder="Search users..." 
+              placeholder="搜索用户..."
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -155,22 +155,22 @@ export default function UserManagement({
           <div className="flex space-x-2">
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="All Roles" />
+                <SelectValue placeholder="所有角色" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="user">User</SelectItem>
+                <SelectItem value="all">所有角色</SelectItem>
+                <SelectItem value="admin">管理员</SelectItem>
+                <SelectItem value="user">用户</SelectItem>
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="All Status" />
+                <SelectValue placeholder="所有状态" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="all">所有状态</SelectItem>
+                <SelectItem value="active">活跃</SelectItem>
+                <SelectItem value="inactive">非活跃</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="icon">
@@ -178,24 +178,24 @@ export default function UserManagement({
             </Button>
           </div>
         </div>
-        
-        {/* Users Table */}
+
+        {/* 用户表格 */}
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>用户</TableHead>
+                <TableHead>邮箱</TableHead>
+                <TableHead>角色</TableHead>
+                <TableHead>状态</TableHead>
+                <TableHead className="text-right">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                    No users found matching the criteria
+                    没有找到符合条件的用户
                   </TableCell>
                 </TableRow>
               ) : (
@@ -204,14 +204,14 @@ export default function UserManagement({
                     <TableCell>
                       <div className="flex items-center">
                         <Avatar className="h-10 w-10 mr-4">
-                          <AvatarFallback className="bg-primary-600 text-white">
+                          <AvatarFallback className="bg-indigo-500 text-white">
                             {getInitials(user.username)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <div className="font-medium">{user.username}</div>
                           <div className="text-sm text-gray-500">
-                            Joined {user.createdAt ? formatDate(user.createdAt.toString()) : "N/A"}
+                            加入于 {user.createdAt ? formatDate(user.createdAt.toString()) : "未知"}
                           </div>
                         </div>
                       </div>
@@ -223,12 +223,12 @@ export default function UserManagement({
                           ? "bg-green-100 text-green-800" 
                           : "bg-gray-100 text-gray-800"
                       }`}>
-                        {user.isAdmin ? "Admin" : "User"}
+                        {user.isAdmin ? "管理员" : "用户"}
                       </span>
                     </TableCell>
                     <TableCell>
                       <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Active
+                        活跃
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
@@ -238,7 +238,7 @@ export default function UserManagement({
                         onClick={() => handleToggleAdmin(user)}
                         disabled={user.id === currentUserId}
                       >
-                        {user.isAdmin ? "Remove Admin" : "Make Admin"}
+                        {user.isAdmin ? "移除管理员" : "设为管理员"}
                       </Button>
                       <Button 
                         variant="ghost" 
@@ -246,7 +246,7 @@ export default function UserManagement({
                         onClick={() => setUserToDelete(user)}
                         disabled={user.id === currentUserId}
                       >
-                        Delete
+                        删除
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -255,12 +255,12 @@ export default function UserManagement({
             </TableBody>
           </Table>
         </div>
-        
-        {/* Pagination */}
+
+        {/* 分页 */}
         {filteredUsers.length > 0 && (
           <div className="mt-6 flex justify-between items-center">
             <div className="text-sm text-gray-700">
-              Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredUsers.length}</span> of <span className="font-medium">{users.length}</span> users
+              显示 <span className="font-medium">1</span> 到 <span className="font-medium">{filteredUsers.length}</span> 条，共 <span className="font-medium">{users.length}</span> 位用户
             </div>
             <div className="flex">
               <Button variant="outline" size="sm" className="rounded-l-md">
@@ -276,22 +276,22 @@ export default function UserManagement({
           </div>
         )}
       </CardContent>
-      
-      {/* Delete confirmation dialog */}
+
+      {/* 删除确认对话框 */}
       <Dialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm User Deletion</DialogTitle>
+            <DialogTitle>确认删除用户</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete the user "{userToDelete?.username}"? This action cannot be undone and will remove all their novels, characters, and relationships.
+              您确定要删除用户 "{userToDelete?.username}" 吗？此操作无法撤销，并将删除其所有的小说、角色和关系。
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setUserToDelete(null)}>
-              Cancel
+              取消
             </Button>
             <Button variant="destructive" onClick={handleDeleteUser}>
-              Delete User
+              删除用户
             </Button>
           </DialogFooter>
         </DialogContent>
