@@ -142,12 +142,22 @@ export default function HomePage() {
 
           {/* Recent Novels */}
           <div>
-            <h2 className="text-lg font-semibold mb-4">最近的小说</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">最近的小说</h2>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-primary flex items-center gap-1"
+                onClick={() => navigate("/novels")}
+              >
+                查看全部 <ArrowRight className="h-3 w-3" />
+              </Button>
+            </div>
             {novels.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {novels.slice(0, 3).map((novel: any) => (
-                  <Card key={novel.id} className="hover:shadow-md transition-shadow">
-                    <div className="relative aspect-[3/1] bg-gray-200">
+              <div className="flex items-start overflow-x-auto pb-4 gap-4 hide-scrollbar">
+                {novels.slice(0, 5).map((novel: any) => (
+                  <Card key={novel.id} className="hover:shadow-md transition-shadow flex-shrink-0 w-48">
+                    <div className="relative aspect-[2/3] bg-gray-100 rounded-t-lg overflow-hidden border-b">
                       {novel.coverImage ? (
                         <img 
                           src={novel.coverImage} 
@@ -155,24 +165,22 @@ export default function HomePage() {
                           className="w-full h-full object-cover rounded-t-lg"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-t-lg">
-                          <BookOpen className="h-8 w-8 text-gray-400" />
+                        <div className="w-full h-full flex items-center justify-center bg-gray-50 rounded-t-lg">
+                          <BookOpen className="h-10 w-10 text-gray-300" />
                         </div>
                       )}
                     </div>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">{novel.title}</CardTitle>
-                      <CardDescription className="line-clamp-2">
-                        {novel.description || "未提供描述"}
-                      </CardDescription>
+                    <CardHeader className="py-2 px-3">
+                      <CardTitle className="text-sm font-medium truncate">{novel.title}</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-0 pb-2 px-3">
                       <Button 
                         variant="ghost" 
-                        className="w-full"
+                        size="sm"
+                        className="w-full h-7 text-xs font-normal"
                         onClick={() => navigate(`/novels/${novel.id}`)}
                       >
-                        查看详情
+                        查看
                       </Button>
                     </CardContent>
                   </Card>
@@ -180,10 +188,13 @@ export default function HomePage() {
               </div>
             ) : (
               <Card>
-                <CardContent className="p-6 text-center">
-                  <p className="text-gray-500 mb-4">您还没有创建任何小说。</p>
-                  <Button onClick={() => navigate("/novels")}>
-                  创建您的第一部小说
+                <CardContent className="p-4 text-center">
+                  <p className="text-gray-500 text-sm mb-3">您还没有创建任何小说。</p>
+                  <Button 
+                    size="sm"
+                    onClick={() => navigate("/novels")}
+                  >
+                    创建小说
                   </Button>
                 </CardContent>
               </Card>

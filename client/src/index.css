@@ -37,6 +37,16 @@
     }
   }
 
+  /* 隐藏滚动条但保留功能 */
+  .hide-scrollbar {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+
   /* 关系图谱容器样式 */
   .graph-container {
     @apply overflow-hidden;
