@@ -91,4 +91,45 @@
   .graph-toolbar {
     @apply bg-gray-100 rounded-lg p-2 flex flex-wrap gap-2 items-center mb-4;
   }
+
+  /* 移动端动画效果 */
+  .fade-in {
+    @apply transition-opacity duration-300 ease-in-out;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  .slide-up {
+    @apply transition-transform duration-300 ease-in-out;
+    animation: slideUp 0.3s ease-in-out;
+  }
+  
+  .scale-in {
+    @apply transition-transform duration-300 ease-in-out;
+    animation: scaleIn 0.3s ease-in-out;
+  }
+  
+  .bounce-in {
+    animation: bounceIn 0.5s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  
+  @keyframes slideUp {
+    0% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  
+  @keyframes scaleIn {
+    0% { transform: scale(0.95); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  
+  @keyframes bounceIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    50% { transform: scale(1.05); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+  }
 }

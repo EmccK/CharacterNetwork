@@ -255,12 +255,6 @@ export default function NovelsPage() {
               queryClient.invalidateQueries({ queryKey: ["/api/novels"] });
             }}
           />
-
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
-              取消
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

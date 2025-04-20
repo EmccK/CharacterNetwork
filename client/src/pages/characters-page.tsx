@@ -120,14 +120,15 @@ export default function CharactersPage() {
               </div>
             ) : displayedCharacters.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
-                {displayedCharacters.map((character: any) => (
-                  <Card key={character.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                {displayedCharacters.map((character: any, index: number) => (
+                  <Card key={character.id} className="overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 active:scale-95 scale-in" style={{ animationDelay: `${0.05 + index * 0.03}s` }}>
                     <div className="aspect-[1/1] relative bg-gray-100 max-h-24">
                       {character.avatar ? (
                         <img 
                           src={character.avatar} 
                           alt={character.name} 
                           className="w-full h-full object-cover"
+                          loading="lazy"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
@@ -151,21 +152,21 @@ export default function CharactersPage() {
                       )}
                     </CardContent>
                     <CardFooter className="p-2 pt-0 flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => navigate(`/novels/${character.novelId}`)}>
-                        <Eye className="h-3 w-3" />
+                      <Button variant="ghost" size="icon" className="h-7 w-7 transition-transform hover:scale-110 active:scale-95" onClick={() => navigate(`/novels/${character.novelId}`)}>
+                        <Eye className="h-3.5 w-3.5" />
                       </Button>
                       <Button 
                         variant="ghost" 
-                        size="icon" className="h-6 w-6" 
+                        size="icon" className="h-7 w-7 transition-transform hover:scale-110 active:scale-95" 
                         onClick={() => {
                           setSelectedCharacter(character);
                           setIsEditCharacterModalOpen(true);
                         }}
                       >
-                        <Edit className="h-3 w-3" />
+                        <Edit className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-6 w-6">
-                        <Trash2 className="h-3 w-3" />
+                      <Button variant="ghost" size="icon" className="h-7 w-7 transition-transform hover:scale-110 active:scale-95">
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </CardFooter>
                   </Card>
@@ -197,7 +198,7 @@ export default function CharactersPage() {
 
       {/* Add Character Dialog */}
       <Dialog open={isAddCharacterModalOpen} onOpenChange={setIsAddCharacterModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6 scale-in">
           <DialogHeader>
             <DialogTitle>添加新角色</DialogTitle>
           </DialogHeader>
@@ -223,7 +224,7 @@ export default function CharactersPage() {
 
       {/* Edit Character Dialog */}
       <Dialog open={isEditCharacterModalOpen} onOpenChange={setIsEditCharacterModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6 scale-in">
           <DialogHeader>
             <DialogTitle>编辑角色</DialogTitle>
           </DialogHeader>

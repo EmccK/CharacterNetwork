@@ -262,8 +262,12 @@ export default function RelationshipForm({
           </div>
         )}
         
-        <div className="flex justify-end">
-          <Button type="submit" disabled={mutation.isPending}>
+        <div className="flex justify-end mt-6">
+          <Button 
+            type="submit" 
+            disabled={mutation.isPending}
+            className="w-full sm:w-auto py-5 sm:py-3 transition-transform active:scale-[0.98] text-base"
+          >
             {mutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -126,8 +126,8 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
       
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden">
-          <div className="bg-white w-64 h-full overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden fade-in" onClick={() => setMobileMenuOpen(false)}>
+          <div className="bg-white w-64 h-full overflow-y-auto translate-x-0 transition-transform duration-300 ease-in-out animate-in slide-in-from-left-full" onClick={(e) => e.stopPropagation()}>
             <div className="p-4 bg-primary-600 text-white flex justify-between items-center">
               <h1 className="text-xl font-bold">小说人物关系管理</h1>
               <Button 

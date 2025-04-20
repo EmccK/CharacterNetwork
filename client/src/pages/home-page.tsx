@@ -87,51 +87,51 @@ export default function HomePage() {
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardContent className="p-6 flex items-center">
-                <div className="bg-primary-100 p-3 rounded-full mr-4">
-                  <BookOpen className="h-6 w-6 text-primary-600" />
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-8">
+            <Card className="bounce-in" style={{ animationDelay: '0.05s' }}>
+              <CardContent className="p-4 sm:p-6 flex items-center">
+                <div className="bg-primary-100 p-2 sm:p-3 rounded-full mr-2 sm:mr-4">
+                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">小说总数</p>
-                  <h3 className="text-2xl font-bold">{novels.length}</h3>
+                  <p className="text-xs sm:text-sm text-gray-500">小说总数</p>
+                  <h3 className="text-xl sm:text-2xl font-bold">{novels.length}</h3>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-6 flex items-center">
-                <div className="bg-blue-100 p-3 rounded-full mr-4">
-                  <Users className="h-6 w-6 text-blue-600" />
+            <Card className="bounce-in" style={{ animationDelay: '0.1s' }}>
+              <CardContent className="p-4 sm:p-6 flex items-center">
+                <div className="bg-blue-100 p-2 sm:p-3 rounded-full mr-2 sm:mr-4">
+                  <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">角色</p>
-                  <h3 className="text-2xl font-bold">{charactersCount}</h3>
+                  <p className="text-xs sm:text-sm text-gray-500">角色</p>
+                  <h3 className="text-xl sm:text-2xl font-bold">{charactersCount}</h3>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-6 flex items-center">
-                <div className="bg-green-100 p-3 rounded-full mr-4">
-                  <Link className="h-6 w-6 text-green-600" />
+            <Card className="bounce-in" style={{ animationDelay: '0.15s' }}>
+              <CardContent className="p-4 sm:p-6 flex items-center">
+                <div className="bg-green-100 p-2 sm:p-3 rounded-full mr-2 sm:mr-4">
+                  <Link className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">关系</p>
-                  <h3 className="text-2xl font-bold">{relationshipsCount}</h3>
+                  <p className="text-xs sm:text-sm text-gray-500">关系</p>
+                  <h3 className="text-xl sm:text-2xl font-bold">{relationshipsCount}</h3>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-6 flex items-center">
-                <div className="bg-amber-100 p-3 rounded-full mr-4">
-                  <BookMarked className="h-6 w-6 text-amber-600" />
+            <Card className="bounce-in" style={{ animationDelay: '0.2s' }}>
+              <CardContent className="p-4 sm:p-6 flex items-center">
+                <div className="bg-amber-100 p-2 sm:p-3 rounded-full mr-2 sm:mr-4">
+                  <BookMarked className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">进行中</p>
-                  <h3 className="text-2xl font-bold">{inProgressCount}</h3>
+                  <p className="text-xs sm:text-sm text-gray-500">进行中</p>
+                  <h3 className="text-xl sm:text-2xl font-bold">{inProgressCount}</h3>
                 </div>
               </CardContent>
             </Card>
@@ -140,15 +140,15 @@ export default function HomePage() {
           {/* Quick Actions */}
           <div className="mb-8">
             <h2 className="text-lg font-semibold mb-4">快捷操作</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+              <Card className="hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 scale-in" style={{ animationDelay: '0.05s' }}>
+                <CardHeader className="pb-2 pt-4">
                   <CardTitle className="text-lg">创建新小说</CardTitle>
-                  <CardDescription>在您的收藏中添加新小说</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">在您的收藏中添加新小说</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pb-4">
                   <Button 
-                    className="w-full" 
+                    className="w-full transition-transform active:scale-[0.97]" 
                     onClick={() => navigate("/novels")}
                   >
                     创建小说 <ArrowRight className="h-4 w-4 ml-2" />
@@ -156,14 +156,14 @@ export default function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-2">
+              <Card className="hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 scale-in" style={{ animationDelay: '0.1s' }}>
+                <CardHeader className="pb-2 pt-4">
                   <CardTitle className="text-lg">管理角色</CardTitle>
-                  <CardDescription>查看和编辑您的角色名单</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">查看和编辑您的角色名单</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pb-4">
                   <Button 
-                    className="w-full" 
+                    className="w-full transition-transform active:scale-[0.97]" 
                     variant="secondary"
                     onClick={() => navigate("/characters")}
                   >
@@ -172,14 +172,14 @@ export default function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-2">
+              <Card className="hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 scale-in" style={{ animationDelay: '0.15s' }}>
+                <CardHeader className="pb-2 pt-4">
                   <CardTitle className="text-lg">可视化关系</CardTitle>
-                  <CardDescription>探索角色联系</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">探索角色联系</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pb-4">
                   <Button 
-                    className="w-full" 
+                    className="w-full transition-transform active:scale-[0.97]" 
                     variant="outline"
                     onClick={() => navigate("/relationships")}
                   >
@@ -197,18 +197,18 @@ export default function HomePage() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-primary flex items-center gap-1"
+                className="text-primary flex items-center gap-1 transition-transform hover:translate-x-1"
                 onClick={() => navigate("/novels")}
               >
                 查看全部 <ArrowRight className="h-3 w-3" />
               </Button>
             </div>
             {novels.length > 0 ? (
-              <div className="flex items-start overflow-x-auto pb-6 pt-2 px-2 gap-4 hide-scrollbar -mx-2">
-                {novels.slice(0, 5).map((novel: any) => (
-                <div key={novel.id} className="flex-shrink-0 w-48 overflow-visible p-2 -m-2">
+              <div className="flex items-start overflow-x-auto pb-6 pt-2 px-2 gap-4 hide-scrollbar -mx-2 touch-pan-x">
+                {novels.slice(0, 5).map((novel: any, index: number) => (
+                <div key={novel.id} className="flex-shrink-0 w-36 sm:w-48 overflow-visible p-2 -m-2 slide-up" style={{ animationDelay: `${0.05 + index * 0.05}s` }}>
                   <Card 
-                    className="h-full cursor-pointer group rounded-lg overflow-hidden transform transition-all duration-200 hover:scale-[1.03] hover:-translate-y-0.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]" 
+                    className="h-full cursor-pointer group rounded-lg overflow-hidden transform transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.98] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)]" 
                     onClick={() => navigate(`/novels/${novel.id}`)}
                   >
                     <div className="relative" style={{ aspectRatio: '128/185' }}>
