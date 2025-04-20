@@ -132,4 +132,23 @@
     50% { transform: scale(1.05); opacity: 0.7; }
     100% { transform: scale(1); opacity: 1; }
   }
+  
+  /* 移动菜单动画 */
+  @keyframes slideInFromLeft {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+  }
+  
+  @keyframes slideOutToLeft {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+  }
+  
+  .mobile-menu-enter {
+    animation: slideInFromLeft 0.3s forwards;
+  }
+  
+  .mobile-menu-exit {
+    animation: slideOutToLeft 0.3s forwards;
+  }
 }

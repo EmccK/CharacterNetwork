@@ -21,7 +21,22 @@ interface TopbarProps {
 export default function Topbar({ title = "控制面板" }: TopbarProps) {
   const { user, logoutMutation } = useAuth();
   const [_, navigate] = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileMenuVisible, setMobileMenuVisible] = useState(false);
+  const [menuClosing, setMenuClosing] = useState(false);
+  
+  const openMobileMenu = () => {
+    setMobileMenuVisible(true);
+    setMenuClosing(false);
+  };
+  
+  const closeMobileMenu = () => {
+    setMenuClosing(true);
+    // 等待动画完成后再隐藏菜单
+    setTimeout(() => {
+      setMobileMenuVisible(false);
+      setMenuClosing(false);
+    }, 300); // 与动画持续时间匹配
+  };
   const [searchOpen, setSearchOpen] = useState(false);
   
   const getInitials = (name: string) => {
@@ -45,7 +60,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
               variant="ghost" 
               size="icon" 
               className="md:hidden mr-2" 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={openMobileMenu}
             >
               <Menu className="h-6 w-6" />
             </Button>
@@ -125,16 +140,22 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
       </header>
       
       {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden fade-in" onClick={() => setMobileMenuOpen(false)}>
-          <div className="bg-white w-64 h-full overflow-y-auto translate-x-0 transition-transform duration-300 ease-in-out animate-in slide-in-from-left-full" onClick={(e) => e.stopPropagation()}>
+      {mobileMenuVisible && (
+        <div 
+          className={`fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden fade-in ${menuClosing ? 'animate-out fade-out duration-300' : ''}`} 
+          onClick={closeMobileMenu}
+        >
+          <div 
+            className={`bg-white w-64 h-full overflow-y-auto ${menuClosing ? 'mobile-menu-exit' : 'mobile-menu-enter'}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="p-4 bg-primary-600 text-white flex justify-between items-center">
               <h1 className="text-xl font-bold">小说人物关系管理</h1>
               <Button 
                 variant="ghost" 
                 size="icon" 
                 className="text-white hover:bg-primary-700" 
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={closeMobileMenu}
               >
                 <X className="h-6 w-6" />
               </Button>
@@ -146,7 +167,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
                 onClick={(e) => {
                   e.preventDefault();
                   navigate("/");
-                  setMobileMenuOpen(false);
+                  closeMobileMenu();
                 }}
               >
                 <LayoutDashboard className="mr-3 text-xl" />
@@ -158,7 +179,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
                 onClick={(e) => {
                   e.preventDefault();
                   navigate("/novels");
-                  setMobileMenuOpen(false);
+                  closeMobileMenu();
                 }}
               >
                 <BookOpen className="mr-3 text-xl" />
@@ -170,7 +191,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
                 onClick={(e) => {
                   e.preventDefault();
                   navigate("/characters");
-                  setMobileMenuOpen(false);
+                  closeMobileMenu();
                 }}
               >
                 <Users className="mr-3 text-xl" />
@@ -182,7 +203,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
                 onClick={(e) => {
                   e.preventDefault();
                   navigate("/relationships");
-                  setMobileMenuOpen(false);
+                  closeMobileMenu();
                 }}
               >
                 <LinkIcon className="mr-3 text-xl" />
@@ -197,7 +218,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
                   onClick={(e) => {
                     e.preventDefault();
                     navigate("/admin");
-                    setMobileMenuOpen(false);
+                    closeMobileMenu();
                   }}
                 >
                   <Shield className="mr-3 text-xl" />
@@ -213,7 +234,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
                 onClick={(e) => {
                   e.preventDefault();
                   navigate("/settings");
-                  setMobileMenuOpen(false);
+                  closeMobileMenu();
                 }}
               >
                 <Settings className="mr-3 text-xl" />
@@ -225,7 +246,7 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
                 onClick={(e) => {
                   e.preventDefault();
                   handleLogout();
-                  setMobileMenuOpen(false);
+                  closeMobileMenu();
                 }}
               >
                 <LogOut className="mr-3 text-xl" />
