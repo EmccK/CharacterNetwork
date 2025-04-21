@@ -16,6 +16,7 @@ import CharactersPage from "@/pages/characters-page";
 import RelationshipsPage from "@/pages/relationships-page";
 import AdminPanel from "@/pages/admin-panel";
 import SettingsPage from "@/pages/settings-page";
+import ImportBookPage from "@/pages/import-book-page";
 
 function Router() {
   return (
@@ -46,6 +47,9 @@ function Router() {
       </Route>
       <Route path="/settings">
         <SettingsPage />
+      </Route>
+      <Route path="/import-book">
+        <ImportBookPage />
       </Route>
       <Route>
         <NotFound />

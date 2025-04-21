@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, unique, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -130,6 +130,49 @@ export type RelationshipType = typeof relationshipTypes.$inferSelect;
 
 export type InsertRelationship = z.infer<typeof insertRelationshipSchema>;
 export type Relationship = typeof relationships.$inferSelect;
+
+// Book Info Schema - 存储外部API获取的书籍信息
+export const bookInfos = pgTable("book_infos", {
+  id: serial("id").primaryKey(),
+  externalId: text("external_id").notNull().unique(), // 外部API的唯一标识符
+  title: text("title").notNull(),
+  author: text("author"),
+  description: text("description"),
+  coverImage: text("cover_image"),
+  publishedDate: text("published_date"),
+  publisher: text("publisher"),
+  isbn: text("isbn"),
+  pageCount: integer("page_count"),
+  categories: jsonb("categories"), // 存储类别数组或对象
+  language: text("language"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Novel 表新增 bookInfoId 字段，关联到书籍信息
+export const novelsExtended = pgTable("novels", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  coverImage: text("cover_image"),
+  genre: text("genre"),
+  status: text("status").default("In Progress"),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  bookInfoId: integer("book_info_id").references(() => bookInfos.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// 书籍信息插入schema
+export const insertBookInfoSchema = createInsertSchema(bookInfos).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// 导出类型
+export type InsertBookInfo = z.infer<typeof insertBookInfoSchema>;
+export type BookInfo = typeof bookInfos.$inferSelect;
 
 // Login type
 export type LoginData = Pick<InsertUser, "username" | "password">;

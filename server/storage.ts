@@ -1,7 +1,7 @@
 import {
-  users, novels, characters, relationshipTypes, relationships, novelGenres,
-  type User, type Novel, type Character, type RelationshipType, type Relationship, type NovelGenre,
-  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre
+  users, novels, characters, relationshipTypes, relationships, novelGenres, bookInfos,
+  type User, type Novel, type Character, type RelationshipType, type Relationship, type NovelGenre, type BookInfo,
+  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre, type InsertBookInfo
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -57,6 +57,17 @@ export interface IStorage {
   createRelationship(relationship: InsertRelationship): Promise<Relationship>;
   updateRelationship(id: number, relationship: Partial<Relationship>): Promise<Relationship | undefined>;
   deleteRelationship(id: number): Promise<boolean>;
+
+  // Book Info operations
+  getBookInfo(id: number): Promise<BookInfo | undefined>;
+  getBookInfoByExternalId(externalId: string): Promise<BookInfo | undefined>;
+  searchBookInfos(query: string): Promise<BookInfo[]>;
+  createBookInfo(bookInfo: InsertBookInfo): Promise<BookInfo>;
+  updateBookInfo(id: number, bookInfo: Partial<BookInfo>): Promise<BookInfo | undefined>;
+  deleteBookInfo(id: number): Promise<boolean>;
+  
+  // 扩展小说操作，支持通过bookInfoId
+  getNovelsByBookInfoId(bookInfoId: number): Promise<Novel[]>;
 
   // Session store
   sessionStore: session.Store;

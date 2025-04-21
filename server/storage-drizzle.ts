@@ -3,12 +3,12 @@ import session from 'express-session';
 import pgSessionStore from 'connect-pg-simple';
 import pg from 'pg';
 import {
-  users, novels, characters, relationshipTypes, relationships, novelGenres,
-  type User, type Novel, type Character, type RelationshipType, type Relationship, type NovelGenre,
-  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre
+  users, novels, characters, relationshipTypes, relationships, novelGenres, bookInfos,
+  type User, type Novel, type Character, type RelationshipType, type Relationship, type NovelGenre, type BookInfo,
+  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre, type InsertBookInfo
 } from '@shared/schema';
 import { db } from './db';
-import { eq, and, or, desc } from 'drizzle-orm';
+import { eq, and, or, desc, like, ilike, or as orExpr, and as andExpr, sql } from 'drizzle-orm';
 
 const { Pool } = pg;
 
@@ -222,5 +222,94 @@ export class DrizzleStorage implements IStorage {
   async deleteRelationship(id: number): Promise<boolean> {
     const result = await db.delete(relationships).where(eq(relationships.id, id)).returning();
     return result.length > 0;
+  }
+
+  // Book Info operations
+  async getBookInfo(id: number): Promise<BookInfo | undefined> {
+    const results = await db.select().from(bookInfos).where(eq(bookInfos.id, id)).limit(1);
+    return results.length > 0 ? results[0] : undefined;
+  }
+
+  async getBookInfoByExternalId(externalId: string): Promise<BookInfo | undefined> {
+    const results = await db.select().from(bookInfos).where(eq(bookInfos.externalId, externalId)).limit(1);
+    return results.length > 0 ? results[0] : undefined;
+  }
+
+  async searchBookInfos(query: string): Promise<BookInfo[]> {
+    // 分解查询字符串以便更灵活地搜索
+    const terms = query.split(/\s+/).filter(term => term.length > 0);
+    
+    if (terms.length === 0) {
+      // 如果没有有效的搜索词，返回最近添加的书籍
+      return await db.select().from(bookInfos).orderBy(desc(bookInfos.createdAt)).limit(10);
+    }
+    
+    // 构建搜索条件
+    const conditions = terms.map(term => {
+      const likePattern = `%${term}%`;
+      return orExpr(
+        ilike(bookInfos.title, likePattern),
+        ilike(bookInfos.author, likePattern),
+        ilike(bookInfos.isbn, likePattern)
+      );
+    });
+    
+    // 组合所有条件（AND连接多个词条的搜索）
+    return await db.select()
+      .from(bookInfos)
+      .where(andExpr(...conditions))
+      .orderBy(desc(bookInfos.createdAt))
+      .limit(20);
+  }
+
+  async createBookInfo(bookInfo: InsertBookInfo): Promise<BookInfo> {
+    // 如果已存在相同的 externalId，返回现有记录
+    const existing = await this.getBookInfoByExternalId(bookInfo.externalId);
+    if (existing) {
+      return existing;
+    }
+    
+    const now = new Date();
+    const bookInfoWithTimestamps = {
+      ...bookInfo,
+      createdAt: now,
+      updatedAt: now
+    };
+    
+    const result = await db.insert(bookInfos).values(bookInfoWithTimestamps).returning();
+    return result[0];
+  }
+
+  async updateBookInfo(id: number, bookInfoData: Partial<BookInfo>): Promise<BookInfo | undefined> {
+    // 更新时间戳
+    const updateData = {
+      ...bookInfoData,
+      updatedAt: new Date()
+    };
+    
+    const result = await db.update(bookInfos).set(updateData).where(eq(bookInfos.id, id)).returning();
+    return result.length > 0 ? result[0] : undefined;
+  }
+
+  async deleteBookInfo(id: number): Promise<boolean> {
+    // 先检查是否有小说关联到这个书籍信息
+    const novels = await this.getNovelsByBookInfoId(id);
+    
+    if (novels.length > 0) {
+      // 有关联的小说，只移除关联而不删除书籍信息
+      for (const novel of novels) {
+        await this.updateNovel(novel.id, { bookInfoId: null });
+      }
+      return false; // 表示没有真正删除书籍信息
+    }
+    
+    // 没有关联的小说，可以安全删除
+    const result = await db.delete(bookInfos).where(eq(bookInfos.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // 扩展小说操作
+  async getNovelsByBookInfoId(bookInfoId: number): Promise<Novel[]> {
+    return await db.select().from(novels).where(eq(novels.bookInfoId, bookInfoId));
   }
 }

@@ -25,7 +25,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { RefreshCcw, Plus, FilterIcon } from "lucide-react";
+import { RefreshCcw, Plus, FilterIcon, BookIcon, ArrowRight } from "lucide-react";
 
 export default function NovelsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -184,6 +184,16 @@ export default function NovelsPage() {
                     <p className="text-gray-600 text-center font-medium">添加新小说</p>
                   </div>
                   
+                  {/* 导入书籍卡片 */}
+                  <div className="flex flex-col items-center justify-center h-full min-h-[300px] border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-primary-500 transition-colors cursor-pointer"
+                      onClick={() => navigate('/import-book')}>
+                    <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                      <BookIcon className="h-8 w-8 text-blue-600" />
+                    </div>
+                    <p className="text-gray-600 text-center font-medium">从书籍导入</p>
+                    <p className="text-gray-400 text-center text-xs mt-2">从外部数据源导入书籍信息</p>
+                  </div>
+                  
                   {/* 现有小说卡片 */}
                   {filteredNovels.map((novel: any) => (
                     <NovelCard 
@@ -211,9 +221,12 @@ export default function NovelsPage() {
                     ? "尝试改变您的搜索或过滤条件"
                     : "从添加您的第一部小说开始"}
                 </p>
-                <div className="mt-6">
+                <div className="mt-6 flex gap-2 justify-center">
                   <Button onClick={() => setIsCreateModalOpen(true)}>
                     <Plus className="mr-1 h-4 w-4" /> 添加小说
+                  </Button>
+                  <Button variant="outline" onClick={() => navigate('/import-book')}>
+                    <BookIcon className="mr-1 h-4 w-4" /> 从书籍导入
                   </Button>
                 </div>
               </div>
@@ -248,6 +261,25 @@ export default function NovelsPage() {
               创建一部新小说以开始跟踪角色及其关系。
             </DialogDescription>
           </DialogHeader>
+
+          <div className="mb-4 bg-blue-50 p-4 rounded-md flex items-start">
+            <BookIcon className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+            <div>
+              <p className="text-sm text-blue-700">想从现有图书数据自动填充信息？</p>
+              <div className="mt-2">
+                <Button 
+                  variant="link" 
+                  className="h-auto p-0 text-blue-600" 
+                  onClick={() => {
+                    setIsCreateModalOpen(false);
+                    navigate('/import-book');
+                  }}
+                >
+                  使用图书导入 <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
+              </div>
+            </div>
+          </div>
 
           <NovelForm 
             onSuccess={() => {

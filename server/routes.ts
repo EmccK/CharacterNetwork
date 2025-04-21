@@ -1,6 +1,7 @@
 import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { searchBooks, getOrFetchBookInfo } from "./services/bookService";
 import { setupAuth } from "./auth";
 import { insertNovelSchema, insertCharacterSchema, insertRelationshipTypeSchema, insertRelationshipSchema, insertNovelGenreSchema } from "@shared/schema";
 import multer from "multer";
@@ -206,6 +207,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Book Info API routes
+  app.get("/api/books/search", isAuthenticated, async (req, res, next) => {
+    try {
+      const query = req.query.q as string;
+      if (!query || query.trim().length === 0) {
+        return res.status(400).json({ message: "搜索查询不能为空" });
+      }
+      
+      const books = await searchBooks(query.trim());
+      res.json(books);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // 微信读书API代理路由 - 不需要登录即可访问
+  app.get("/api/weread/search", async (req, res, next) => {
+    try {
+      const keyword = req.query.keyword as string;
+      if (!keyword || keyword.trim().length === 0) {
+        return res.status(400).json({ message: "搜索关键词不能为空" });
+      }
+
+      console.log(`代理搜索请求: ${keyword}`);
+      const response = await fetch(`https://weread.qq.com/api/store/search?keyword=${encodeURIComponent(keyword)}`);
+      
+      if (!response.ok) {
+        console.error(`微信读书API响应错误: ${response.status}`);
+        return res.status(response.status).json({ message: `微信读书API错误: ${response.status}` });
+      }
+
+      const data = await response.json();
+      console.log(`搜索结果: ${data.results ? data.results.length : 0} 个结果集`);
+      res.json(data);
+    } catch (error) {
+      console.error('代理搜索出错:', error);
+      next(error);
+    }
+  });
+  
+  app.get("/api/books/:externalId", isAuthenticated, async (req, res, next) => {
+    try {
+      const externalId = req.params.externalId;
+      const bookInfo = await getOrFetchBookInfo(externalId);
+      
+      if (!bookInfo) {
+        return res.status(404).json({ message: "未找到书籍信息" });
+      }
+      
+      res.json(bookInfo);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   app.post("/api/novels", isAuthenticated, upload.single('coverImage'), async (req, res, next) => {
     try {
       let coverImage = null;
@@ -224,6 +280,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Remove coverImageUrl field as it's not in our schema
       delete novelData.coverImageUrl;
+      
+      const validationResult = insertNovelSchema.safeParse(novelData);
+      if (!validationResult.success) {
+        return res.status(400).json({ message: "Invalid novel data", errors: validationResult.error.format() });
+      }
+      
+      const novel = await storage.createNovel(validationResult.data);
+      res.status(201).json(novel);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // 从外部书籍创建小说
+  app.post("/api/novels/from-book/:bookInfoId", isAuthenticated, async (req, res, next) => {
+    try {
+      const bookInfoId = parseInt(req.params.bookInfoId);
+      const bookInfo = await storage.getBookInfo(bookInfoId);
+      
+      if (!bookInfo) {
+        return res.status(404).json({ message: "未找到书籍信息" });
+      }
+      
+      // 从书籍信息创建小说
+      const novelData = {
+        title: bookInfo.title,
+        description: bookInfo.description || '',
+        coverImage: bookInfo.coverImage || '',
+        genre: Array.isArray(bookInfo.categories) && bookInfo.categories.length > 0 ? 
+               bookInfo.categories[0] : '',
+        status: req.body.status || 'In Progress',
+        userId: req.user!.id,
+        bookInfoId: bookInfoId
+      };
       
       const validationResult = insertNovelSchema.safeParse(novelData);
       if (!validationResult.success) {
