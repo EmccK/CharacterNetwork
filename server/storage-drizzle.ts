@@ -231,8 +231,35 @@ export class DrizzleStorage implements IStorage {
   }
 
   async getBookInfoByExternalId(externalId: string): Promise<BookInfo | undefined> {
-    const results = await db.select().from(bookInfos).where(eq(bookInfos.externalId, externalId)).limit(1);
-    return results.length > 0 ? results[0] : undefined;
+    // 确保外部ID是字符串
+    const idString = externalId ? externalId.toString() : '';
+    
+    if (!idString) {
+      console.error('[数据库操作] getBookInfoByExternalId: 无效的外部ID');
+      return undefined;
+    }
+    
+    console.log(`[数据库操作] 查询外部ID: "${idString}", 类型: ${typeof idString}`);
+    
+    try {
+      // 检查SQL查询
+      const sqlQuery = `SELECT * FROM book_infos WHERE external_id = '${idString}' LIMIT 1`;
+      console.log(`[数据库操作] 执行SQL查询: ${sqlQuery}`);
+      
+      const results = await db.select().from(bookInfos).where(eq(bookInfos.externalId, idString)).limit(1);
+      console.log(`[数据库操作] 查询结果: ${results.length > 0 ? '有结果' : '无结果'}`);
+      
+      if (results.length > 0) {
+        console.log(`[数据库操作] 找到书籍信息: ID=${results[0].id}, 标题=${results[0].title}`);
+      } else {
+        console.log(`[数据库操作] 未找到外部ID为"${idString}"的书籍信息`);
+      }
+      
+      return results.length > 0 ? results[0] : undefined;
+    } catch (error) {
+      console.error('[数据库操作] 根据外部ID查询书籍时出错:', error);
+      return undefined;
+    }
   }
 
   async searchBookInfos(query: string): Promise<BookInfo[]> {
@@ -263,21 +290,43 @@ export class DrizzleStorage implements IStorage {
   }
 
   async createBookInfo(bookInfo: InsertBookInfo): Promise<BookInfo> {
+    // 确保 externalId 是字符串
+    const externalId = bookInfo.externalId ? bookInfo.externalId.toString() : '';
+    if (!externalId) {
+      console.error('创建书籍信息失败: externalId不能为空');
+      throw new Error('创建书籍信息时externalId不能为空');
+    }
+    
+    console.log(`[数据库操作] 开始创建书籍信息，外部ID: "${externalId}", 标题: "${bookInfo.title}"`);
+    
     // 如果已存在相同的 externalId，返回现有记录
-    const existing = await this.getBookInfoByExternalId(bookInfo.externalId);
+    const existing = await this.getBookInfoByExternalId(externalId);
     if (existing) {
+      console.log(`[数据库操作] 书籍信息已存在，ID: ${existing.id}, 外部ID: "${existing.externalId}"`);
       return existing;
     }
     
+    // 准备数据，确保外部ID是字符串
     const now = new Date();
     const bookInfoWithTimestamps = {
       ...bookInfo,
+      externalId, // 使用处理后的字符串类型外部ID
       createdAt: now,
       updatedAt: now
     };
     
-    const result = await db.insert(bookInfos).values(bookInfoWithTimestamps).returning();
-    return result[0];
+    console.log(`[数据库操作] 以下是将插入数据库的书籍数据:`);
+    console.log(JSON.stringify(bookInfoWithTimestamps, null, 2));
+    
+    try {
+      console.log(`[数据库操作] 执行插入操作...`);
+      const result = await db.insert(bookInfos).values(bookInfoWithTimestamps).returning();
+      console.log(`[数据库操作] 插入成功！新书籍信息 ID: ${result[0].id}`);
+      return result[0];
+    } catch (error) {
+      console.error(`[数据库操作] 插入书籍信息失败:`, error);
+      throw error;
+    }
   }
 
   async updateBookInfo(id: number, bookInfoData: Partial<BookInfo>): Promise<BookInfo | undefined> {

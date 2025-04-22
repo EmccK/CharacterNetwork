@@ -12,24 +12,59 @@ interface BookDetailProps {
   onBack: () => void;
 }
 
-// 从书籍创建小说的API请求函数
-const createNovelFromBook = async (bookInfoId: number): Promise<any> => {
-  const response = await fetch(`/api/novels/from-book/${bookInfoId}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      status: 'In Progress'
-    }),
-  });
+// 直接从搜索结果创建小说的API请求函数
+const createNovelFromSearchBook = async (book: BookInfo): Promise<any> => {
+  try {
+    console.log('从搜索结果中创建小说，书籍数据:', {
+      title: book.title,
+      externalId: book.externalId,
+      externalIdType: typeof book.externalId,
+      categories: book.categories,
+      rating: (book as any).rating
+    });
+    
+    // 直接发送全部数据给新的API端点
+    const response = await fetch('/api/novels/from-search-book', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        bookData: {
+          externalId: book.externalId,
+          title: book.title,
+          author: book.author || '',
+          description: book.description || '',
+          coverImage: book.coverImage || '',
+          publishedDate: book.publishedDate || '',
+          publisher: book.publisher || '',
+          isbn: book.isbn || '',
+          pageCount: book.pageCount || 0,
+          categories: book.categories || [],
+          language: book.language || 'zh',
+          // 传递微信读书特有字段
+          rating: (book as any).rating,
+          ratingCount: (book as any).ratingCount,
+          payType: (book as any).payType
+        },
+        status: 'In Progress'
+      }),
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || '创建小说失败');
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('请求失败:', response.status, response.statusText);
+      console.error('创建小说失败响应:', errorData);
+      throw new Error(errorData.message || '创建小说失败');
+    }
+
+    const novel = await response.json();
+    console.log('小说创建成功响应:', novel);
+    return novel;
+  } catch (error) {
+    console.error('创建小说过程中出错:', error);
+    throw error;
   }
-
-  return response.json();
 };
 
 const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
@@ -38,7 +73,7 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
 
   // 使用React Query进行创建小说的变异操作
   const { mutate, isPending } = useMutation({
-    mutationFn: createNovelFromBook,
+    mutationFn: createNovelFromSearchBook,
     onSuccess: (data) => {
       toast({
         title: '小说创建成功',
@@ -56,7 +91,7 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
   });
 
   const handleCreateNovel = () => {
-    mutate(book.id);
+    mutate(book);
   };
 
   // 提取和格式化分类
