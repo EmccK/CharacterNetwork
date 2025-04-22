@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Menu, Bell, Search, X, LayoutDashboard, Shield, BookOpen, Users, Link as LinkIcon, Settings, LogOut } from "lucide-react";
+import { Menu, Bell, X, LayoutDashboard, Shield, BookOpen, Users, Link as LinkIcon, Settings, LogOut, BookType } from "lucide-react";
+import { Link } from "wouter";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,9 +20,21 @@ interface TopbarProps {
 
 export default function Topbar({ title = "控制面板" }: TopbarProps) {
   const { user, logoutMutation } = useAuth();
-  const [_, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const [mobileMenuVisible, setMobileMenuVisible] = useState(false);
   const [menuClosing, setMenuClosing] = useState(false);
+  
+  // 根据当前页面路径选择合适的图标
+  const pageIcon = useMemo(() => {
+    if (location === "/") return <LayoutDashboard className="h-6 w-6 text-primary-600" />;
+    if (location === "/novels" || location.startsWith("/novels/")) return <BookOpen className="h-6 w-6 text-primary-600" />;
+    if (location === "/characters") return <Users className="h-6 w-6 text-blue-600" />;
+    if (location === "/relationships") return <LinkIcon className="h-6 w-6 text-green-600" />;
+    if (location === "/novel-genres") return <BookType className="h-6 w-6 text-amber-600" />;
+    if (location === "/admin") return <Shield className="h-6 w-6 text-red-600" />;
+    if (location === "/settings") return <Settings className="h-6 w-6 text-gray-600" />;
+    return <img src="/icons/icon-universal.svg" alt="小说人物关系" className="h-6 w-6" />;
+  }, [location]);
   
   const openMobileMenu = () => {
     setMobileMenuVisible(true);
@@ -35,9 +47,8 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
     setTimeout(() => {
       setMobileMenuVisible(false);
       setMenuClosing(false);
-    }, 300); // 与动画持续时间匹配
-  };
-  const [searchOpen, setSearchOpen] = useState(false);
+      }, 300); // 与动画持续时间匹配
+      };
   
   const getInitials = (name: string) => {
     return name
@@ -64,45 +75,12 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
             >
               <Menu className="h-6 w-6" />
             </Button>
+            <Link href="/" className="flex items-center mr-3">
+              {pageIcon}
+            </Link>
             <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
           </div>
           <div className="flex items-center space-x-4">
-            {!searchOpen ? (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="lg:hidden" 
-                onClick={() => setSearchOpen(true)}
-              >
-                <Search className="h-5 w-5" />
-              </Button>
-            ) : (
-              <div className="flex items-center lg:hidden">
-                <Input 
-                  type="text"
-                  placeholder="搜索..."
-                  className="w-full"
-                  autoFocus
-                />
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setSearchOpen(false)}
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-            )}
-            
-            <div className="relative hidden lg:block">
-              <Input 
-                type="text" 
-                placeholder="搜索..." 
-                className="pl-10 pr-4 py-2 w-full max-w-xs"
-              />
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-            </div>
-            
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5 text-gray-600" />
             </Button>
@@ -150,7 +128,10 @@ export default function Topbar({ title = "控制面板" }: TopbarProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 bg-primary-600 text-white flex justify-between items-center">
-              <h1 className="text-xl font-bold">小说人物关系管理</h1>
+              <div className="flex items-center">
+                {pageIcon}
+                <h1 className="text-xl font-bold ml-3">小说人物关系管理</h1>
+              </div>
               <Button 
                 variant="ghost" 
                 size="icon" 

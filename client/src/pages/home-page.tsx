@@ -7,7 +7,7 @@ import Sidebar from "@/components/layout/sidebar";
 import Topbar from "@/components/layout/topbar";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { BookOpen, Users, Link, BookMarked, ArrowRight } from "lucide-react";
+import { BookOpen, Users, Link as LinkIcon, BookMarked, ArrowRight } from "lucide-react";
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -82,8 +82,13 @@ export default function HomePage() {
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-2">欢迎，{user?.username}！</h1>
-            <p className="text-gray-600">在一处管理您的小说、角色和它们的关系。</p>
+            <div className="flex items-center mb-3">
+              <img src="/icons/icon-universal.svg" alt="小说人物关系" className="h-12 w-12 mr-3" />
+              <div>
+                <h1 className="text-2xl font-bold">欢迎，{user?.username}！</h1>
+                <p className="text-gray-600">在一处管理您的小说、角色和它们的关系。</p>
+              </div>
+            </div>
           </div>
 
           {/* Summary Cards */}
@@ -115,7 +120,7 @@ export default function HomePage() {
             <Card className="bounce-in" style={{ animationDelay: '0.15s' }}>
               <CardContent className="p-4 sm:p-6 flex items-center">
                 <div className="bg-green-100 p-2 sm:p-3 rounded-full mr-2 sm:mr-4">
-                  <Link className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+                  <LinkIcon className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                 </div>
                 <div>
                   <p className="text-xs sm:text-sm text-gray-500">关系</p>
@@ -139,11 +144,21 @@ export default function HomePage() {
 
           {/* Quick Actions */}
           <div className="mb-8">
-            <h2 className="text-lg font-semibold mb-4">快捷操作</h2>
+            <div className="flex items-center mb-4">
+              <div className="p-2 bg-blue-100 rounded-full mr-2">
+                <LinkIcon className="h-4 w-4 text-blue-600" />
+              </div>
+              <h2 className="text-lg font-semibold">快捷操作</h2>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               <Card className="hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 scale-in" style={{ animationDelay: '0.05s' }}>
                 <CardHeader className="pb-2 pt-4">
-                  <CardTitle className="text-lg">创建新小说</CardTitle>
+                  <div className="flex items-center mb-1">
+                    <div className="p-2 bg-primary-100 rounded-full mr-2">
+                      <BookOpen className="h-5 w-5 text-primary-600" />
+                    </div>
+                    <CardTitle className="text-lg">创建新小说</CardTitle>
+                  </div>
                   <CardDescription className="text-xs sm:text-sm">在您的收藏中添加新小说</CardDescription>
                 </CardHeader>
                 <CardContent className="pb-4">
@@ -158,7 +173,12 @@ export default function HomePage() {
 
               <Card className="hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 scale-in" style={{ animationDelay: '0.1s' }}>
                 <CardHeader className="pb-2 pt-4">
-                  <CardTitle className="text-lg">管理角色</CardTitle>
+                  <div className="flex items-center mb-1">
+                    <div className="p-2 bg-blue-100 rounded-full mr-2">
+                      <Users className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <CardTitle className="text-lg">管理角色</CardTitle>
+                  </div>
                   <CardDescription className="text-xs sm:text-sm">查看和编辑您的角色名单</CardDescription>
                 </CardHeader>
                 <CardContent className="pb-4">
@@ -174,7 +194,12 @@ export default function HomePage() {
 
               <Card className="hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 scale-in" style={{ animationDelay: '0.15s' }}>
                 <CardHeader className="pb-2 pt-4">
-                  <CardTitle className="text-lg">可视化关系</CardTitle>
+                  <div className="flex items-center mb-1">
+                    <div className="p-2 bg-green-100 rounded-full mr-2">
+                      <LinkIcon className="h-5 w-5 text-green-600" />
+                    </div>
+                    <CardTitle className="text-lg">可视化关系</CardTitle>
+                  </div>
                   <CardDescription className="text-xs sm:text-sm">探索角色联系</CardDescription>
                 </CardHeader>
                 <CardContent className="pb-4">
@@ -193,7 +218,12 @@ export default function HomePage() {
           {/* Recent Novels */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">最近的小说</h2>
+              <div className="flex items-center">
+                <div className="p-2 bg-amber-100 rounded-full mr-2">
+                  <BookOpen className="h-4 w-4 text-amber-600" />
+                </div>
+                <h2 className="text-lg font-semibold">最近的小说</h2>
+              </div>
               <Button 
                 variant="ghost" 
                 size="sm" 

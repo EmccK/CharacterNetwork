@@ -49,8 +49,11 @@ export default function Sidebar() {
   
   return (
     <div className="bg-white w-64 hidden md:block shadow-md">
-      <div className="p-4 bg-primary-600 text-white">
-        <h1 className="text-xl font-bold">小说人物关系管理</h1>
+    <div className="p-4 bg-primary-600 text-white">
+    <div className="flex items-center">
+        <img src="/icons/icon-universal.svg" alt="小说人物关系" className="h-8 w-8 mr-3" />
+          <h1 className="text-xl font-bold">小说人物关系管理</h1>
+        </div>
       </div>
       <nav className="mt-4">
         <SidebarLink 
