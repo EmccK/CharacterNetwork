@@ -43,13 +43,23 @@ self.addEventListener('fetch', (event) => {
               return response;
             }
             
+            // 检查URL是否有效（不是chrome-extension等不支持的协议）
+            const url = new URL(event.request.url);
+            if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+              return response;
+            }
+            
             // 克隆响应以便我们可以将其存入缓存并返回
             const responseToCache = response.clone();
             
             caches.open(CACHE_NAME)
               .then((cache) => {
-                // 添加响应到缓存
-                cache.put(event.request, responseToCache);
+                try {
+                  // 添加响应到缓存
+                  cache.put(event.request, responseToCache);
+                } catch (err) {
+                  console.warn('缓存存储失败:', err);
+                }
               });
               
             return response;

@@ -25,6 +25,8 @@ const __dirname = dirname(__filename);
 export default defineConfig({
   server: {
     hmr: {
+      host: 'localhost',
+      port: 5001,
       overlay: false // 禁用错误覆盖层
     }
   },
@@ -33,11 +35,18 @@ export default defineConfig({
     customRuntimeErrorOverlay(),
     themePlugin(),
     VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.png', 'robots.txt', 'icons/*.png'],
+      registerType: 'prompt',
+      includeAssets: ['favicon.png', 'robots.txt', 'icons/*.png', 'offline.html'],
       manifest: false, // 我们使用自定义的manifest.json
+      strategies: 'generateSW',
       workbox: {
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        sourcemap: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,json}'],
+        navigateFallback: 'offline.html',
+        navigateFallbackDenylist: [/\/api\//], // API请求不应该回退到offline.html
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

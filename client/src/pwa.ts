@@ -1,14 +1,27 @@
 // Service Worker 注册函数
 export function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js', { scope: '/' })
-        .then(registration => {
-          console.log('Service Worker 注册成功，范围:', registration.scope);
-        })
-        .catch(error => {
-          console.error('Service Worker 注册失败:', error);
+    window.addEventListener('load', async () => {
+      try {
+        // 尝试先注销已有的Service Worker
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          await registration.unregister();
+        }
+        
+        // 重新注册
+        const registration = await navigator.serviceWorker.register('/sw.js', { 
+          scope: '/',
+          updateViaCache: 'none' // 禁用缓存，确保每次都获取最新的service worker
         });
+        
+        console.log('Service Worker 注册成功，范围:', registration.scope);
+        
+        // 强制更新
+        registration.update();
+      } catch (error) {
+        console.error('Service Worker 注册失败:', error);
+      }
     });
   }
 }

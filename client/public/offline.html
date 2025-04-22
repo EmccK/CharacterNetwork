@@ -1,70 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#ffffff">
   <title>离线 - 小说人物关系管理器</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      height: 100vh;
+      margin: 0;
       padding: 20px;
-      background-color: #f8f9fa;
-      color: #333;
       text-align: center;
+      background-color: #f9fafb;
+      color: #1f2937;
     }
     .container {
       max-width: 500px;
-      background-color: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     h1 {
-      margin-bottom: 20px;
-      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      font-size: 1.875rem;
+      font-weight: 600;
     }
     p {
-      margin-bottom: 15px;
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
       line-height: 1.5;
+      color: #4b5563;
     }
     .icon {
-      font-size: 64px;
-      margin-bottom: 20px;
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      color: #3b82f6;
     }
-    .button {
-      display: inline-block;
-      background-color: #4285f4;
-      color: white;
-      padding: 10px 20px;
-      margin-top: 20px;
-      border-radius: 5px;
-      text-decoration: none;
+    .btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
       font-weight: 500;
-      transition: background-color 0.3s;
+      border-radius: 0.375rem;
+      background-color: #3b82f6;
+      color: white;
+      text-decoration: none;
+      transition: background-color 0.2s;
     }
-    .button:hover {
-      background-color: #3367d6;
+    .btn:hover {
+      background-color: #2563eb;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="icon">⚠️</div>
-    <h1>您当前处于离线状态</h1>
-    <p>无法连接到小说人物关系管理器。请检查您的网络连接并重试。</p>
-    <p>如果您已经登录，您仍然可以访问已缓存的内容。</p>
-    <a href="/" class="button">重试</a>
+    <div class="icon">📶</div>
+    <h1>您已离线</h1>
+    <p>看起来您的网络连接已断开。请检查您的网络连接并重试。您可以继续访问已缓存的内容。</p>
+    <a href="/" class="btn">重新加载</a>
   </div>
+  <script>
+    // 监听在线状态变化
+    window.addEventListener('online', () => {
+      window.location.reload();
+    });
+  </script>
 </body>
 </html>
