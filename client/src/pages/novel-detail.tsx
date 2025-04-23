@@ -379,6 +379,11 @@ export default function NovelDetail() {
             onSuccess={() => {
               setIsAddCharacterModalOpen(false);
               refetchCharacters();
+              
+              // 刷新侧边栏计数
+              queryClient.invalidateQueries({ queryKey: ["allCharacters"] });
+              queryClient.invalidateQueries({ queryKey: ["allRelationships"] });
+              
               toast({
                 title: "角色已添加",
                 description: "角色已成功添加到您的小说中",
@@ -402,6 +407,10 @@ export default function NovelDetail() {
             onSuccess={() => {
               setIsAddRelationshipModalOpen(false);
               refetchRelationships();
+              
+              // 刷新侧边栏计数
+              queryClient.invalidateQueries({ queryKey: ["allRelationships"] });
+              
               toast({
                 title: "关系已添加",
                 description: "关系已成功添加",
@@ -459,6 +468,10 @@ export default function NovelDetail() {
                   try {
                     await apiRequest("DELETE", `/api/relationships/${relationshipToDelete}`, {});
                     refetchRelationships();
+                    
+                    // 刷新侧边栏计数
+                    queryClient.invalidateQueries({ queryKey: ["allRelationships"] });
+                    
                     toast({
                       title: "关系已删除",
                       description: "角色关系已成功删除",

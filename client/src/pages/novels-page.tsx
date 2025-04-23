@@ -54,6 +54,9 @@ export default function NovelsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/novels"] });
+      // 更新角色和关系计数
+      queryClient.invalidateQueries({ queryKey: ["allCharacters"] });
+      queryClient.invalidateQueries({ queryKey: ["allRelationships"] });
       toast({
         title: "Novel deleted",
         description: "The novel has been successfully deleted",
@@ -285,6 +288,9 @@ export default function NovelsPage() {
             onSuccess={() => {
               setIsCreateModalOpen(false);
               queryClient.invalidateQueries({ queryKey: ["/api/novels"] });
+              // 更新侧边栏计数
+              queryClient.invalidateQueries({ queryKey: ["allCharacters"] });
+              queryClient.invalidateQueries({ queryKey: ["allRelationships"] });
             }}
           />
         </DialogContent>

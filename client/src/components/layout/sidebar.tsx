@@ -1,5 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { 
   BookOpen, 
   Users, 
@@ -18,9 +19,10 @@ interface SidebarLinkProps {
   children: React.ReactNode;
   active?: boolean;
   onClick?: () => void;
+  count?: number;
 }
 
-function SidebarLink({ href, icon, children, active, onClick }: SidebarLinkProps) {
+function SidebarLink({ href, icon, children, active, onClick, count }: SidebarLinkProps) {
   return (
     <a 
       href={href} 
@@ -34,7 +36,12 @@ function SidebarLink({ href, icon, children, active, onClick }: SidebarLinkProps
       }}
     >
       {icon}
-      <span className="ml-3">{children}</span>
+      <span className="ml-3 flex-grow">{children}</span>
+      {count !== undefined && (
+        <span className="ml-auto bg-gray-100 text-gray-700 rounded-full px-2 py-0.5 text-xs font-medium">
+          {count}
+        </span>
+      )}
     </a>
   );
 }
@@ -42,6 +49,61 @@ function SidebarLink({ href, icon, children, active, onClick }: SidebarLinkProps
 export default function Sidebar() {
   const { user, logoutMutation } = useAuth();
   const [location, navigate] = useLocation();
+  
+  // 获取小说总数
+  const { data: novels = [] } = useQuery({
+    queryKey: ["/api/novels"],
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
+  });
+  
+  // 获取所有小说的角色总数
+  const { data: allCharacters = [] } = useQuery({
+    queryKey: ["allCharacters"],
+    queryFn: async () => {
+      if (novels.length === 0) return [];
+      
+      let characters = [];
+      for (const novel of novels) {
+        try {
+          const chars = await fetch(`/api/novels/${novel.id}/characters`, {
+            credentials: "include"
+          }).then(res => res.json());
+          characters = [...characters, ...chars];
+        } catch (e) {
+          console.error(`无法获取小说 ID ${novel.id} 的角色`, e);
+        }
+      }
+      return characters;
+    },
+    enabled: novels.length > 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
+  });
+  
+  // 获取所有小说的关系总数
+  const { data: allRelationships = [] } = useQuery({
+    queryKey: ["allRelationships"],
+    queryFn: async () => {
+      if (novels.length === 0) return [];
+      
+      let relationships = [];
+      for (const novel of novels) {
+        try {
+          const rels = await fetch(`/api/novels/${novel.id}/relationships`, {
+            credentials: "include"
+          }).then(res => res.json());
+          relationships = [...relationships, ...rels];
+        } catch (e) {
+          console.error(`无法获取小说 ID ${novel.id} 的关系`, e);
+        }
+      }
+      return relationships;
+    },
+    enabled: novels.length > 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
+  });
   
   const handleLogout = () => {
     logoutMutation.mutate();
@@ -69,6 +131,7 @@ export default function Sidebar() {
           icon={<BookOpen className="text-xl" />}
           active={location === "/novels" || location.startsWith("/novels/")}
           onClick={() => navigate("/novels")}
+          count={novels.length}
         >
           小说作品
         </SidebarLink>
@@ -77,6 +140,7 @@ export default function Sidebar() {
           icon={<Users className="text-xl" />}
           active={location === "/characters"}
           onClick={() => navigate("/characters")}
+          count={allCharacters.length}
         >
           人物角色
         </SidebarLink>
@@ -85,6 +149,7 @@ export default function Sidebar() {
           icon={<Link className="text-xl" />}
           active={location === "/relationships"}
           onClick={() => navigate("/relationships")}
+          count={allRelationships.length}
         >
           角色关系
         </SidebarLink>

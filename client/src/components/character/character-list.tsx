@@ -60,6 +60,10 @@ export default function CharacterList({
       });
       setCharacterToDelete(null);
       onUpdate();
+      
+      // 刷新侧边栏计数
+      queryClient.invalidateQueries({ queryKey: ["allCharacters"] });
+      queryClient.invalidateQueries({ queryKey: ["allRelationships"] });
     },
     onError: (error: Error) => {
       toast({
@@ -201,6 +205,10 @@ export default function CharacterList({
               onSuccess={() => {
                 setIsEditDialogOpen(false);
                 onUpdate();
+                
+                // 刷新侧边栏计数
+                queryClient.invalidateQueries({ queryKey: ["allCharacters"] });
+                
                 toast({
                   title: "角色已更新",
                   description: "角色已成功更新",

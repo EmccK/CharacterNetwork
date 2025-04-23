@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import Sidebar from "@/components/layout/sidebar";
 import Topbar from "@/components/layout/topbar";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,9 @@ import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle 
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
 } from "@/components/ui/dialog";
 import { 
   Card, 
@@ -27,16 +29,77 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CharacterForm from "@/components/character/character-form";
-import { User, Edit, Trash2, Eye } from "lucide-react";
+import { User, Edit, Trash2, Eye, AlertTriangle } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function CharactersPage() {
   const [selectedNovelId, setSelectedNovelId] = useState<string>("all");
   const [isAddCharacterModalOpen, setIsAddCharacterModalOpen] = useState(false);
   const [isEditCharacterModalOpen, setIsEditCharacterModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedCharacter, setSelectedCharacter] = useState<any>(null);
+  const [characterToDelete, setCharacterToDelete] = useState<number | null>(null);
   const { toast } = useToast();
   const [_, navigate] = useLocation();
+
+  // 删除角色的mutation
+  const deleteCharacterMutation = useMutation({
+    mutationFn: async (characterId: number) => {
+      await apiRequest("DELETE", `/api/characters/${characterId}`);
+    },
+    onSuccess: () => {
+      // 刷新当前选中小说的角色
+      if (selectedNovelId !== "all") {
+        queryClient.invalidateQueries({ queryKey: [`/api/novels/${selectedNovelId}/characters`] });
+      } else {
+        // 如果是"所有小说"视图，则直接手动刷新
+        refetchAllCharacters();
+      }
+      
+      // 刷新所有角色统计信息
+      queryClient.invalidateQueries({ queryKey: ["allCharacters"] });
+      
+      // 刷新所有关系（因为删除角色会级联删除所有相关的关系）
+      queryClient.invalidateQueries({ queryKey: ["allRelationships"] });
+      
+      toast({
+        title: "角色已删除",
+        description: "角色已成功删除"
+      });
+      
+      setIsDeleteModalOpen(false);
+      setCharacterToDelete(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "删除角色失败",
+        description: error.message,
+        variant: "destructive"
+      });
+      setIsDeleteModalOpen(false);
+    }
+  });
+
+  // 处理删除角色
+  const handleDeleteCharacter = (characterId: number) => {
+    setCharacterToDelete(characterId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteCharacter = () => {
+    if (characterToDelete) {
+      deleteCharacterMutation.mutate(characterToDelete);
+    }
+  };
+
+  // 处理选择小说更改
+  const handleNovelChange = (novelId: string) => {
+    setSelectedNovelId(novelId);
+    // 如果切换到"所有小说"，强制刷新
+    if (novelId === "all") {
+      refetchAllCharacters();
+    }
+  };
 
   // Fetch novels
   const { data: novels = [] } = useQuery({
@@ -50,19 +113,37 @@ export default function CharactersPage() {
   });
 
   // Get all characters across all novels
-  const { data: allCharacters = [] } = useQuery({
-    queryKey: ["allCharacters"],
+  const { data: allCharacters = [], refetch: refetchAllCharacters } = useQuery({
+    queryKey: ["allCharacters", novels.length], // 添加novels.length作为依赖项
     queryFn: async () => {
+      console.log("获取所有小说的角色", novels.map(n => n.title));
       const allChars: any[] = [];
       for (const novel of novels) {
-        const chars = await queryClient.fetchQuery({
-          queryKey: [`/api/novels/${novel.id}/characters`],
-        });
-        allChars.push(...chars.map((char: any) => ({ ...char, novelTitle: novel.title })));
+        try {
+          // 使用fetch而不是fetchQuery以避免缓存问题
+          const response = await fetch(`/api/novels/${novel.id}/characters`, {
+            credentials: "include"
+          });
+          if (!response.ok) {
+            console.error(`获取小说 ${novel.id} 的角色失败`);
+            continue;
+          }
+          const chars = await response.json();
+          // 确保添加novelTitle
+          const charsWithTitle = chars.map((char: any) => ({
+            ...char,
+            novelTitle: novel.title || `小说 #${novel.id}`
+          }));
+          allChars.push(...charsWithTitle);
+        } catch (error) {
+          console.error(`获取小说 ${novel.id} 的角色时出错:`, error);
+        }
       }
       return allChars;
     },
     enabled: selectedNovelId === "all" && novels.length > 0,
+    refetchOnMount: true, // 确保每次挂载都刷新
+    refetchOnWindowFocus: true, // 当窗口获得焦点时刷新
   });
 
   // Display characters based on novel selection
@@ -89,7 +170,7 @@ export default function CharactersPage() {
 
             {/* Novel selector */}
             <div className="mb-6">
-              <Select value={selectedNovelId} onValueChange={setSelectedNovelId}>
+              <Select value={selectedNovelId} onValueChange={handleNovelChange}>
                 <SelectTrigger className="w-full max-w-xs">
                   <SelectValue placeholder="选择小说" />
                 </SelectTrigger>
@@ -152,12 +233,18 @@ export default function CharactersPage() {
                       )}
                     </CardContent>
                     <CardFooter className="p-2 pt-0 flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7 transition-transform hover:scale-110 active:scale-95" onClick={() => navigate(`/novels/${character.novelId}`)}>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-7 w-7 transition-transform hover:scale-110 active:scale-95" 
+                        onClick={() => navigate(`/novels/${character.novelId}`)}
+                      >
                         <Eye className="h-3.5 w-3.5" />
                       </Button>
                       <Button 
                         variant="ghost" 
-                        size="icon" className="h-7 w-7 transition-transform hover:scale-110 active:scale-95" 
+                        size="icon" 
+                        className="h-7 w-7 transition-transform hover:scale-110 active:scale-95" 
                         onClick={() => {
                           setSelectedCharacter(character);
                           setIsEditCharacterModalOpen(true);
@@ -165,7 +252,12 @@ export default function CharactersPage() {
                       >
                         <Edit className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 transition-transform hover:scale-110 active:scale-95">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-7 w-7 transition-transform hover:scale-110 active:scale-95"
+                        onClick={() => handleDeleteCharacter(character.id)}
+                      >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </CardFooter>
@@ -208,14 +300,23 @@ export default function CharactersPage() {
             novels={novels}
             onSuccess={() => {
               setIsAddCharacterModalOpen(false);
+              // 刷新当前选中小说的角色
               if (selectedNovelId !== "all") {
                 queryClient.invalidateQueries({ queryKey: [`/api/novels/${selectedNovelId}/characters`] });
               } else {
-                queryClient.invalidateQueries({ queryKey: ["allCharacters"] });
+                // 如果是"所有小说"视图，则直接手动刷新
+                refetchAllCharacters();
               }
+              
+              // 刷新所有角色统计信息
+              queryClient.invalidateQueries({ queryKey: ["allCharacters"] });
+              
+              // 刷新关系计数
+              queryClient.invalidateQueries({ queryKey: ["allRelationships"] });
+              
               toast({
-                title: "Character added",
-                description: "Character has been successfully added",
+                title: "角色已添加",
+                description: "角色已成功添加"
               });
             }}
           />
@@ -243,18 +344,61 @@ export default function CharactersPage() {
               onSuccess={() => {
                 setIsEditCharacterModalOpen(false);
                 setSelectedCharacter(null);
+                
+                // 刷新当前选中小说的角色
                 if (selectedNovelId !== "all") {
                   queryClient.invalidateQueries({ queryKey: [`/api/novels/${selectedNovelId}/characters`] });
                 } else {
-                  queryClient.invalidateQueries({ queryKey: ["allCharacters"] });
+                  // 如果是"所有小说"视图，则直接手动刷新
+                  refetchAllCharacters();
                 }
+                
+                // 刷新所有角色统计信息
+                queryClient.invalidateQueries({ queryKey: ["allCharacters"] });
+                
+                // 刷新关系计数
+                queryClient.invalidateQueries({ queryKey: ["allRelationships"] });
+                
                 toast({
                   title: "角色已更新",
-                  description: "角色信息已成功更新",
+                  description: "角色信息已成功更新"
                 });
               }}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Character Confirmation Dialog */}
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <AlertTriangle className="text-amber-500 mr-2 h-5 w-5" />
+              确认删除
+            </DialogTitle>
+            <DialogDescription>
+              您确定要删除这个角色吗？该操作将同时删除与此角色相关的所有关系，且无法撤销。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 flex gap-2 justify-end">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsDeleteModalOpen(false);
+                setCharacterToDelete(null);
+              }}
+            >
+              取消
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDeleteCharacter}
+              disabled={deleteCharacterMutation.isPending}
+            >
+              {deleteCharacterMutation.isPending ? "删除中..." : "删除"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
