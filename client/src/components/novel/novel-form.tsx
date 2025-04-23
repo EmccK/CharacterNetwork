@@ -261,14 +261,14 @@ export default function NovelForm({
                     <SelectSeparator />
                     <SelectGroup>
                       <SelectLabel>默认类型</SelectLabel>
-                      <SelectItem value="Fantasy">奇幻</SelectItem>
-                      <SelectItem value="Science Fiction">科幻</SelectItem>
-                      <SelectItem value="Mystery">悬疑</SelectItem>
-                      <SelectItem value="Romance">爱情</SelectItem>
-                      <SelectItem value="Historical">历史</SelectItem>
-                      <SelectItem value="Thriller">惊悚</SelectItem>
-                      <SelectItem value="Horror">恐怖</SelectItem>
-                      <SelectItem value="Other">其他</SelectItem>
+                      <SelectItem value="奇幻">奇幻</SelectItem>
+                      <SelectItem value="科幻">科幻</SelectItem>
+                      <SelectItem value="悬疑">悬疑</SelectItem>
+                      <SelectItem value="爱情">爱情</SelectItem>
+                      <SelectItem value="历史">历史</SelectItem>
+                      <SelectItem value="惊悚">惊悚</SelectItem>
+                      <SelectItem value="恐怖">恐怖</SelectItem>
+                      <SelectItem value="其他">其他</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>

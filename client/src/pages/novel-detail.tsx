@@ -11,10 +11,11 @@ import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle 
+  DialogTitle,
+  DialogDescription
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Edit, Share, MoreHorizontal, BookOpen } from "lucide-react";
+import { ArrowLeft, Edit, Share, MoreHorizontal, BookOpen, Trash, Link } from "lucide-react";
 import CharacterForm from "@/components/character/character-form";
 import CharacterList from "@/components/character/character-list";
 import RelationshipForm from "@/components/relationship/relationship-form";
@@ -28,6 +29,8 @@ export default function NovelDetail() {
   const [isAddCharacterModalOpen, setIsAddCharacterModalOpen] = useState(false);
   const [isAddRelationshipModalOpen, setIsAddRelationshipModalOpen] = useState(false);
   const [isEditNovelModalOpen, setIsEditNovelModalOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [relationshipToDelete, setRelationshipToDelete] = useState<number | null>(null);
   
   // 获取小说数据
   const { 
@@ -271,6 +274,70 @@ export default function NovelDetail() {
                               }
                             }}
                           />
+                          
+                          {/* 关系列表 */}
+                          {relationships.length > 0 && (
+                            <div className="mt-4 bg-white p-4 rounded-lg border border-gray-100">
+                              <h4 className="text-md font-medium mb-2">已有关系</h4>
+                              <div className="grid gap-2">
+                                {relationships.map((relationship: any) => {
+                                  const source = characters.find((c: any) => c.id === relationship.sourceId);
+                                  const target = characters.find((c: any) => c.id === relationship.targetId);
+                                  const relType = relationshipTypes.find((t: any) => t.id === relationship.typeId);
+                                  
+                                  if (!source || !target || !relType) return null;
+                                  
+                                  return (
+                                    <div key={relationship.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded border border-gray-100">
+                                      <div className="flex items-center">
+                                        <strong className="mr-2">{source.name}</strong>
+                                        <span 
+                                          className="px-2 py-0.5 rounded text-xs text-white mx-2"
+                                          style={{ backgroundColor: relType.color }}
+                                        >
+                                          {relType.name}
+                                        </span>
+                                        <strong>{target.name}</strong>
+                                        {relationship.description && (
+                                          <span className="ml-2 text-sm text-gray-500">
+                                            - {relationship.description}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-gray-500 hover:text-red-500"
+                                        onClick={() => {
+                                          setRelationshipToDelete(relationship.id);
+                                          setIsDeleteConfirmOpen(true);
+                                        }}
+                                      >
+                                        <Trash className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* 关系为空状态 */}
+                          {relationships.length === 0 && characters.length >= 2 && (
+                            <div className="mt-4 bg-white p-6 rounded-lg border border-gray-100 text-center">
+                              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 mb-3">
+                                <Link className="h-6 w-6 text-gray-500" />
+                              </div>
+                              <h3 className="text-lg font-medium text-gray-900 mb-1">还没有角色关系</h3>
+                              <p className="text-gray-500 mb-4">创建角色之间的关系来构建关系网络</p>
+                              <Button 
+                                onClick={() => setIsAddRelationshipModalOpen(true)}
+                                disabled={characters.length < 2}
+                              >
+                                添加第一个关系
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -330,6 +397,7 @@ export default function NovelDetail() {
           <RelationshipForm 
             novelId={parseInt(params?.id || "0")}
             characters={characters}
+            relationships={relationships}
             relationshipTypes={relationshipTypes}
             onSuccess={() => {
               setIsAddRelationshipModalOpen(false);
@@ -368,6 +436,49 @@ export default function NovelDetail() {
               });
             }}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* 删除关系确认对话框 */}
+      <Dialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>确认删除</DialogTitle>
+            <DialogDescription>
+              您确定要删除这个角色关系吗？此操作无法撤销。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsDeleteConfirmOpen(false)}>
+              取消
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (relationshipToDelete) {
+                  try {
+                    await apiRequest("DELETE", `/api/relationships/${relationshipToDelete}`, {});
+                    refetchRelationships();
+                    toast({
+                      title: "关系已删除",
+                      description: "角色关系已成功删除",
+                    });
+                  } catch (error: any) {
+                    toast({
+                      title: "删除关系失败",
+                      description: error.message || "删除角色关系时发生错误",
+                      variant: "destructive",
+                    });
+                  } finally {
+                    setIsDeleteConfirmOpen(false);
+                    setRelationshipToDelete(null);
+                  }
+                }
+              }}
+            >
+              删除
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

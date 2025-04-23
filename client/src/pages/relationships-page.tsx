@@ -107,6 +107,23 @@ export default function RelationshipsPage() {
     }
   };
 
+  const handleRelationshipDelete = async (relationshipId: number) => {
+    try {
+      await apiRequest("DELETE", `/api/relationships/${relationshipId}`, {});
+      queryClient.invalidateQueries({ queryKey: [`/api/novels/${selectedNovelId}/relationships`] });
+      toast({
+        title: "关系已删除",
+        description: "角色关系已成功删除",
+      });
+    } catch (error: any) {
+      toast({
+        title: "删除关系失败",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleRelationshipTypeDelete = async (typeId: number) => {
     // 检查是否有使用此关系类型的关系
     const relationshipsUsingType = relationships.filter((rel: any) => rel.typeId === typeId);
@@ -223,6 +240,54 @@ export default function RelationshipsPage() {
               </div>
             </div>
 
+            {/* Relationship List */}
+            {selectedNovelId && !isLoading && characters.length >= 2 && (
+              <div className="mb-6">
+                <h4 className="text-md font-medium mb-2">已有关系</h4>
+                {relationships.length === 0 ? (
+                  <p className="text-sm text-gray-500">还没有定义任何关系。</p>
+                ) : (
+                  <div className="grid gap-2 border rounded-lg p-2 bg-white">
+                    {relationships.map((relationship: any) => {
+                      const source = characters.find((c: any) => c.id === relationship.sourceId);
+                      const target = characters.find((c: any) => c.id === relationship.targetId);
+                      const relType = relationshipTypes.find((t: any) => t.id === relationship.typeId);
+                      
+                      if (!source || !target || !relType) return null;
+                      
+                      return (
+                        <div key={relationship.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
+                          <div className="flex items-center">
+                            <strong className="mr-2">{source.name}</strong>
+                            <span 
+                              className="px-2 py-0.5 rounded text-xs text-white mx-2"
+                              style={{ backgroundColor: relType.color }}
+                            >
+                              {relType.name}
+                            </span>
+                            <strong>{target.name}</strong>
+                            {relationship.description && (
+                              <span className="ml-2 text-sm text-gray-500">
+                                - {relationship.description}
+                              </span>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-gray-500 hover:text-red-500"
+                            onClick={() => handleRelationshipDelete(relationship.id)}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+            
             {/* Relationship Graph */}
             {!selectedNovelId ? (
               <Card>
@@ -291,13 +356,14 @@ export default function RelationshipsPage() {
           <RelationshipForm 
             novelId={parseInt(selectedNovelId)}
             characters={characters}
+            relationships={relationships}
             relationshipTypes={relationshipTypes}
             onSuccess={() => {
               setIsAddRelationshipModalOpen(false);
               queryClient.invalidateQueries({ queryKey: [`/api/novels/${selectedNovelId}/relationships`] });
               toast({
-                title: "Relationship added",
-                description: "Character relationship has been successfully added",
+                title: "关系已添加",
+                description: "角色关系已成功添加",
               });
             }}
           />

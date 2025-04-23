@@ -5,6 +5,7 @@ import { insertRelationshipSchema, Character, RelationshipType } from "@shared/s
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { 
   Form, 
@@ -33,6 +34,7 @@ interface RelationshipFormProps {
   initialData?: Partial<RelationshipFormValues>;
   novelId: number;
   characters: Character[];
+  relationships: any[];
   relationshipTypes: RelationshipType[];
   onSuccess?: () => void;
 }
@@ -41,6 +43,7 @@ export default function RelationshipForm({
   initialData,
   novelId,
   characters,
+  relationships,
   relationshipTypes,
   onSuccess 
 }: RelationshipFormProps) {
@@ -62,6 +65,43 @@ export default function RelationshipForm({
   const sourceId = form.watch("sourceId");
   const targetId = form.watch("targetId");
   const typeId = form.watch("typeId");
+  
+  // 获取已经与源角色有关系的角色 ID 列表
+  const getRelatedCharacterIds = (characterId?: number) => {
+    if (!characterId) return [];
+    
+    return relationships
+      .filter(rel => 
+        rel.sourceId === characterId || rel.targetId === characterId
+      )
+      .map(rel => rel.sourceId === characterId ? rel.targetId : rel.sourceId);
+  };
+  
+  // 获取已与源角色有关系的目标角色 ID 列表
+  const relatedCharacterIds = useMemo(() => {
+    return sourceId ? getRelatedCharacterIds(sourceId) : [];
+  }, [sourceId, relationships]);
+  
+  // 使用useEffect检查关系是否存在，避免无限渲染
+  useEffect(() => {
+    if (sourceId && targetId) {
+      // 检查选定的两个角色之间是否已经存在关系
+      const relationshipExists = relationships.some(rel =>
+        (rel.sourceId === sourceId && rel.targetId === targetId) ||
+        (rel.sourceId === targetId && rel.targetId === sourceId)
+      );
+      
+      if (relationshipExists) {
+        form.setError("targetId", {
+          type: "manual",
+          message: "这两个角色之间已经存在关系"
+        });
+      } else {
+        // 如果选择了新的角色组合，清除错误
+        form.clearErrors("targetId");
+      }
+    }
+  }, [sourceId, targetId, form, relationships]);
   
   // Handle form submission
   const mutation = useMutation({
@@ -86,6 +126,21 @@ export default function RelationshipForm({
   });
   
   function onSubmit(values: RelationshipFormValues) {
+    // 提交前再次检查是否已存在关系
+    const existingRelationship = relationships.find(rel =>
+      (rel.sourceId === values.sourceId && rel.targetId === values.targetId) ||
+      (rel.sourceId === values.targetId && rel.targetId === values.sourceId)
+    );
+    
+    if (existingRelationship) {
+      toast({
+        title: "关系已存在",
+        description: "这两个角色之间已经存在关系",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     mutation.mutate(values);
   }
   
@@ -166,26 +221,34 @@ export default function RelationshipForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {characters.map((character) => (
-                    <SelectItem 
-                      key={character.id} 
-                      value={character.id.toString()}
-                      disabled={character.id === sourceId}
-                    >
-                      <div className="flex items-center">
-                        <Avatar className="h-6 w-6 mr-2">
-                          {character.avatar ? (
-                            <AvatarImage src={character.avatar} alt={character.name} />
-                          ) : (
-                            <AvatarFallback className="text-xs">
-                              {character.name.substring(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          )}
-                        </Avatar>
-                        {character.name}
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {characters.map((character) => {
+                    // 判断此角色是否已与源角色有关系
+                    const isRelated = relatedCharacterIds.includes(character.id);
+                    
+                    return (
+                      <SelectItem 
+                        key={character.id} 
+                        value={character.id.toString()}
+                        disabled={character.id === sourceId || isRelated}
+                      >
+                        <div className="flex items-center">
+                          <Avatar className="h-6 w-6 mr-2">
+                            {character.avatar ? (
+                              <AvatarImage src={character.avatar} alt={character.name} />
+                            ) : (
+                              <AvatarFallback className="text-xs">
+                                {character.name.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
+                          <span className={isRelated ? "text-gray-400" : ""}>
+                            {character.name}
+                            {isRelated && " (已有关系)"}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
               <FormMessage />
