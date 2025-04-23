@@ -575,12 +575,22 @@ const GraphVisualization: React.FC<GraphProps> = ({
     if (!container) return;
 
     if (!isFullscreen) {
+      // 支持不同浏览器的全屏 API
       if (container.requestFullscreen) {
         container.requestFullscreen();
+      } else if ((container as any).webkitRequestFullscreen) { // Safari
+        (container as any).webkitRequestFullscreen();
+      } else if ((container as any).msRequestFullscreen) { // IE11
+        (container as any).msRequestFullscreen();
       }
     } else {
+      // 支持不同浏览器的退出全屏 API
       if (document.exitFullscreen) {
         document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) { // Safari
+        (document as any).webkitExitFullscreen();
+      } else if ((document as any).msExitFullscreen) { // IE11
+        (document as any).msExitFullscreen();
       }
     }
   };
@@ -588,11 +598,24 @@ const GraphVisualization: React.FC<GraphProps> = ({
   // 监听全屏状态变化
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      // 支持不同浏览器的全屏状态检测
+      const isFullscreenNow = !!(document.fullscreenElement || 
+                              (document as any).webkitFullscreenElement || 
+                              (document as any).msFullscreenElement);
+      setIsFullscreen(isFullscreenNow);
     };
 
+    // 添加各种浏览器的全屏事件监听
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+    
+    return () => {
+      // 移除监听器
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('msfullscreenchange', handleFullscreenChange);
+    };
   }, []);
 
   if (isLoading) {
@@ -607,7 +630,15 @@ const GraphVisualization: React.FC<GraphProps> = ({
     <div 
       ref={containerRef}
       className="w-full h-[500px] bg-gray-50 relative"
-      style={{ height: isFullscreen ? '100vh' : '500px' }}
+      style={{ 
+        height: isFullscreen ? '100vh' : '500px',
+        // 确保全屏时有正确的宽度，并覆盖浏览器界面
+        width: isFullscreen ? '100vw' : '100%',
+        position: isFullscreen ? 'fixed' : 'relative',
+        top: isFullscreen ? 0 : 'auto',
+        left: isFullscreen ? 0 : 'auto',
+        zIndex: isFullscreen ? 9999 : 'auto',
+      }}
     >
       <svg
         ref={svgRef}

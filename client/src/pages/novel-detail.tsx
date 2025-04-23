@@ -439,6 +439,8 @@ export default function NovelDetail() {
               setIsEditNovelModalOpen(false);
               // 重新获取小说数据以更新UI
               queryClient.invalidateQueries({ queryKey: [`/api/novels/${params?.id}`] });
+              // 同时刷新小说列表，确保其他页面引用的小说名称也能更新
+              queryClient.invalidateQueries({ queryKey: ["/api/novels"] });
               toast({
                 title: "小说已更新",
                 description: "您的小说已成功更新",
