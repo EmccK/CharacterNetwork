@@ -117,8 +117,25 @@ export class DrizzleStorage implements IStorage {
   }
 
   async createNovel(novel: InsertNovel): Promise<Novel> {
-    const result = await db.insert(novels).values(novel).returning();
-    return result[0];
+    console.log(`[数据库操作] 开始创建小说:`, {
+      title: novel.title,
+      bookInfoId: novel.bookInfoId
+    });
+    
+    // 确保 bookInfoId 是有效值
+    const insertData = { ...novel };
+    if (!insertData.bookInfoId) {
+      console.warn(`[数据库操作] 警告: 创建小说时 bookInfoId 无效，可能导致关联丢失`);
+    }
+    
+    try {
+      const result = await db.insert(novels).values(insertData).returning();
+      console.log(`[数据库操作] 小说创建成功: ID=${result[0].id}, bookInfoId=${result[0].bookInfoId}`);
+      return result[0];
+    } catch (error) {
+      console.error(`[数据库操作] 创建小说失败:`, error);
+      throw error;
+    }
   }
 
   async updateNovel(id: number, novelData: Partial<Novel>): Promise<Novel | undefined> {
@@ -359,6 +376,47 @@ export class DrizzleStorage implements IStorage {
 
   // 扩展小说操作
   async getNovelsByBookInfoId(bookInfoId: number): Promise<Novel[]> {
-    return await db.select().from(novels).where(eq(novels.bookInfoId, bookInfoId));
+    // 现在可以直接使用模式了，因为已在schema中整合了定义
+    console.log(`[数据库操作] 开始查询书籍ID为${bookInfoId}的小说`);
+    
+    try {
+      // 执行查询
+      const query = db.select().from(novels).where(eq(novels.bookInfoId, bookInfoId));
+      console.log(`[数据库操作] 执行查询: ${JSON.stringify(query.toSQL())}`);
+      
+      const results = await query;
+      console.log(`[数据库操作] 查询结果数量: ${results.length}`);
+      return results;
+    } catch (error) {
+      console.error(`[数据库操作] 查询时出错:`, error);
+      
+      // 如果刚才的查询失败，尝试使用原始方式SQL查询
+      try {
+        console.log(`[数据库操作] 尝试使用原始SQL查询方式`);
+        const { rows } = await pool.query(
+          'SELECT * FROM novels WHERE book_info_id = $1', 
+          [bookInfoId]
+        );
+        
+        console.log(`[数据库操作] 原始查询结果数量: ${rows.length}`);
+        
+        // 转换字段名称为驼峰命名
+        return rows.map(row => ({
+          id: row.id,
+          title: row.title,
+          description: row.description,
+          coverImage: row.cover_image,
+          genre: row.genre,
+          status: row.status,
+          userId: row.user_id,
+          bookInfoId: row.book_info_id,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at
+        }));
+      } catch (sqlError) {
+        console.error(`[数据库操作] 原始查询也失败:`, sqlError);
+        return [];
+      }
+    }
   }
 }

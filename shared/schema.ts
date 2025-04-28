@@ -35,6 +35,7 @@ export const novels = pgTable("novels", {
   genre: text("genre"),
   status: text("status").default("In Progress"),
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  bookInfoId: integer("book_info_id").references(() => bookInfos.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -89,6 +90,7 @@ export const insertNovelSchema = createInsertSchema(novels).pick({
   genre: true,
   status: true,
   userId: true,
+  bookInfoId: true,
 });
 
 export const insertCharacterSchema = createInsertSchema(characters).pick({
@@ -149,19 +151,8 @@ export const bookInfos = pgTable("book_infos", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Novel 表新增 bookInfoId 字段，关联到书籍信息
-export const novelsExtended = pgTable("novels", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description"),
-  coverImage: text("cover_image"),
-  genre: text("genre"),
-  status: text("status").default("In Progress"),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  bookInfoId: integer("book_info_id").references(() => bookInfos.id),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+// 提示: novelsExtended 定义已被移除，合并到 novels 表中
+// bookInfoId 字段已直接添加到 novels 表定义中
 
 // 书籍信息插入schema
 export const insertBookInfoSchema = createInsertSchema(bookInfos).omit({

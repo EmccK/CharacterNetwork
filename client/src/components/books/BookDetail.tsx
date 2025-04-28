@@ -12,6 +12,12 @@ interface BookDetailProps {
   onBack: () => void;
 }
 
+interface ErrorResponseData {
+  message: string;
+  existingNovelId?: number;
+  details?: string;
+}
+
 // 直接从搜索结果创建小说的API请求函数
 const createNovelFromSearchBook = async (book: BookInfo): Promise<any> => {
   try {
@@ -55,7 +61,11 @@ const createNovelFromSearchBook = async (book: BookInfo): Promise<any> => {
       const errorData = await response.json();
       console.error('请求失败:', response.status, response.statusText);
       console.error('创建小说失败响应:', errorData);
-      throw new Error(errorData.message || '创建小说失败');
+      
+      // 创建自定义错误对象，包含响应数据
+      const error: any = new Error(errorData.message || '创建小说失败');
+      error.response = { data: errorData };
+      throw error;
     }
 
     const novel = await response.json();

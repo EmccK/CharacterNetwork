@@ -474,8 +474,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
                             .json({ message: "获取外部书籍信息失败" });
                     }
                 }
+                
+                // 检查当前用户是否已经使用此书创建过小说
+                try {
+                  // 查询已存在的小说
+                  const existingNovels = await storage.getNovelsByBookInfoId(bookInfo.id);
+                  console.log(`[路由] 查询到 ${existingNovels.length} 部书籍ID = ${bookInfo.id} 的小说`);
+                  
+                  // 过滤是否存在当前用户创建的小说
+                  const currentUserId = req.user!.id;
+                  console.log(`[路由] 当前用户ID: ${currentUserId}`);
+                  
+                  const userExistingNovel = existingNovels.find(novel => {
+                    console.log(`[路由] 比较小说 userId: ${novel.userId} vs 当前用户ID: ${currentUserId}`);
+                    return novel.userId === currentUserId;
+                  });
+                  
+                  if (userExistingNovel) {
+                      console.log(`[路由] 用户已经用此书创建过小说，ID: ${userExistingNovel.id}`);
+                      return res.status(400).json({
+                          message: "您已经用《" + bookInfo.title + "》创建过小说",
+                          existingNovelId: userExistingNovel.id
+                      });
+                  } else {
+                      console.log(`[路由] 未找到用户 ${currentUserId} 用此书创建的小说，可以继续创建`);
+                  }
+                } catch (error) {
+                  console.error("查询已有小说时出错:", error);
+                  // 如果查询失败，我们就不做此检查，继续创建小说
+                }
 
-                // 从书籍信息创建小说
                 const novelData = {
                     title: bookInfo.title,
                     description: bookInfo.description || "",
@@ -487,11 +515,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                             : "",
                     status: req.body.status || "In Progress",
                     userId: req.user!.id,
-                    bookInfoId: bookInfo.id, // 使用内部数据库 ID
+                    bookInfoId: bookInfo.id // 必须设置 bookInfoId
                 };
 
-                console.log("使用书籍信息创建小说:", {
+                console.log("[路由] 使用书籍信息创建小说:", {
                     bookId: bookInfo.id,
+                    bookInfoId: novelData.bookInfoId, // 若干代码中也使用了 bookId 这个名称，这里证实清楚
                     title: novelData.title,
                     userId: novelData.userId,
                 });
@@ -506,6 +535,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
                         message: "Invalid novel data",
                         errors: validationResult.error.format(),
                     });
+                }
+
+                console.log("[路由] 获取到的验证数据:", validationResult.data);
+                // 再次确认 bookInfoId 存在
+                if (!validationResult.data.bookInfoId) {
+                    console.warn("[路由] 警告: 验证后的 bookInfoId 为空，尝试手动设置");
+                    validationResult.data.bookInfoId = bookInfo.id;
                 }
 
                 const novel = await storage.createNovel(validationResult.data);
@@ -567,13 +603,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
                         existingBook.id
                     );
                     bookInfo = existingBook;
+                    
+                    // 检查当前用户是否已经使用此书创建过小说
+                    try {
+                      // 查询已存在的小说
+                      const existingNovels = await storage.getNovelsByBookInfoId(bookInfo.id);
+                      console.log(`[路由] 查询到 ${existingNovels.length} 部书籍ID = ${bookInfo.id} 的小说`);
+                      
+                      // 过滤是否存在当前用户创建的小说
+                      const currentUserId = req.user!.id;
+                      console.log(`[路由] 当前用户ID: ${currentUserId}`);
+                      
+                      const userExistingNovel = existingNovels.find(novel => {
+                      console.log(`[路由] 比较小说 userId: ${novel.userId} vs 当前用户ID: ${currentUserId}`);
+                    return novel.userId === currentUserId;
+                  });
+                  
+                  if (userExistingNovel) {
+                      console.log(`[路由] 用户已经用此书创建过小说，ID: ${userExistingNovel.id}`);
+                      return res.status(400).json({
+                          message: "您已经用《" + bookInfo.title + "》创建过小说",
+                          existingNovelId: userExistingNovel.id
+                      });
+                  } else {
+                      console.log(`[路由] 未找到用户 ${currentUserId} 用此书创建的小说，可以继续创建`);
+                  }
+                    } catch (error) {
+                      console.error("查询已有小说时出错:", error);
+                      // 如果查询失败，我们就不做此检查，继续创建小说
+                    }
                 } else {
                     console.log("创建新的书籍信息");
                     bookInfo = await storage.createBookInfo(insertBookData);
                     console.log("新书籍信息创建成功:", bookInfo.id);
                 }
 
-                // 从书籍信息创建小说
                 const novelData = {
                     title: bookInfo.title,
                     description: bookInfo.description || "",
@@ -585,11 +649,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                             : "",
                     status: req.body.status || "In Progress",
                     userId: req.user!.id,
-                    bookInfoId: bookInfo.id, // 使用内部数据库 ID
+                    bookInfoId: bookInfo.id // 必须设置 bookInfoId
                 };
 
-                console.log("使用书籍信息创建小说:", {
+                console.log("[路由] 使用书籍信息创建小说:", {
                     bookId: bookInfo.id,
+                    bookInfoId: novelData.bookInfoId, // 若干代码中也使用了 bookId 这个名称，这里证实清楚
                     title: novelData.title,
                     userId: novelData.userId,
                 });
@@ -606,6 +671,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
                             message: "Invalid novel data",
                             errors: validationResult.error.format(),
                         });
+                }
+
+                console.log("[路由] 获取到的验证数据:", validationResult.data);
+                // 再次确认 bookInfoId 存在
+                if (!validationResult.data.bookInfoId) {
+                    console.warn("[路由] 警告: 验证后的 bookInfoId 为空，尝试手动设置");
+                    validationResult.data.bookInfoId = bookInfo.id;
                 }
 
                 const novel = await storage.createNovel(validationResult.data);
