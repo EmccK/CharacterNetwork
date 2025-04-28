@@ -7,6 +7,7 @@ import express, {
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { searchBooks, getOrFetchBookInfo } from "./services/bookService";
+import { WEREAD_API_URL } from "./services/bookService";
 import { setupAuth } from "./auth";
 import {
     insertNovelSchema,
@@ -343,9 +344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             console.log(`代理搜索请求: ${keyword}`);
             const response = await fetch(
-                `https://weread.qq.com/api/store/search?keyword=${encodeURIComponent(
-                    keyword
-                )}`
+                `${WEREAD_API_URL}?keyword=${encodeURIComponent(keyword)}`
             );
 
             if (!response.ok) {
@@ -357,7 +356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             const data = await response.json();
             console.log(
-                `搜索结果: ${data.results ? data.results.length : 0} 个结果集`
+                `搜索结果: ${data.books ? data.books.length : 0} 本书籍`
             );
             res.json(data);
         } catch (error) {

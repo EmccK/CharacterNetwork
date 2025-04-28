@@ -17,49 +17,46 @@ const searchBooks = async (query: string): Promise<BookInfo[]> => {
   
   // 解析微信读书API的返回结果
   const data = await response.json();
-  // 只处理type为1的电子书结果
   const bookResults: BookInfo[] = [];
   
-  // 遍历结果找到type为1的电子书
-  for (const result of data.results || []) {
-    if (result.type === 1 && result.books && result.books.length > 0) {
-      // 转换微信读书格式为项目的BookInfo格式
-      for (const book of result.books) {
-        const bookInfo = book.bookInfo;
-        if (bookInfo) {
-          // 生成唯一ID
-          const id = parseInt(bookInfo.bookId);
-          
-          // 生成类别数组 - 如果有评分细节可以加入类别
-          const categories: string[] = [];
-          if (bookInfo.newRatingDetail && bookInfo.newRatingDetail.title) {
-            categories.push(bookInfo.newRatingDetail.title);
-          }
-          
-          const bookData: BookInfo = {
-            id,
-            externalId: bookInfo.bookId,
-            title: bookInfo.title,
-            author: bookInfo.author || '',
-            description: '',
-            coverImage: bookInfo.cover ? bookInfo.cover.replace('/s_', '/t6_') : '',  // 替换封面图片URL以获取更高分辨率图片
-            publishedDate: '',
-            publisher: '',
-            isbn: '',
-            pageCount: 0,
-            categories,
-            language: '',
-            createdAt: new Date(),
-            updatedAt: new Date()
-          };
-          
-          // 添加额外属性，评分等
-          (bookData as any).rating = bookInfo.newRating;
-          (bookData as any).ratingCount = bookInfo.newRatingCount;
-          (bookData as any).payType = bookInfo.payType;
-          
-          bookResults.push(bookData);
+  // 直接处理新API返回的books数组
+  if (data.books && data.books.length > 0) {
+    for (const book of data.books) {
+      const bookInfo = book.bookInfo;
+      if (bookInfo) {
+        // 生成唯一ID
+        const id = parseInt(bookInfo.bookId);
+        
+        // 生成类别数组 - 如果有评分细节可以加入类别
+        const categories: string[] = [];
+        if (bookInfo.newRatingDetail && bookInfo.newRatingDetail.title) {
+          categories.push(bookInfo.newRatingDetail.title);
         }
+        
+        const bookData: BookInfo = {
+          id,
+          externalId: bookInfo.bookId,
+          title: bookInfo.title,
+          author: bookInfo.author || '',
+          description: bookInfo.intro || '',
+          coverImage: bookInfo.cover ? bookInfo.cover.replace('/s_', '/t6_') : '',  // 替换封面图片URL以获取更高分辨率图片
+          publishedDate: '',
+          publisher: bookInfo.publisher || '',
+          isbn: '',
+          pageCount: 0,
+          categories,
+          language: '',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        
+        // 添加额外属性，评分等
+        (bookData as any).rating = bookInfo.newRating;
+        (bookData as any).ratingCount = bookInfo.newRatingCount;
+        (bookData as any).payType = bookInfo.payType;
+        (bookData as any).readingCount = book.readingCount || 0;
+        
+        bookResults.push(bookData);
       }
     }
   }

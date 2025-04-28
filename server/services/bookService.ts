@@ -4,6 +4,9 @@
 import { storage } from '../storage';
 import { BookInfo, InsertBookInfo } from '@shared/schema';
 
+// 统一的微信读书API URL
+export const WEREAD_API_URL = 'https://weread.qq.com/web/search/global';
+
 interface WereadBookInfo {
   bookId: string;
   title: string;
@@ -15,6 +18,8 @@ interface WereadBookInfo {
   soldout: number;
   newRating: number;
   newRatingCount: number;
+  intro?: string;  // 新增字段：书籍介绍
+  publisher?: string;  // 新增字段：出版社
   newRatingDetail?: {
     title: string;
   };
@@ -30,7 +35,7 @@ export async function searchBooksFromAPI(query: string): Promise<WereadBookInfo[
     // 对查询参数进行URL编码
     // 在后端中可以直接访问微信读书API，不会有CORS问题
     const encodedQuery = encodeURIComponent(query);
-    const response = await fetch(`https://weread.qq.com/api/store/search?keyword=${encodedQuery}`);
+    const response = await fetch(`${WEREAD_API_URL}?keyword=${encodedQuery}`);
 
     if (!response.ok) {
       throw new Error(`微信读书API错误: ${response.status}`);
@@ -39,14 +44,11 @@ export async function searchBooksFromAPI(query: string): Promise<WereadBookInfo[
     const data = await response.json();
     const books: WereadBookInfo[] = [];
     
-    // 只处理type为1的电子书结果
-    for (const result of data.results || []) {
-      if (result.type === 1 && result.books && result.books.length > 0) {
-        // 提取书籍信息
-        for (const book of result.books) {
-          if (book.bookInfo) {
-            books.push(book.bookInfo);
-          }
+    // 直接处理新的books数组
+    if (data.books && data.books.length > 0) {
+      for (const book of data.books) {
+        if (book.bookInfo) {
+          books.push(book.bookInfo);
         }
       }
     }
@@ -54,44 +56,6 @@ export async function searchBooksFromAPI(query: string): Promise<WereadBookInfo[
     return books;
   } catch (error) {
     console.error('搜索书籍时出错:', error);
-    throw error;
-  }
-}
-
-/**
- * 从微信读书API获取详细书籍信息
- * @param bookId 微信读书的bookId
- * @returns 详细的书籍信息
- */
-export async function getBookDetailsFromAPI(bookId: string): Promise<WereadBookInfo | null> {
-  try {
-    // 先通过搜索API获取详细信息
-    // 在后端中可以直接访问微信读书API，不会有CORS问题
-    const response = await fetch(`https://weread.qq.com/api/store/search?keyword=${encodeURIComponent(bookId)}`);
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null;
-      }
-      throw new Error(`微信读书API错误: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    // 遍历结果找到匹配的书籍
-    for (const result of data.results || []) {
-      if (result.type === 1 && result.books && result.books.length > 0) {
-        for (const book of result.books) {
-          if (book.bookInfo && book.bookInfo.bookId === bookId) {
-            return book.bookInfo;
-          }
-        }
-      }
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('获取书籍详情时出错:', error);
     throw error;
   }
 }
@@ -112,10 +76,10 @@ export function convertToBookInfo(bookData: WereadBookInfo): InsertBookInfo {
     externalId: bookData.bookId,
     title: bookData.title || '',
     author: bookData.author || '',
-    description: '',
+    description: bookData.intro || '',  // 使用新API返回的intro字段
     coverImage: bookData.cover ? bookData.cover.replace('/s_', '/t6_') : '',
     publishedDate: '',
-    publisher: '',
+    publisher: bookData.publisher || '',  // 使用新API返回的publisher字段
     isbn: '',
     pageCount: 0,
     categories,
@@ -175,14 +139,37 @@ export async function getOrFetchBookInfo(externalId: string): Promise<BookInfo |
     return existingBook;
   }
   
-  // 从API获取
-  const bookDetails = await getBookDetailsFromAPI(externalId);
-  
-  if (!bookDetails) {
+  // 直接使用搜索API查找特定书籍
+  try {
+    const response = await fetch(`${WEREAD_API_URL}?keyword=${encodeURIComponent(externalId)}`);
+
+    if (!response.ok) {
+      console.error(`微信读书API错误: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    
+    // 从搜索结果中找到匹配的书籍
+    let bookDetails = null;
+    if (data.books && data.books.length > 0) {
+      for (const book of data.books) {
+        if (book.bookInfo && book.bookInfo.bookId === externalId) {
+          bookDetails = book.bookInfo;
+          break;
+        }
+      }
+    }
+    
+    if (!bookDetails) {
+      return null;
+    }
+    
+    // 转换并保存到数据库
+    const bookInfo = convertToBookInfo(bookDetails);
+    return await storage.createBookInfo(bookInfo);
+  } catch (error) {
+    console.error('获取书籍信息时出错:', error);
     return null;
   }
-  
-  // 转换并保存到数据库
-  const bookInfo = convertToBookInfo(bookDetails);
-  return await storage.createBookInfo(bookInfo);
 }
