@@ -127,21 +127,39 @@ export async function searchBooks(query: string): Promise<BookInfo[]> {
 }
 
 /**
- * 根据外部ID获取书籍信息，如果数据库中不存在则从API获取并保存
- * @param externalId 外部API的书籍ID
+ * 根据外部ID获取书籍信息，如果数据库中不存在则从微信读书API获取并保存
+ * @param externalId 外部API的书籍ID，可能是字符串或数字
  * @returns 书籍信息
  */
-export async function getOrFetchBookInfo(externalId: string): Promise<BookInfo | null> {
+export async function getOrFetchBookInfo(externalId: string | number): Promise<BookInfo | null> {
+  // 统一处理外部ID为字符串类型
+  if (externalId === null || externalId === undefined) {
+    console.error('获取书籍信息失败: 外部ID为空');
+    return null;
+  }
+  
+  // 将任何类型都转换为字符串
+  const idString = String(externalId).trim();
+  
+  if (!idString) {
+    console.error('获取书籍信息失败: 外部ID转换后为空字符串');
+    return null;
+  }
+  
+  console.log(`获取书籍信息, 外部ID: "${idString}", 原始类型: ${typeof externalId}`);
+  
   // 先从数据库中查询
-  const existingBook = await storage.getBookInfoByExternalId(externalId);
+  const existingBook = await storage.getBookInfoByExternalId(idString);
   
   if (existingBook) {
+    console.log(`书籍信息已存在于数据库, ID: ${existingBook.id}`);
     return existingBook;
   }
   
   // 直接使用搜索API查找特定书籍
   try {
-    const response = await fetch(`${WEREAD_API_URL}?keyword=${encodeURIComponent(externalId)}`);
+    console.log(`从微信读书API获取书籍信息: ${idString}`);
+    const response = await fetch(`${WEREAD_API_URL}?keyword=${encodeURIComponent(idString)}`);
 
     if (!response.ok) {
       console.error(`微信读书API错误: ${response.status}`);
@@ -154,19 +172,23 @@ export async function getOrFetchBookInfo(externalId: string): Promise<BookInfo |
     let bookDetails = null;
     if (data.books && data.books.length > 0) {
       for (const book of data.books) {
-        if (book.bookInfo && book.bookInfo.bookId === externalId) {
+        if (book.bookInfo && String(book.bookInfo.bookId) === idString) {
+          // 使用字符串比较确保类型一致
           bookDetails = book.bookInfo;
+          console.log(`在API结果中找到匹配的书籍: ${book.bookInfo.title}`);
           break;
         }
       }
     }
     
     if (!bookDetails) {
+      console.log(`未在API结果中找到匹配的书籍 ID: ${idString}`);
       return null;
     }
     
     // 转换并保存到数据库
     const bookInfo = convertToBookInfo(bookDetails);
+    console.log(`准备将书籍信息保存到数据库: ${bookInfo.title}, 外部ID: ${bookInfo.externalId}`);
     return await storage.createBookInfo(bookInfo);
   } catch (error) {
     console.error('获取书籍信息时出错:', error);

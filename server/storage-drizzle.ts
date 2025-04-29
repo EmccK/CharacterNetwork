@@ -122,19 +122,30 @@ export class DrizzleStorage implements IStorage {
       bookInfoId: novel.bookInfoId
     });
     
-    // 确保 bookInfoId 是有效值
+    // 创建一个新对象来保存处理后的数据
     const insertData = { ...novel };
     
-    if (!insertData.bookInfoId) {
-      console.warn(`[数据库操作] 警告: 创建小说时 bookInfoId 无效，可能导致关联丢失`);
+    // 统一处理 bookInfoId
+    if (insertData.bookInfoId !== undefined && insertData.bookInfoId !== null) {
+      // 确保 bookInfoId 是数字类型
+      const numericId = Number(insertData.bookInfoId);
+      
+      if (!isNaN(numericId) && numericId > 0) {
+        // 只有当转换结果是有效的正数时才设置
+        insertData.bookInfoId = numericId;
+        console.log(`[数据库操作] bookInfoId 有效，已转换为数字: ${numericId}`);
+      } else {
+        console.warn(`[数据库操作] 警告: bookInfoId 非有效数字 (${insertData.bookInfoId})，设置为 null`);
+        insertData.bookInfoId = null; // 无效值设为null而不是保留错误的值
+      }
     } else {
-      // 再次确认 bookInfoId 是有效的数字
-      insertData.bookInfoId = parseInt(String(insertData.bookInfoId), 10);
-      console.log(`[数据库操作] 已将 bookInfoId 转换为数字: ${insertData.bookInfoId}`);
+      console.log(`[数据库操作] bookInfoId 未提供或为null`);
+      // 确保明确设置为null而不是undefined
+      insertData.bookInfoId = null;
     }
     
     try {
-      // 给values放入明确的插入数据
+      // 给values放入明确处理过的插入数据
       console.log(`[数据库操作] 准备插入数据:`, {
         title: insertData.title,
         bookInfoId: insertData.bookInfoId,
@@ -259,27 +270,31 @@ export class DrizzleStorage implements IStorage {
     return results.length > 0 ? results[0] : undefined;
   }
 
-  async getBookInfoByExternalId(externalId: string): Promise<BookInfo | undefined> {
-    // 确保外部ID是字符串
-    const idString = externalId ? externalId.toString() : '';
+  async getBookInfoByExternalId(externalId: string | number | null | undefined): Promise<BookInfo | undefined> {
+    // 注意: 参数类型改为更广泛的类型，以适应不同的调用方式
     
-    if (!idString) {
-      console.error('[数据库操作] getBookInfoByExternalId: 无效的外部ID');
+    // 统一处理成字符串类型
+    if (externalId === null || externalId === undefined) {
+      console.error('[数据库操作] getBookInfoByExternalId: 传入的外部ID为空');
       return undefined;
     }
     
-    console.log(`[数据库操作] 查询外部ID: "${idString}", 类型: ${typeof idString}`);
+    // 将任何类型都转换为字符串
+    const idString = String(externalId).trim();
     
-    try {
-      // 检查SQL查询
-      const sqlQuery = `SELECT * FROM book_infos WHERE external_id = '${idString}' LIMIT 1`;
-      console.log(`[数据库操作] 执行SQL查询: ${sqlQuery}`);
-      
+    if (!idString) {
+      console.error('[数据库操作] getBookInfoByExternalId: 转换后的外部ID为空字符串');
+      return undefined;
+    }
+    
+    console.log(`[数据库操作] 查询外部ID: "${idString}", 原始类型: ${typeof externalId}, 转换后类型: ${typeof idString}`);
+    
+    try {      
+      // 使用统一的字符串形式进行查询
       const results = await db.select().from(bookInfos).where(eq(bookInfos.externalId, idString)).limit(1);
-      console.log(`[数据库操作] 查询结果: ${results.length > 0 ? '有结果' : '无结果'}`);
       
       if (results.length > 0) {
-        console.log(`[数据库操作] 找到书籍信息: ID=${results[0].id}, 标题=${results[0].title}`);
+        console.log(`[数据库操作] 找到书籍信息: ID=${results[0].id}, 标题=${results[0].title}, 外部ID=${results[0].externalId}`);
       } else {
         console.log(`[数据库操作] 未找到外部ID为"${idString}"的书籍信息`);
       }
@@ -319,23 +334,30 @@ export class DrizzleStorage implements IStorage {
   }
 
   async createBookInfo(bookInfo: InsertBookInfo): Promise<BookInfo> {
-    // 确保 externalId 是字符串
-    const externalId = bookInfo.externalId ? bookInfo.externalId.toString() : '';
-    if (!externalId) {
-      console.error('创建书籍信息失败: externalId不能为空');
+    // 统一处理 externalId，确保是字符串类型
+    if (bookInfo.externalId === undefined || bookInfo.externalId === null) {
+      console.error('[数据库操作] 创建书籍信息失败: externalId不能为null或undefined');
       throw new Error('创建书籍信息时externalId不能为空');
     }
     
-    console.log(`[数据库操作] 开始创建书籍信息，外部ID: "${externalId}", 标题: "${bookInfo.title}"`);
+    // 使用String()来统一处理为字符串
+    const externalId = String(bookInfo.externalId).trim();
     
-    // 如果已存在相同的 externalId，返回现有记录
+    if (!externalId) {
+      console.error('[数据库操作] 创建书籍信息失败: 处理后的externalId为空字符串');
+      throw new Error('创建书籍信息时externalId不能为空');
+    }
+    
+    console.log(`[数据库操作] 开始创建书籍信息，外部ID: "${externalId}", 标题: "${bookInfo.title}", 原始类型: ${typeof bookInfo.externalId}`);
+    
+    // 先检查是否已存在相同的 externalId
     const existing = await this.getBookInfoByExternalId(externalId);
     if (existing) {
       console.log(`[数据库操作] 书籍信息已存在，ID: ${existing.id}, 外部ID: "${existing.externalId}"`);
       return existing;
     }
     
-    // 准备数据，确保外部ID是字符串
+    // 准备数据，创建一个新对象以确保不改变原始对象
     const now = new Date();
     const bookInfoWithTimestamps = {
       ...bookInfo,
@@ -344,13 +366,45 @@ export class DrizzleStorage implements IStorage {
       updatedAt: now
     };
     
-    console.log(`[数据库操作] 以下是将插入数据库的书籍数据:`);
-    console.log(JSON.stringify(bookInfoWithTimestamps, null, 2));
+    // 统一处理categories字段，确保是数组
+    if (!Array.isArray(bookInfoWithTimestamps.categories)) {
+      if (bookInfoWithTimestamps.categories) {
+        try {
+          // 如果是字符串，尝试解析
+          if (typeof bookInfoWithTimestamps.categories === 'string') {
+            try {
+              bookInfoWithTimestamps.categories = JSON.parse(bookInfoWithTimestamps.categories as string);
+            } catch {
+              // 解析失败，转换为数组
+              bookInfoWithTimestamps.categories = [bookInfoWithTimestamps.categories as string];
+            }
+          } else {
+            // 其他类型则使用空数组
+            bookInfoWithTimestamps.categories = [];
+          }
+        } catch (err) {
+          console.warn(`[数据库操作] 警告: 处理categories时出错，使用空数组`, err);
+          bookInfoWithTimestamps.categories = [];
+        }
+      } else {
+        bookInfoWithTimestamps.categories = [];
+      }
+    }
+    
+    console.log(`[数据库操作] 准备插入书籍数据:`);
+    console.log(JSON.stringify({
+      id: 'to be generated',
+      externalId: bookInfoWithTimestamps.externalId,
+      title: bookInfoWithTimestamps.title,
+      categoriesType: typeof bookInfoWithTimestamps.categories,
+      categoriesIsArray: Array.isArray(bookInfoWithTimestamps.categories),
+      categories: bookInfoWithTimestamps.categories
+    }, null, 2));
     
     try {
       console.log(`[数据库操作] 执行插入操作...`);
       const result = await db.insert(bookInfos).values(bookInfoWithTimestamps).returning();
-      console.log(`[数据库操作] 插入成功！新书籍信息 ID: ${result[0].id}`);
+      console.log(`[数据库操作] 插入成功！新书籍信息 ID: ${result[0].id}, 外部ID: ${result[0].externalId}`);
       return result[0];
     } catch (error) {
       console.error(`[数据库操作] 插入书籍信息失败:`, error);
