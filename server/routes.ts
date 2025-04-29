@@ -517,6 +517,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     userId: req.user!.id,
                     bookInfoId: bookInfo.id // 必须设置 bookInfoId
                 };
+                
+                console.log(`[路由] 创建小说前确认bookInfoId: ${bookInfo.id}, 类型: ${typeof bookInfo.id}`);
 
                 console.log("[路由] 使用书籍信息创建小说:", {
                     bookId: bookInfo.id,
@@ -544,8 +546,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     validationResult.data.bookInfoId = bookInfo.id;
                 }
 
-                const novel = await storage.createNovel(validationResult.data);
-                console.log("小说创建成功:", novel.id);
+                // 避免仅依赖于validationResult，它可能修改了bookInfoId
+                // 创建最终确定的数据对象
+                const finalNovelData = {
+                    ...validationResult.data,
+                    bookInfoId: bookInfo.id // 强制确保bookInfoId不会丢失
+                };
+                
+                console.log(`[路由] 最终数据确认 bookInfoId=${finalNovelData.bookInfoId}`);
+                
+                const novel = await storage.createNovel(finalNovelData);
+                console.log(`小说创建成功: ID=${novel.id}, bookInfoId=${novel.bookInfoId}`);
                 res.status(201).json(novel);
             } catch (error) {
                 console.error("从书籍创建小说失败:", error);
@@ -680,8 +691,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     validationResult.data.bookInfoId = bookInfo.id;
                 }
 
-                const novel = await storage.createNovel(validationResult.data);
-                console.log("小说创建成功:", novel.id);
+                // 避免仅依赖于validationResult，它可能修改了bookInfoId
+                // 创建最终确定的数据对象
+                const finalNovelData = {
+                    ...validationResult.data,
+                    bookInfoId: bookInfo.id // 强制确保bookInfoId不会丢失
+                };
+                
+                console.log(`[路由-from-search] 最终数据确认 bookInfoId=${finalNovelData.bookInfoId}`);
+                
+                const novel = await storage.createNovel(finalNovelData);
+                console.log(`小说创建成功: ID=${novel.id}, bookInfoId=${novel.bookInfoId}`);
                 res.status(201).json(novel);
             } catch (error) {
                 console.error("从书籍创建小说失败:", error);

@@ -124,11 +124,23 @@ export class DrizzleStorage implements IStorage {
     
     // 确保 bookInfoId 是有效值
     const insertData = { ...novel };
+    
     if (!insertData.bookInfoId) {
       console.warn(`[数据库操作] 警告: 创建小说时 bookInfoId 无效，可能导致关联丢失`);
+    } else {
+      // 再次确认 bookInfoId 是有效的数字
+      insertData.bookInfoId = parseInt(String(insertData.bookInfoId), 10);
+      console.log(`[数据库操作] 已将 bookInfoId 转换为数字: ${insertData.bookInfoId}`);
     }
     
     try {
+      // 给values放入明确的插入数据
+      console.log(`[数据库操作] 准备插入数据:`, {
+        title: insertData.title,
+        bookInfoId: insertData.bookInfoId,
+        bookInfoIdType: typeof insertData.bookInfoId
+      });
+      
       const result = await db.insert(novels).values(insertData).returning();
       console.log(`[数据库操作] 小说创建成功: ID=${result[0].id}, bookInfoId=${result[0].bookInfoId}`);
       return result[0];
