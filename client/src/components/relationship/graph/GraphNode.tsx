@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import type { GraphNode as GraphNodeType } from './types';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface GraphNodeProps {
   node: GraphNodeType;
@@ -16,7 +17,9 @@ const GraphNode: React.FC<GraphNodeProps> = ({
   onNodeClick,
   onNodeMouseDown
 }) => {
-  const nodeRadius = 12; // 增加节点大小，使其更易于选中
+  const isMobile = useIsMobile();
+  // 移动设备上增大节点大小
+  const nodeRadius = isMobile ? 16 : 12; 
   const groupRef = useRef<SVGGElement>(null);
   
   const handleMouseDown = (event: React.MouseEvent) => {
@@ -29,14 +32,28 @@ const GraphNode: React.FC<GraphNodeProps> = ({
     event.stopPropagation(); // 阻止事件冒泡
     onNodeClick(node.id);
   };
+  
+  // 处理触摸事件
+  const handleTouchStart = (event: React.TouchEvent) => {
+    event.stopPropagation();
+    // 设置触摸节点ID
+    onNodeMouseDown(event as any, node.id);
+  };
+  
+  const handleTouchEnd = (event: React.TouchEvent) => {
+    event.stopPropagation();
+    // 触发点击事件
+    onNodeClick(node.id);
+  };
 
   // 确保节点的x和y属性存在
   const x = node.x !== undefined ? node.x : 0;
   const y = node.y !== undefined ? node.y : 0;
   
   // 根据节点连接度对应的大小
-  const sizeMultiplier = Math.min(1.5, 1 + (node.degree * 0.1));
-  const finalRadius = nodeRadius * sizeMultiplier;
+  const sizeMultiplier = Math.min(1.6, 1 + (node.degree * 0.1));
+  // 移动设备上增大倍数
+  const finalRadius = nodeRadius * sizeMultiplier * (isMobile ? 1.2 : 1);
 
   return (
     <g 
@@ -44,6 +61,8 @@ const GraphNode: React.FC<GraphNodeProps> = ({
       transform={`translate(${x},${y})`}
       onClick={handleClick}
       onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       className="cursor-move node-group"
       style={{ pointerEvents: 'all' }} // 确保元素可以接收鼠标事件
       data-id={String(node.id)} // 添加数据属性，确保是字符串类型
@@ -86,7 +105,7 @@ const GraphNode: React.FC<GraphNodeProps> = ({
       
       {/* 透明的更大点击区域 */}
       <circle
-        r={finalRadius + 14}
+        r={finalRadius + (isMobile ? 20 : 14)}
         fill="transparent"
         style={{ pointerEvents: 'all' }}
         className="cursor-move"

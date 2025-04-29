@@ -4,8 +4,9 @@ import type { GraphProps, GraphNode, GraphLink } from './types';
 import { useGraphStore } from './graphStore';
 import GraphNodeComponent from './GraphNode';
 import GraphLinkComponent from './GraphLink';
-import { Maximize } from 'lucide-react';
+import { Maximize, ZoomIn, ZoomOut, Move } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // 创建一个可以从外部调用的引用
 export const graphVisualizationRef = {
@@ -19,6 +20,7 @@ const GraphVisualization: React.FC<GraphProps> = ({
   isLoading = false,
   onNodeSelect
 }) => {
+  const isMobile = useIsMobile();
   const { 
     nodes, 
     links, 
@@ -39,9 +41,15 @@ const GraphVisualization: React.FC<GraphProps> = ({
   const [activelyDragging, setActivelyDragging] = useState(false);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [interactionMode, setInteractionMode] = useState<'default' | 'pan' | 'zoom'>('default'); // 移动设备交互模式
   const nodesMapRef = useRef(new Map<number, GraphNode>());
   const isDraggingRef = useRef(false);
   const draggedNodeRef = useRef<number | null>(null);
+  
+  // 触摸事件相关状态
+  const touchStartRef = useRef<{ x: number, y: number, time: number } | null>(null);
+  const lastTouchRef = useRef<{ x: number, y: number } | null>(null);
+  const touchDistanceRef = useRef<number | null>(null);
 
   // 更新节点映射以便快速访问
   useEffect(() => {
@@ -444,6 +452,173 @@ const GraphVisualization: React.FC<GraphProps> = ({
     };
   }, [transform.scale, transform.x, transform.y]);
 
+  // 计算两个触摸点之间的距离
+  const getTouchDistance = (touch1: Touch, touch2: Touch): number => {
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  // 处理触摸开始事件
+  const handleTouchStart = (event: React.TouchEvent) => {
+    event.preventDefault();
+    
+    if (event.touches.length === 1) {
+      // 单指触摸 - 记录起始位置和时间
+      const touch = event.touches[0];
+      touchStartRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+        time: Date.now(),
+      };
+      lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
+      
+      // 检查是否触摸到了节点
+      if (draggedNodeRef.current === null) {
+        // 没有拖动节点时默认为平移模式
+        if (interactionMode === 'default' || interactionMode === 'pan') {
+          setActivelyDragging(true);
+        }
+      }
+    } else if (event.touches.length === 2) {
+      // 双指触摸 - 用于缩放
+      const touch1 = event.touches[0];
+      const touch2 = event.touches[1];
+      touchDistanceRef.current = getTouchDistance(touch1, touch2);
+      
+      // 在缩放模式下
+      if (interactionMode === 'default' || interactionMode === 'zoom') {
+        setActivelyDragging(false);
+      }
+    }
+  };
+
+  // 处理触摸移动事件
+  const handleTouchMove = (event: React.TouchEvent) => {
+    event.preventDefault();
+    
+    if (event.touches.length === 1) {
+      // 单指移动 - 用于平移或拖动节点
+      const touch = event.touches[0];
+      
+      if (draggedNodeRef.current !== null && isDraggingRef.current && simulationRef.current) {
+        // 拖动节点
+        if (!svgRef.current) return;
+        
+        const rect = svgRef.current.getBoundingClientRect();
+        const scale = transform.scale;
+        const x = (touch.clientX - rect.left - transform.x) / scale;
+        const y = (touch.clientY - rect.top - transform.y) / scale;
+        
+        // 更新节点位置
+        const node = simulationRef.current.nodes().find(n => n.id === draggedNodeRef.current);
+        if (node) {
+          node.fx = x;
+          node.fy = y;
+          simulationRef.current.alpha(0.3).restart();
+        }
+      } else if (lastTouchRef.current && (interactionMode === 'default' || interactionMode === 'pan')) {
+        // 平移视图
+        const dx = touch.clientX - lastTouchRef.current.x;
+        const dy = touch.clientY - lastTouchRef.current.y;
+        
+        setTransform(prev => ({
+          ...prev,
+          x: prev.x + dx,
+          y: prev.y + dy
+        }));
+      }
+      
+      // 更新最后触摸位置
+      lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
+    } else if (event.touches.length === 2 && touchDistanceRef.current !== null) {
+      // 双指移动 - 用于缩放
+      const touch1 = event.touches[0];
+      const touch2 = event.touches[1];
+      const newDistance = getTouchDistance(touch1, touch2);
+      
+      if (interactionMode === 'default' || interactionMode === 'zoom') {
+        // 计算缩放比例
+        const scaleFactor = newDistance / touchDistanceRef.current;
+        const newScale = Math.max(0.1, Math.min(3, transform.scale * scaleFactor));
+        
+        // 计算缩放中心点
+        const rect = svgRef.current?.getBoundingClientRect();
+        if (rect) {
+          const centerX = (touch1.clientX + touch2.clientX) / 2;
+          const centerY = (touch1.clientY + touch2.clientY) / 2;
+          
+          const mouseX = centerX - rect.left;
+          const mouseY = centerY - rect.top;
+          
+          const newX = mouseX - (mouseX - transform.x) * (newScale / transform.scale);
+          const newY = mouseY - (mouseY - transform.y) * (newScale / transform.scale);
+          
+          setTransform({
+            x: newX,
+            y: newY,
+            scale: newScale
+          });
+        }
+      }
+      
+      // 更新触摸距离
+      touchDistanceRef.current = newDistance;
+    }
+  };
+
+  // 处理触摸结束事件
+  const handleTouchEnd = (event: React.TouchEvent) => {
+    event.preventDefault();
+    
+    // 处理单指点击
+    if (touchStartRef.current && lastTouchRef.current && event.touches.length === 0) {
+      const touchEnd = {
+        x: lastTouchRef.current.x,
+        y: lastTouchRef.current.y,
+        time: Date.now(),
+      };
+      
+      // 检测是否为点击（移动距离小且时间短）
+      const dx = touchEnd.x - touchStartRef.current.x;
+      const dy = touchEnd.y - touchStartRef.current.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const duration = touchEnd.time - touchStartRef.current.time;
+      
+      if (distance < 10 && duration < 300) {
+        // 这是一个点击，但我们需要检查是否点击了节点
+        if (draggedNodeRef.current === null) {
+          // 点击了背景，取消节点选择
+          setSelectedNode(null);
+        }
+      }
+    }
+    
+    // 结束拖动状态
+    if (draggedNodeRef.current !== null && isDraggingRef.current && simulationRef.current) {
+      const node = simulationRef.current.nodes().find(n => n.id === draggedNodeRef.current);
+      if (node) {
+        // 释放节点
+        node.fx = null;
+        node.fy = null;
+      }
+      
+      // 重置拖拽状态
+      setDragging(null);
+      isDraggingRef.current = false;
+      draggedNodeRef.current = null;
+      
+      // 冷却模拟
+      simulationRef.current.alphaTarget(0);
+    }
+    
+    // 重置触摸状态
+    setActivelyDragging(false);
+    touchStartRef.current = null;
+    lastTouchRef.current = null;
+    touchDistanceRef.current = null;
+  };
+
   // 当DOM加载后应用拖拽行为
   useEffect(() => {
     if (!svgRef.current || !simulationRef.current || nodes.length === 0) return;
@@ -651,6 +826,10 @@ const GraphVisualization: React.FC<GraphProps> = ({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onContextMenu={(e) => e.preventDefault()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
         // onWheel被移到useEffect中使用原生API
       >
         <g transform={`translate(${transform.x},${transform.y}) scale(${transform.scale})`}>
@@ -678,8 +857,30 @@ const GraphVisualization: React.FC<GraphProps> = ({
         </g>
       </svg>
 
-      {/* 简化的控制区 */}
+      {/* 控制区 */}
       <div className="absolute bottom-5 right-5 flex space-x-2 justify-end z-10">
+        {isMobile && (
+          <>
+            <Button
+              onClick={() => setInteractionMode(interactionMode === 'pan' ? 'default' : 'pan')}
+              className={`rounded-full p-2 shadow-md transition-colors ${interactionMode === 'pan' ? 'bg-blue-100' : 'bg-white'}`}
+              size="icon"
+              variant="ghost"
+              title="移动模式"
+            >
+              <Move className={`w-5 h-5 ${interactionMode === 'pan' ? 'text-blue-600' : 'text-gray-500'}`} />
+            </Button>
+            <Button
+              onClick={() => setInteractionMode(interactionMode === 'zoom' ? 'default' : 'zoom')}
+              className={`rounded-full p-2 shadow-md transition-colors ${interactionMode === 'zoom' ? 'bg-blue-100' : 'bg-white'}`}
+              size="icon"
+              variant="ghost"
+              title="缩放模式"
+            >
+              <ZoomIn className={`w-5 h-5 ${interactionMode === 'zoom' ? 'text-blue-600' : 'text-gray-500'}`} />
+            </Button>
+          </>
+        )}
         <Button
           onClick={resetAndCenterView}
           className="rounded-full bg-white p-2 shadow-md hover:bg-gray-50 transition-colors"
@@ -702,10 +903,14 @@ const GraphVisualization: React.FC<GraphProps> = ({
         </Button>
       </div>
 
-      {/* 键盘快捷键提示 */}
+      {/* 操作提示 */}
       {nodes.length > 0 && (
         <div className="absolute top-2 right-5 bg-white p-2 rounded text-xs text-gray-500 opacity-60 hover:opacity-100 transition-opacity z-10">
-          空格+拖动: 平移视图 | 滚轮: 缩放 | Esc: 取消选择
+          {isMobile ? (
+            <>单指拖动: 移动视图 | 双指捕合: 缩放 | 点击节点: 选择</>
+          ) : (
+            <>空格+拖动: 平移视图 | 滚轮: 缩放 | Esc: 取消选择</>
+          )}
         </div>
       )}
 
