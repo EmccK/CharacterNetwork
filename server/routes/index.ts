@@ -8,6 +8,7 @@ import relationshipsRoutes from "./relationships";
 import genresRoutes from "./genres";
 import booksRoutes from "./books";
 import adminRoutes from "./admin";
+import wereadRoutes from "./weread";
 
 /**
  * 注册所有API路由
@@ -16,25 +17,28 @@ import adminRoutes from "./admin";
 export function registerRoutes(app: Express): void {
   // 静态文件服务
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-  
+
   // 认证相关路由 - 直接挂载到 /api 路径
   app.use("/api", authRoutes);
-  
+
   // 小说相关路由
   app.use("/api/novels", novelsRoutes);
-  
+
   // 角色相关路由
   app.use("/api/characters", charactersRoutes);
-  
+
   // 关系相关路由
   app.use("/api/relationships", relationshipsRoutes);
-  
+
   // 小说类型相关路由
   app.use("/api/genres", genresRoutes);
-  
+
   // 书籍信息相关路由
   app.use("/api/books", booksRoutes);
-  
+
   // 管理员相关路由
   app.use("/api/admin", adminRoutes);
+
+  // 微信读书API代理路由 - 不需要登录即可访问
+  app.use("/api/weread", wereadRoutes);
 }

@@ -248,7 +248,44 @@
    - `server/services/novelService.ts` - 小说相关业务逻辑 ✅
    - `server/services/characterService.ts` - 角色相关业务逻辑 ✅
    - `server/services/relationshipService.ts` - 关系相关业务逻辑 ✅
+   - `server/services/wereadService.ts` - 微信读书API相关业务逻辑 ✅
 
 3. 使用存储库模式封装数据访问： ✅
    - 将storage.ts重构为多个存储库类 ✅
    - 每个存储库负责一种资源类型的数据操作 ✅
+
+## 7. 外部API集成优化
+
+### 问题：
+- 微信读书API集成代码直接写在路由文件中
+- 缺少专门的控制器处理外部API请求
+- 错误处理不够完善
+
+### 改进步骤：
+
+#### 7.1 创建专门的微信读书API控制器 ✅
+1. 创建`server/controllers/wereadController.ts`文件： ✅
+   - 实现`proxyWereadSearch`函数处理搜索请求 ✅
+   - 添加内容类型检查，确保返回JSON数据 ✅
+   - 增强错误处理和日志记录 ✅
+
+2. 创建专门的路由文件： ✅
+   - `server/routes/weread.ts` - 微信读书API相关路由 ✅
+   - 在主路由文件中注册该路由 ✅
+
+#### 7.2 增强外部API错误处理 ✅
+1. 添加更详细的错误处理： ✅
+   - 检查响应内容类型 ✅
+   - 记录详细的错误信息 ✅
+   - 提供友好的错误消息 ✅
+
+2. 考虑添加重试机制和超时处理 ⬜
+
+#### 7.3 优化API响应处理 ✅
+1. 统一响应格式： ✅
+   - 确保所有API响应使用一致的格式 ✅
+   - 添加适当的状态码 ✅
+
+2. 添加响应数据转换： ✅
+   - 将外部API数据格式转换为应用内部格式 ✅
+   - 过滤不必要的数据字段 ✅
