@@ -1,8 +1,9 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
+import { registerRoutes } from "./routes/index";
 import { setupVite, serveStatic, log } from "./vite";
 import 'dotenv/config'; // 导入 dotenv 配置
 import { errorHandler } from './middleware/errorHandler';
+import { setupAuth } from './auth';
 
 const app = express();
 app.use(express.json());
@@ -39,9 +40,17 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  // 设置认证
+  setupAuth(app);
+  
+  // 注册路由
+  registerRoutes(app);
 
   app.use(errorHandler);
+
+  // 创建HTTP服务器
+  const { createServer } = await import('http');
+  const server = createServer(app);
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route

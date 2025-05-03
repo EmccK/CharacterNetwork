@@ -1,4 +1,6 @@
-import { Express } from "express";
+import { Express, Server } from "express";
+import express from "express";
+import path from "path";
 import authRoutes from "./auth";
 import novelsRoutes from "./novels";
 import charactersRoutes from "./characters";
@@ -12,8 +14,11 @@ import adminRoutes from "./admin";
  * @param app Express应用实例
  */
 export function registerRoutes(app: Express): void {
-  // 认证相关路由
-  app.use("/api/auth", authRoutes);
+  // 静态文件服务
+  app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+  
+  // 认证相关路由 - 直接挂载到 /api 路径
+  app.use("/api", authRoutes);
   
   // 小说相关路由
   app.use("/api/novels", novelsRoutes);
