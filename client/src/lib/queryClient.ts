@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { ApiResponse, ApiError } from "@shared/api-types";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -7,11 +8,11 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-export async function apiRequest(
+export async function apiRequest<TResponse, TData = unknown>(
   method: string,
   url: string,
-  data?: unknown | undefined,
-): Promise<Response> {
+  data?: TData | undefined,
+): Promise<TResponse> {
   const res = await fetch(url, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
@@ -20,13 +21,13 @@ export async function apiRequest(
   });
 
   await throwIfResNotOk(res);
-  return res;
+  return await res.json();
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
-export const getQueryFn: <T>(options: {
+export const getQueryFn: <TResponse>(options: {
   on401: UnauthorizedBehavior;
-}) => QueryFunction<T> =
+}) => QueryFunction<TResponse> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     const res = await fetch(queryKey[0] as string, {
@@ -34,12 +35,33 @@ export const getQueryFn: <T>(options: {
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+      return null as unknown as TResponse;
     }
 
     await throwIfResNotOk(res);
     return await res.json();
   };
+
+// 通用请求辅助函数
+export const getRequest = <TResponse>(url: string) => {
+  return apiRequest<TResponse, void>("GET", url);
+};
+
+export const postRequest = <TResponse, TData = unknown>(url: string, data: TData) => {
+  return apiRequest<TResponse, TData>("POST", url, data);
+};
+
+export const putRequest = <TResponse, TData = unknown>(url: string, data: TData) => {
+  return apiRequest<TResponse, TData>("PUT", url, data);
+};
+
+export const deleteRequest = <TResponse>(url: string) => {
+  return apiRequest<TResponse, void>("DELETE", url);
+};
+
+export const patchRequest = <TResponse, TData = unknown>(url: string, data: TData) => {
+  return apiRequest<TResponse, TData>("PATCH", url, data);
+};
 
 export const queryClient = new QueryClient({
   defaultOptions: {

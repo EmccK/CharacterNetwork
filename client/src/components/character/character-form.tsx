@@ -4,30 +4,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { insertCharacterSchema } from "@shared/schema";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ImagePlus, Loader2, User, Link as LinkIcon, Grid } from "lucide-react";
-import { avatarIcons, generateColoredAvatar, utf8ToBase64 } from "@/assets/avatars";
+import { Form } from "@/components/ui/form";
+import { Loader2 } from "lucide-react";
+import { Novel } from "@shared/schema";
+import CharacterBasicInfo from "./CharacterBasicInfo";
+import CharacterNovelSelector from "./CharacterNovelSelector";
+import CharacterAvatarSelector from "./CharacterAvatarSelector";
 
 const formSchema = insertCharacterSchema.extend({
   avatar: z.instanceof(File).optional().or(z.string().optional()),
@@ -38,7 +22,7 @@ type CharacterFormValues = z.infer<typeof formSchema>;
 interface CharacterFormProps {
   initialData?: Partial<CharacterFormValues>;
   novelId?: number;
-  novels?: any[];
+  novels?: Novel[];
   onSuccess?: () => void;
   mode?: 'create' | 'update';
   characterId?: number;
@@ -53,17 +37,16 @@ export default function CharacterForm({
   characterId
 }: CharacterFormProps) {
   const { toast } = useToast();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(
-    initialData?.avatar as string || null
-  );
-  const [avatarUrl, setAvatarUrl] = useState<string>(
-    initialData?.avatar as string || ""
-  );
-  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("preset");
+  const [avatarData, setAvatarData] = useState<{
+    file?: File | null,
+    url?: string | null,
+    dataUrl?: string | null,
+    method: 'upload' | 'url' | 'preset' | 'auto' | null
+  }>({
+    method: null
+  });
 
-  // Set up form with default values
+  // 设置表单，使用默认值
   const form = useForm<CharacterFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -73,7 +56,17 @@ export default function CharacterForm({
     },
   });
 
-  // Handle form submission
+  // 处理头像变化
+  const handleAvatarChange = (data: {
+    file?: File | null,
+    url?: string | null,
+    dataUrl?: string | null,
+    method: 'upload' | 'url' | 'preset' | 'auto'
+  }) => {
+    setAvatarData(data);
+  };
+
+  // 处理表单提交
   const mutation = useMutation({
     mutationFn: async (values: CharacterFormValues) => {
       const formData = new FormData();
@@ -84,25 +77,16 @@ export default function CharacterForm({
         formData.append("description", values.description);
       }
 
-      // Handle image based on active tab
-      if (activeTab === "upload" && selectedFile) {
-        formData.append("avatar", selectedFile);
-      } else if (activeTab === "url" && avatarUrl) {
-        formData.append("avatarUrl", avatarUrl);
-      } else if (activeTab === "preset" && selectedIcon) {
-        // 如果选择了预设图标，将其添加为base64数据
-        const iconData = selectedIcon;
-        formData.append("avatarData", iconData);
-        console.log("Adding preset icon data:", iconData.substring(0, 50) + "...");
-      } else if (activeTab === "auto" && values.name) {
-        // 如果是自动生成，根据名称生成头像
-        const autoAvatar = generateColoredAvatar(values.name);
-        const dataUrl = `data:image/svg+xml;base64,${utf8ToBase64(autoAvatar)}`;
-        formData.append("avatarData", dataUrl);
-        console.log("Adding auto-generated avatar data:", dataUrl.substring(0, 50) + "...");
+      // 根据不同的头像设置方式处理
+      if (avatarData.method === 'upload' && avatarData.file) {
+        formData.append("avatar", avatarData.file);
+      } else if (avatarData.method === 'url' && avatarData.url) {
+        formData.append("avatarUrl", avatarData.url);
+      } else if ((avatarData.method === 'preset' || avatarData.method === 'auto') && avatarData.dataUrl) {
+        formData.append("avatarData", avatarData.dataUrl);
       }
 
-      // Different API endpoint and method based on create/update mode
+      // 根据模式选择不同的API端点和方法
       const endpoint = mode === 'create' ? "/api/characters" : `/api/characters/${characterId}`;
       const method = mode === 'create' ? "POST" : "PUT";
 
@@ -125,12 +109,12 @@ export default function CharacterForm({
         description: mode === 'create' ? "您的角色已成功创建" : "您的角色已成功更新",
       });
       if (onSuccess) onSuccess();
-      form.reset();
-      setSelectedFile(null);
-      setPreviewUrl(null);
-      setAvatarUrl("");
-      setSelectedIcon(null);
-      setActiveTab("preset");
+      
+      // 重置表单和状态
+      if (mode === 'create') {
+        form.reset();
+        setAvatarData({ method: null });
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -141,59 +125,6 @@ export default function CharacterForm({
     },
   });
 
-  // Handle URL input
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const url = e.target.value;
-    setAvatarUrl(url);
-    setPreviewUrl(url);
-    setSelectedFile(null);
-  };
-
-  // Handle tab change
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    // Reset preview if switching to upload and no file is selected
-    if (value === "upload" && !selectedFile && avatarUrl) {
-      setPreviewUrl(null);
-    }
-    // Set preview to URL if switching to url tab and URL exists
-    if (value === "url" && avatarUrl) {
-      setPreviewUrl(avatarUrl);
-    }
-    // 如果选择预设图标并已经选择了图标
-    if (value === "preset" && selectedIcon) {
-      setPreviewUrl(selectedIcon);
-    }
-    // 如果是自动生成且有名字
-    if (value === "auto" && form.getValues("name")) {
-      const autoAvatar = generateColoredAvatar(form.getValues("name"));
-      const dataUrl = `data:image/svg+xml;base64,${utf8ToBase64(autoAvatar)}`;
-      setPreviewUrl(dataUrl);
-    }
-  };
-  
-  // 处理预设图标选择
-  const handleIconSelect = (icon: typeof avatarIcons[0]) => {
-    const dataUrl = `data:image/svg+xml;base64,${utf8ToBase64(icon.svg)}`;
-    setSelectedIcon(dataUrl);
-    setPreviewUrl(dataUrl);
-  };
-
-  // Handle file selection
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-
-      // Create a preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   function onSubmit(values: CharacterFormValues) {
     mutation.mutate(values);
   }
@@ -201,242 +132,24 @@ export default function CharacterForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>角色名称</FormLabel>
-              <FormControl>
-                <Input placeholder="输入角色名称" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+        {/* 基本信息区域 */}
+        <CharacterBasicInfo form={form} />
+        
+        {/* 小说选择区域 */}
+        <CharacterNovelSelector 
+          form={form} 
+          novels={novels} 
+          novelId={novelId} 
+        />
+        
+        {/* 头像选择区域 */}
+        <CharacterAvatarSelector 
+          form={form}
+          initialAvatar={initialData?.avatar as string}
+          onAvatarChange={handleAvatarChange}
         />
 
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>描述</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="角色的简要描述" 
-                  rows={3} 
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {!novelId && novels.length > 0 && (
-          <FormField
-            control={form.control}
-            name="novelId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>小说</FormLabel>
-                <Select
-                  onValueChange={(value) => field.onChange(parseInt(value))}
-                  defaultValue={field.value?.toString()}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="选择小说" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {novels.map((novel) => (
-                      <SelectItem key={novel.id} value={novel.id.toString()}>
-                        {novel.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-
-        <div>
-          <FormLabel>头像</FormLabel>
-
-          <Tabs defaultValue={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid grid-cols-4 w-full">
-              <TabsTrigger value="preset" className="flex items-center gap-1">
-                <Grid className="h-4 w-4" />
-                <span>预设</span>
-              </TabsTrigger>
-              <TabsTrigger value="auto" className="flex items-center gap-1">
-                <User className="h-4 w-4" />
-                <span>自动</span>
-              </TabsTrigger>
-              <TabsTrigger value="upload" className="flex items-center gap-1">
-                <ImagePlus className="h-4 w-4" />
-                <span>上传</span>
-              </TabsTrigger>
-              <TabsTrigger value="url" className="flex items-center gap-1">
-                <LinkIcon className="h-4 w-4" />
-                <span>URL</span>
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="preset">
-              <div className="mt-1 border-2 border-gray-300 rounded-lg p-3">
-                {previewUrl && activeTab === "preset" ? (
-                  <div className="space-y-2 text-center mb-3">
-                    <div className="w-24 h-24 mx-auto overflow-hidden rounded-full">
-                      <img 
-                        src={previewUrl} 
-                        alt="Avatar preview" 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <p className="text-sm font-medium text-gray-700">已选择预设头像</p>
-                  </div>
-                ) : (
-                  <div className="mb-3 text-center">
-                    <p className="text-sm text-gray-600">选择一个预设头像</p>
-                  </div>
-                )}
-                
-                <div className="grid grid-cols-4 gap-2">
-                  {avatarIcons.map((icon) => (
-                    <div 
-                      key={icon.id} 
-                      className={`p-2 border rounded-lg cursor-pointer transition-all hover:bg-gray-50 ${selectedIcon && selectedIcon === `data:image/svg+xml;base64,${utf8ToBase64(icon.svg)}` ? 'border-primary-500 bg-primary-50' : 'border-gray-200'}`}
-                      onClick={() => handleIconSelect(icon)}
-                      title={icon.name}
-                    >
-                      <div className="w-full aspect-square" dangerouslySetInnerHTML={{ __html: icon.svg }} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="auto">
-              <div className="mt-1 border-2 border-gray-300 rounded-lg p-4">
-                {form.getValues("name") ? (
-                  <div className="space-y-2 text-center">
-                    <div className="w-24 h-24 mx-auto overflow-hidden rounded-full">
-                      <img 
-                        src={`data:image/svg+xml;base64,${utf8ToBase64(generateColoredAvatar(form.getValues("name")))}`} 
-                        alt="Auto avatar preview" 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <p className="text-sm text-gray-600">根据角色名称生成的头像</p>
-                    <p className="text-xs text-gray-500">如果修改了角色名称，请点击下面的按钮更新头像</p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const autoAvatar = generateColoredAvatar(form.getValues("name"));
-                        const dataUrl = `data:image/svg+xml;base64,${utf8ToBase64(autoAvatar)}`;
-                        setPreviewUrl(dataUrl);
-                        setSelectedIcon(dataUrl);
-                      }}
-                    >
-                      更新头像
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <p className="text-gray-500 mb-2">请先填写角色名称</p>
-                    <p className="text-sm text-gray-400">系统将根据角色名称自动生成头像</p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="upload">
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
-                {previewUrl && activeTab === "upload" ? (
-                  <div className="space-y-2 text-center">
-                    <div className="w-32 h-32 mx-auto overflow-hidden rounded-full">
-                      <img 
-                        src={previewUrl} 
-                        alt="Avatar preview" 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex text-sm">
-                      <label
-                        htmlFor="file-upload"
-                        className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500"
-                      >
-                        <span>更改文件</span>
-                        <input 
-                          id="file-upload" 
-                          name="file-upload" 
-                          type="file"
-                          accept="image/*"
-                          className="sr-only"
-                          onChange={handleFileChange}
-                        />
-                      </label>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-1 text-center">
-                    <User className="mx-auto h-12 w-12 text-gray-400" />
-                    <div className="flex text-sm text-gray-600">
-                      <label
-                        htmlFor="file-upload"
-                        className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500"
-                      >
-                        <span>上传文件</span>
-                        <input 
-                          id="file-upload" 
-                          name="file-upload" 
-                          type="file"
-                          accept="image/*"
-                          className="sr-only"
-                          onChange={handleFileChange}
-                        />
-                      </label>
-                      <p className="pl-1">或拖放至此处</p>
-                    </div>
-                    <p className="text-xs text-gray-500">PNG, JPG, GIF 格式，最大 10MB</p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="url">
-              <div className="space-y-4">
-                <Input 
-                  placeholder="输入图片链接"
-                  value={avatarUrl}
-                  onChange={handleUrlChange}
-                  className="w-full"
-                />
-
-                {previewUrl && activeTab === "url" && (
-                  <div className="mt-2">
-                    <div className="w-32 h-32 mx-auto overflow-hidden rounded-full border border-gray-200">
-                      <img 
-                        src={previewUrl} 
-                        alt="Avatar preview from URL" 
-                        className="w-full h-full object-cover"
-                        onError={() => setPreviewUrl(null)}
-                      />
-                    </div>
-                  </div>
-                )}
-                <p className="text-xs text-gray-500 italic">粘贴图片的直接链接（JPG，PNG 或 GIF）</p>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-
+        {/* 提交按钮 */}
         <div className="flex justify-end mt-6">
           <Button 
             type="submit" 

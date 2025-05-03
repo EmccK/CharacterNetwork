@@ -33,7 +33,7 @@ const GraphVisualization: React.FC<GraphProps> = ({
   
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const simulationRef = useRef<any>(null);
+  const simulationRef = useRef<d3.Simulation<GraphNode, d3.SimulationLinkDatum<GraphNode>> | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [dragging, setDragging] = useState<number | null>(null);
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
