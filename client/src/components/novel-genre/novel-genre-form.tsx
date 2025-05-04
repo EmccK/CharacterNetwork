@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -60,8 +61,8 @@ export default function NovelGenreForm({
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
       const url = isEditing 
-        ? `/api/novel-genres/${initialData.id}` 
-        : "/api/novel-genres";
+        ? `/api/genres/${initialData.id}` 
+        : "/api/genres";
       
       const method = isEditing ? "PUT" : "POST";
       
@@ -73,6 +74,8 @@ export default function NovelGenreForm({
       if (!isEditing) {
         form.reset();
       }
+      // 刷新小说类型列表
+      queryClient.invalidateQueries({ queryKey: ["novel-genres"] });
     },
     onError: (error: any) => {
       toast({

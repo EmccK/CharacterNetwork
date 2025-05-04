@@ -56,19 +56,44 @@ function useApiMutation<TData = any, TError = Error, TVariables = any>(
     });
     
     try {
-      // 构建请求配置
-      const config: RequestInit = {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // 包含cookie
-      };
+    console.log(`[API请求] ${method} ${url}`);
+    
+    // 构建请求配置
+    const config: RequestInit = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      },
+      credentials: 'include', // 包含cookie
+    };
+    
+    // 对于有请求体的方法，添加请求体
+    if (method !== 'GET' && method !== 'DELETE') {
+    // 检查variables是否为FormData类型
+    if (variables instanceof FormData) {
+    // 如果是FormData，直接使用，并删除Content-Type头（让浏览器自动设置）
+      config.body = variables;
+    delete config.headers['Content-Type'];
+    console.log(`[API请求] 使用FormData发送数据`);
       
-      // 对于有请求体的方法，添加请求体
-      if (method !== 'GET' && method !== 'DELETE') {
-        config.body = JSON.stringify(variables);
-      }
+        // 输出 FormData 的内容（仅用于调试）
+            const formDataEntries = [];
+            variables.forEach((value, key) => {
+              if (value instanceof File) {
+                formDataEntries.push(`${key}: File(${value.name}, ${value.type}, ${value.size} bytes)`);
+              } else {
+                formDataEntries.push(`${key}: ${value}`);
+              }
+            });
+            console.log(`[API请求] FormData内容:`, formDataEntries);
+          } else {
+            // 否则按JSON处理
+            config.body = JSON.stringify(variables);
+            console.log(`[API请求] 使用JSON发送数据:`, variables);
+          }
+        } else if (method === 'DELETE') {
+          console.log(`[API请求] DELETE 请求至: ${url}`);
+        }
       
       // 发送请求
       const response = await fetch(url, config);

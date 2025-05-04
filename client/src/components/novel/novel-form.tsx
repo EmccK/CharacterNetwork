@@ -52,7 +52,11 @@ export default function NovelForm({
   
   // 获取用户的小说类型列表
   const { data: genreList } = useQuery({
-    queryKey: ["/api/novel-genres"],
+    queryKey: ["novel-genres"],
+    queryFn: async () => {
+      const response = await apiRequest<any[]>("GET", "/api/genres");
+      return response || [];
+    },
     select: (data) => Array.isArray(data) ? data : []
   });
 
@@ -162,26 +166,37 @@ export default function NovelForm({
     
     const formData = new FormData();
     formData.append("title", values.title);
-    formData.append("userId", String(user?.id));
-
-    if (values.description) {
-      formData.append("description", values.description);
+    
+    // 如果不是编辑模式，添加userId
+    if (!isEditing) {
+      formData.append("userId", String(user?.id));
     }
 
-    if (values.genre) {
-      formData.append("genre", values.genre);
-    }
-
-    if (values.status) {
-      formData.append("status", values.status);
-    }
+    // 即使字段为空也要发送，以便后端能正确处理
+    formData.append("description", values.description || "");
+    formData.append("genre", values.genre || "");
+    formData.append("status", values.status || "In Progress");
 
     // 处理图片
     if (activeTab === "upload" && fileState.file) {
       formData.append("coverImage", fileState.file);
     } else if (activeTab === "url" && fileState.fileUrl) {
       formData.append("coverImageUrl", fileState.fileUrl);
+    } else if (initialData?.coverImage && typeof initialData.coverImage === 'string') {
+      // 如果没有新上传的图片，并且有初始封面，保留原有封面
+      formData.append("coverImageUrl", initialData.coverImage);
     }
+    
+    // 调试信息
+    console.log("提交表单数据：", {
+      url: isEditing ? `/api/novels/${initialData?.id}` : "/api/novels",
+      method: isEditing ? "PUT" : "POST",
+      title: values.title,
+      description: values.description,
+      genre: values.genre,
+      status: values.status,
+      isEditing: isEditing
+    });
 
     mutation.mutate(formData);
   };

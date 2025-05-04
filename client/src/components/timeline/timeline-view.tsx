@@ -171,7 +171,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({
               return (
                 <div key={event.id} className="relative pl-14">
                   {/* 时间点标记 */}
-                  <div className={`absolute left-4 -translate-x-1/2 w-5 h-5 rounded-full border-2 ${importanceStyle} flex items-center justify-center`}>
+                  <div className={`absolute left-6 -translate-x-1/2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2 ${importanceStyle} flex items-center justify-center`}>
                     {event.importance === 'critical' && <Star className="h-3 w-3" />}
                   </div>
                   

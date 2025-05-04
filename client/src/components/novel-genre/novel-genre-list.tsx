@@ -62,8 +62,8 @@ export default function NovelGenreList() {
   } = useQuery<NovelGenre[]>({
     queryKey: ["novel-genres"],
     queryFn: async () => {
-      const response = await apiRequest<{ data: NovelGenre[] }>("GET", "/api/novel-genres");
-      return response.data || [];
+      const response = await apiRequest<NovelGenre[]>("GET", "/api/genres");
+      return response || [];
     },
   });
 
@@ -84,10 +84,10 @@ export default function NovelGenreList() {
   // 删除小说类型
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest("DELETE", `/api/novel-genres/${id}`);
+      return await apiRequest("DELETE", `/api/genres/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/novel-genres"] });
+      queryClient.invalidateQueries({ queryKey: ["novel-genres"] });
       toast({
         title: "类型已删除",
         description: "小说类型已成功删除",
@@ -198,7 +198,7 @@ export default function NovelGenreList() {
           <NovelGenreForm
             onSuccess={() => {
               setIsAddDialogOpen(false);
-              queryClient.invalidateQueries({ queryKey: ["/api/novel-genres"] });
+              queryClient.invalidateQueries({ queryKey: ["novel-genres"] });
               toast({
                 title: "类型已添加",
                 description: "小说类型已成功添加",
@@ -219,7 +219,7 @@ export default function NovelGenreList() {
               initialData={selectedGenre}
               onSuccess={() => {
                 setIsEditDialogOpen(false);
-                queryClient.invalidateQueries({ queryKey: ["/api/novel-genres"] });
+                queryClient.invalidateQueries({ queryKey: ["novel-genres"] });
                 toast({
                   title: "类型已更新",
                   description: "小说类型已成功更新",

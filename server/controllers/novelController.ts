@@ -87,19 +87,38 @@ export const updateNovel = async (req: Request, res: Response, next: NextFunctio
       checkOwnership: true
     });
     
+    console.log('[updateNovel] 原小说数据:', {
+      id: novel.id,
+      title: novel.title,
+      description: novel.description,
+      genre: novel.genre,
+      status: novel.status,
+      coverImage: novel.coverImage
+    });
+    
+    console.log('[updateNovel] 提交的更新数据:', req.body);
+    
     let coverImage = novel.coverImage;
     if (req.file) {
       coverImage = `/uploads/${req.file.filename}`;
+      console.log('[updateNovel] 使用上传的文件作为封面:', coverImage);
     } else if (req.body.coverImageUrl) {
       // 直接使用提供的URL
       coverImage = req.body.coverImageUrl;
+      console.log('[updateNovel] 使用URL作为封面:', coverImage);
     }
 
+    // 构建更新数据，确保所有字段都被正确更新
     const novelData = {
-      ...req.body,
+      title: req.body.title || novel.title,
+      description: req.body.description !== undefined ? req.body.description : novel.description,
+      genre: req.body.genre !== undefined ? req.body.genre : novel.genre,
+      status: req.body.status || novel.status,
       coverImage,
     };
 
+    console.log('[updateNovel] 最终更新数据:', novelData);
+    
     // 移除coverImageUrl字段，因为它不在我们的schema中
     delete novelData.coverImageUrl;
 

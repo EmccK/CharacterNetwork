@@ -504,6 +504,7 @@ export default function NovelDetail() {
               status: novel?.status || "In Progress",
               coverImage: novel?.coverImage || ""
             }}
+            key={novel?.id} // 添加key属性，确保小说变化时表单重新初始化
             onSuccess={() => {
               setIsEditNovelModalOpen(false);
               // 重新获取小说数据以更新UI
