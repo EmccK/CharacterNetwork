@@ -6,13 +6,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
+  // 表单容器组件
+  FormContainer,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from "../ui/custom-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { 
@@ -52,8 +51,9 @@ export default function NovelForm({
   const [activeTab, setActiveTab] = useState<string>(initialData?.coverImage ? "url" : "upload");
   
   // 获取用户的小说类型列表
-  const { data: genreList = [] } = useQuery({
+  const { data: genreList } = useQuery({
     queryKey: ["/api/novel-genres"],
+    select: (data) => Array.isArray(data) ? data : []
   });
 
   // 使用自定义文件上传hook
@@ -88,7 +88,7 @@ export default function NovelForm({
       description: initialData?.description || "",
       genre: initialData?.genre || "",
       status: initialData?.status || "In Progress",
-      userId: user?.id,
+      userId: user?.id ?? 0,
       id: initialData?.id,
     },
     validate: (values) => {
@@ -192,14 +192,12 @@ export default function NovelForm({
         <div className="md:col-span-2">
           <FormItem>
             <FormLabel>小说标题</FormLabel>
-            <FormControl>
-              <Input 
-                placeholder="输入小说标题" 
-                name="title"
-                value={values.title}
-                onChange={handleChange}
-              />
-            </FormControl>
+            <Input
+              placeholder="输入小说标题"
+              name="title"
+              value={values.title}
+              onChange={handleChange}
+            />
             {errors.title && <FormMessage>{errors.title}</FormMessage>}
           </FormItem>
         </div>
@@ -207,82 +205,64 @@ export default function NovelForm({
         <div className="md:col-span-2">
           <FormItem>
             <FormLabel>描述</FormLabel>
-            <FormControl>
-              <Textarea 
-                placeholder="小说简介" 
-                rows={3} 
-                name="description"
-                value={values.description || ""}
-                onChange={handleChange}
-              />
-            </FormControl>
+            <Textarea
+              placeholder="小说简介"
+              rows={3}
+              name="description"
+              value={values.description || ""}
+              onChange={handleChange}
+            />
             {errors.description && <FormMessage>{errors.description}</FormMessage>}
           </FormItem>
         </div>
 
         <FormItem>
           <FormLabel>类型</FormLabel>
-          <Select
+          <select
             value={values.genre || ""}
-            onValueChange={(value) => setFieldValue("genre", value)}
+            onChange={(e) => setFieldValue("genre", e.target.value)}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <FormControl>
-              <SelectTrigger>
-                <SelectValue placeholder="选择类型" />
-              </SelectTrigger>
-            </FormControl>
-            <SelectContent>
-              {/* 用户自定义类型 */}
-              {Array.isArray(genreList) && genreList.length > 0 && (
-                <SelectGroup>
-                  <SelectLabel>自定义类型</SelectLabel>
-                  {genreList.map((genre: any, index: number) => (
-                    <SelectItem key={genre.id || index} value={genre.name || `自定义类型${index+1}`}>
-                      {genre.name || `自定义类型${index+1}`}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              )}
-              <SelectSeparator />
-              <SelectGroup>
-                <SelectLabel>默认类型</SelectLabel>
-                <SelectItem value="奇幻">奇幻</SelectItem>
-                <SelectItem value="科幻">科幻</SelectItem>
-                <SelectItem value="悬疑">悬疑</SelectItem>
-                <SelectItem value="爱情">爱情</SelectItem>
-                <SelectItem value="历史">历史</SelectItem>
-                <SelectItem value="惊悚">惊悚</SelectItem>
-                <SelectItem value="恐怖">恐怖</SelectItem>
-                <SelectItem value="其他">其他</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+            <option value="">选择类型</option>
+            {/* 用户自定义类型 */}
+            <optgroup label="自定义类型">
+              {(genreList || []).map((genre: any, index: number) => (
+                <option key={genre.id || index} value={genre.name || `自定义类型${index+1}`}>
+                  {genre.name || `自定义类型${index+1}`}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="默认类型">
+              <option value="奇幻">奇幻</option>
+              <option value="科幻">科幻</option>
+              <option value="悬疑">悬疑</option>
+              <option value="爱情">爱情</option>
+              <option value="历史">历史</option>
+              <option value="惊悚">惊悚</option>
+              <option value="恐怖">恐怖</option>
+              <option value="其他">其他</option>
+            </optgroup>
+          </select>
           {errors.genre && <FormMessage>{errors.genre}</FormMessage>}
         </FormItem>
 
         <FormItem>
           <FormLabel>状态</FormLabel>
-          <Select
+          <select
             value={values.status || "In Progress"}
-            onValueChange={(value) => setFieldValue("status", value)}
+            onChange={(e) => setFieldValue("status", e.target.value)}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <FormControl>
-              <SelectTrigger>
-                <SelectValue placeholder="选择状态" />
-              </SelectTrigger>
-            </FormControl>
-            <SelectContent>
-              <SelectItem value="In Progress">进行中</SelectItem>
-              <SelectItem value="Completed">已完成</SelectItem>
-              <SelectItem value="Planning">计划中</SelectItem>
-              <SelectItem value="On Hold">暂停</SelectItem>
-            </SelectContent>
-          </Select>
+            <option value="In Progress">进行中</option>
+            <option value="Completed">已完成</option>
+            <option value="Planning">计划中</option>
+            <option value="On Hold">暂停</option>
+          </select>
           {errors.status && <FormMessage>{errors.status}</FormMessage>}
         </FormItem>
 
         <div className="md:col-span-2">
-          <FormLabel>封面图片</FormLabel>
+          <FormLabel className="block mb-2">封面图片</FormLabel>
           <Tabs 
             value={activeTab}
             className="mt-2" 

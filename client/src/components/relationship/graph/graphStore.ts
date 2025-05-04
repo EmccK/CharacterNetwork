@@ -135,7 +135,10 @@ export const useGraphStore = create<GraphState>()(
       }), false, 'removeLink'),
       
       // 选择操作
-      setSelectedNode: (id) => set({ selectedNode: id }, false, 'setSelectedNode'),
+      setSelectedNode: (id) => {
+        console.log('Setting selected node:', id);
+        return set({ selectedNode: id }, false, 'setSelectedNode');
+      },
       
       setInitialData: (data) => set({ 
         nodes: data.nodes, 

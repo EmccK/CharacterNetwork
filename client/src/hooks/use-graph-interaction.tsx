@@ -47,7 +47,13 @@ export function useGraphInteraction() {
    * @param nodeId 节点ID
    */
   const handleNodeClick = useCallback((nodeId: number) => {
+    console.log('Node click callback triggered with id:', nodeId, 'type:', typeof nodeId);
+    if (typeof nodeId !== 'number') {
+      console.error('Invalid nodeId type:', typeof nodeId);
+      return;
+    }
     setSelectedNode(nodeId);
+    console.log('Selected node set to:', nodeId);
   }, [setSelectedNode]);
   
   /**

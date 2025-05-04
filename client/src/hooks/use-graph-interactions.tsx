@@ -1,13 +1,16 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useGraphStore } from '@/components/relationship/graph/graphStore';
 
+import type { Character } from '../../../shared/schema';
+
 interface UseGraphInteractionsProps {
   svgRef: React.RefObject<SVGSVGElement>;
   updateNodePosition?: (nodeId: number, x: number, y: number) => void;
   releaseNode?: (nodeId: number) => void;
   startSimulation?: (alpha?: number) => void;
   stopSimulation?: () => void;
-  onNodeSelect?: (nodeId: number | null) => void;
+  onNodeSelect?: (character: Character | null) => void;
+  characters?: Character[];
 }
 
 export function useGraphInteractions({
@@ -16,7 +19,8 @@ export function useGraphInteractions({
   releaseNode,
   startSimulation,
   stopSimulation,
-  onNodeSelect
+  onNodeSelect,
+  characters = []
 }: UseGraphInteractionsProps) {
   const { selectedNode, setSelectedNode } = useGraphStore();
   
@@ -51,12 +55,14 @@ export function useGraphInteractions({
 
   // 处理节点点击
   const handleNodeClick = useCallback((id: number) => {
+    console.log('Node clicked with id:', id);
     if (onNodeSelect) {
-      onNodeSelect(id);
-    } else {
-      setSelectedNode(id);
+      // 查找对应的角色对象
+      const character = characters?.find(c => c.id === id) || null;
+      onNodeSelect(character);
     }
-  }, [onNodeSelect, setSelectedNode]);
+    setSelectedNode(id);
+  }, [onNodeSelect, setSelectedNode, characters]);
 
   // 处理节点鼠标按下
   const handleNodeMouseDown = useCallback((event: React.MouseEvent, id: number) => {

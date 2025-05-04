@@ -28,8 +28,8 @@ const GraphNode: React.FC<GraphNodeProps> = ({
     onNodeMouseDown(event, node.id);
   };
 
-  const handleClick = (event: React.MouseEvent) => {
-    event.stopPropagation(); // 阻止事件冒泡
+  const handleClick = () => {
+    console.log('Node clicked:', node.id);
     onNodeClick(node.id);
   };
   
@@ -41,7 +41,7 @@ const GraphNode: React.FC<GraphNodeProps> = ({
   };
   
   const handleTouchEnd = (event: React.TouchEvent) => {
-    event.stopPropagation();
+    console.log('Node touched:', node.id);
     // 触发点击事件
     onNodeClick(node.id);
   };
@@ -63,7 +63,7 @@ const GraphNode: React.FC<GraphNodeProps> = ({
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="cursor-move node-group"
+      className="node-group"
       style={{ pointerEvents: 'all' }} // 确保元素可以接收鼠标事件
       data-id={String(node.id)} // 添加数据属性，确保是字符串类型
     >
@@ -107,8 +107,12 @@ const GraphNode: React.FC<GraphNodeProps> = ({
       <circle
         r={finalRadius + (isMobile ? 20 : 14)}
         fill="transparent"
+        onClick={handleClick}
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         style={{ pointerEvents: 'all' }}
-        className="cursor-move"
+        className="cursor-pointer"
       />
     </g>
   );

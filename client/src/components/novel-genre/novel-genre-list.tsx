@@ -55,9 +55,31 @@ export default function NovelGenreList() {
   const [selectedGenre, setSelectedGenre] = useState<NovelGenre | null>(null);
 
   // 获取小说类型列表
-  const { data: genres = [], isLoading } = useQuery({
-    queryKey: ["/api/novel-genres"],
+  const {
+    data: genres = [],
+    isLoading,
+    error
+  } = useQuery<NovelGenre[]>({
+    queryKey: ["novel-genres"],
+    queryFn: async () => {
+      const response = await apiRequest<{ data: NovelGenre[] }>("GET", "/api/novel-genres");
+      return response.data || [];
+    },
   });
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-40 gap-2">
+        <span className="text-red-500">加载小说类型失败</span>
+        <Button
+          variant="outline"
+          onClick={() => queryClient.refetchQueries({ queryKey: ["novel-genres"] })}
+        >
+          重试
+        </Button>
+      </div>
+    );
+  }
 
   // 删除小说类型
   const deleteMutation = useMutation({
@@ -128,7 +150,7 @@ export default function NovelGenreList() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {genres.map((genre) => (
+          {genres.map((genre: NovelGenre) => (
             <Card key={genre.id}>
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
