@@ -112,8 +112,24 @@ export class DrizzleStorage implements IStorage {
   }
 
   async getNovel(id: number): Promise<Novel | undefined> {
-    const results = await db.select().from(novels).where(eq(novels.id, id)).limit(1);
-    return results.length > 0 ? results[0] : undefined;
+    const results = await db.select({
+      novel: novels,
+      bookInfo: bookInfos
+    })
+    .from(novels)
+    .leftJoin(bookInfos, eq(novels.bookInfoId, bookInfos.id))
+    .where(eq(novels.id, id))
+    .limit(1);
+
+    if (results.length === 0) {
+      return undefined;
+    }
+
+    const { novel, bookInfo } = results[0];
+    return {
+      ...novel,
+      bookInfo: bookInfo || undefined
+    };
   }
 
   async createNovel(novel: InsertNovel): Promise<Novel> {

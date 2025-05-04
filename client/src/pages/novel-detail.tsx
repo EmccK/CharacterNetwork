@@ -21,6 +21,44 @@ import CharacterList from "@/components/character/character-list";
 import RelationshipForm from "@/components/relationship/relationship-form";
 import NovelForm from "@/components/novel/novel-form";
 
+interface Novel {
+  title: string;
+  coverImage: string;
+  genre: string;
+  updatedAt: string;
+  description: string;
+  author?: string;
+  status: string;
+  bookInfoId?: number;
+  bookInfo?: {
+    author?: string;
+  };
+}
+
+interface Character {
+  id: number;
+  name: string;
+  novelId: number;
+  description: string | null;
+  avatar: string | null;
+  createdAt: string;
+}
+
+interface Relationship {
+  id: number;
+  novelId: number;
+  description: string | null;
+  sourceId: number;
+  targetId: number;
+  typeId: number;
+}
+
+interface RelationshipType {
+  id: number;
+  color: string;
+  name: string;
+  userId: number;
+}
 export default function NovelDetail() {
   const [match, params] = useRoute<{ id: string }>("/novels/:id");
   const [_, navigate] = useLocation();
@@ -33,40 +71,42 @@ export default function NovelDetail() {
   const [relationshipToDelete, setRelationshipToDelete] = useState<number | null>(null);
   
   // 获取小说数据
-  const { 
+  const {
     data: novel,
     isLoading: isNovelLoading,
     isError: isNovelError
-  } = useQuery({
+  } = useQuery<Novel>({
     queryKey: [`/api/novels/${params?.id}`],
     enabled: !!params?.id,
   });
   
   // 获取该小说的角色
-  const { 
+  const {
     data: characters = [],
     isLoading: isCharactersLoading,
     refetch: refetchCharacters
-  } = useQuery({
+  } = useQuery<Character[]>({
     queryKey: [`/api/novels/${params?.id}/characters`],
     enabled: !!params?.id,
   });
   
+  const parsedCharacters = characters.map((c: Character) => ({ ...c, createdAt: new Date(c.createdAt) }));
+  
   // 获取该小说的角色关系
-  const { 
+  const {
     data: relationships = [],
     isLoading: isRelationshipsLoading,
     refetch: refetchRelationships
-  } = useQuery({
+  } = useQuery<Relationship[]>({
     queryKey: [`/api/novels/${params?.id}/relationships`],
     enabled: !!params?.id,
   });
   
   // 获取关系类型
-  const { 
+  const {
     data: relationshipTypes = [],
     isLoading: isRelationshipTypesLoading
-  } = useQuery({
+  } = useQuery<RelationshipType[]>({
     queryKey: ["/api/relationship-types"],
     enabled: !!params?.id,
   });
@@ -194,7 +234,11 @@ export default function NovelDetail() {
                 <div className="flex-1 md:pl-2">
                   <div className="md:mt-2">
                     <h2 className="text-2xl font-bold text-gray-900 hidden md:block">{novel?.title || "小说"}</h2>
-                    {novel?.author && <p className="text-sm text-gray-500 mt-1 hidden md:block">作者：{novel.author}</p>}
+                    {(novel?.bookInfo?.author || novel?.author) && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        作者：{novel?.bookInfo?.author || novel?.author}
+                      </p>
+                    )}
                     <div className="mt-3 bg-gray-50 rounded-lg p-4 border border-gray-100">
                       <h3 className="font-medium text-gray-700 mb-1">作品简介</h3>
                       <p className="text-gray-600 text-sm leading-relaxed">
@@ -221,7 +265,7 @@ export default function NovelDetail() {
                       <div className="mt-4">
                         <h3 className="text-lg font-semibold text-gray-800 mb-4">小说角色</h3>
                         <CharacterList 
-                          characters={characters}
+                          characters={parsedCharacters}
                           isLoading={isCharactersLoading}
                           novelId={parseInt(params?.id || "0")}
                           onAddCharacter={() => setIsAddCharacterModalOpen(true)}
@@ -261,7 +305,7 @@ export default function NovelDetail() {
                         
                         <div className="bg-gray-50 rounded-lg border border-gray-100 overflow-hidden p-1">
                           <CharacterNetworkGraph 
-                            characters={characters}
+                            characters={parsedCharacters}
                             relationships={relationships}
                             relationshipTypes={relationshipTypes}
                             isLoading={isCharactersLoading || isRelationshipsLoading || isRelationshipTypesLoading}
@@ -401,7 +445,7 @@ export default function NovelDetail() {
           </DialogHeader>
           <RelationshipForm 
             novelId={parseInt(params?.id || "0")}
-            characters={characters}
+            characters={parsedCharacters}
             relationships={relationships}
             relationshipTypes={relationshipTypes}
             onSuccess={() => {

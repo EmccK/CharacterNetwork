@@ -122,7 +122,9 @@ export type InsertNovelGenre = z.infer<typeof insertNovelGenreSchema>;
 export type NovelGenre = typeof novelGenres.$inferSelect;
 
 export type InsertNovel = z.infer<typeof insertNovelSchema>;
-export type Novel = typeof novels.$inferSelect;
+export type Novel = typeof novels.$inferSelect & {
+  bookInfo?: typeof bookInfos.$inferSelect | null;
+};
 
 export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
 export type Character = typeof characters.$inferSelect;
