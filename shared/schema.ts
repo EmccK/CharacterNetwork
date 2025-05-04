@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, unique, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, unique, jsonb, array } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -166,6 +166,32 @@ export const insertBookInfoSchema = createInsertSchema(bookInfos).omit({
 // 导出类型
 export type InsertBookInfo = z.infer<typeof insertBookInfoSchema>;
 export type BookInfo = typeof bookInfos.$inferSelect;
+
+// Timeline Events Schema
+export const timelineEvents = pgTable("timeline_events", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  date: text("date").notNull(), // 使用文本以便于灵活的日期表示
+  importance: text("importance").default("normal").notNull(), // minor, normal, important, critical
+  characterIds: integer("character_ids").array(), // 关联的角色ID数组
+  novelId: integer("novel_id").notNull().references(() => novels.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Timeline Events insert schema
+export const insertTimelineEventSchema = createInsertSchema(timelineEvents).pick({
+  title: true,
+  description: true,
+  date: true,
+  importance: true,
+  characterIds: true,
+  novelId: true,
+});
+
+// Timeline Event type
+export type InsertTimelineEvent = z.infer<typeof insertTimelineEventSchema>;
+export type TimelineEvent = typeof timelineEvents.$inferSelect;
 
 // Login type
 export type LoginData = Pick<InsertUser, "username" | "password">;

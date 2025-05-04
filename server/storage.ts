@@ -1,7 +1,7 @@
 import {
-  users, novels, characters, relationshipTypes, relationships, novelGenres, bookInfos,
-  type User, type Novel, type Character, type RelationshipType, type Relationship, type NovelGenre, type BookInfo,
-  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre, type InsertBookInfo
+  users, novels, characters, relationshipTypes, relationships, novelGenres, bookInfos, timelineEvents,
+  type User, type Novel, type Character, type RelationshipType, type Relationship, type NovelGenre, type BookInfo, type TimelineEvent,
+  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre, type InsertBookInfo, type InsertTimelineEvent
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -68,6 +68,13 @@ export interface IStorage {
   
   // 扩展小说操作，支持通过bookInfoId
   getNovelsByBookInfoId(bookInfoId: number): Promise<Novel[]>;
+
+  // 时间线事件相关操作
+  getNovelTimelineEvents(novelId: number): Promise<TimelineEvent[]>;
+  getTimelineEvent(id: number): Promise<TimelineEvent | undefined>;
+  createTimelineEvent(event: InsertTimelineEvent): Promise<TimelineEvent>;
+  updateTimelineEvent(id: number, event: Partial<TimelineEvent>): Promise<TimelineEvent | undefined>;
+  deleteTimelineEvent(id: number): Promise<boolean>;
 
   // Session store
   sessionStore: session.Store;

@@ -6,6 +6,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import Sidebar from "@/components/layout/sidebar";
 import Topbar from "@/components/layout/topbar";
 import { CharacterNetworkGraph } from "@/components/relationship";
+import { TimelineView } from "@/components/timeline";
 import { Button } from "@/components/ui/button";
 import { 
   Dialog, 
@@ -51,6 +52,17 @@ interface Relationship {
   sourceId: number;
   targetId: number;
   typeId: number;
+}
+
+interface TimelineEvent {
+  id: number;
+  title: string;
+  description: string | null;
+  date: string;
+  importance: string;
+  characterIds: number[];
+  novelId: number;
+  createdAt: string;
 }
 
 interface RelationshipType {
@@ -108,6 +120,16 @@ export default function NovelDetail() {
     isLoading: isRelationshipTypesLoading
   } = useQuery<RelationshipType[]>({
     queryKey: ["/api/relationship-types"],
+    enabled: !!params?.id,
+  });
+  
+  // 获取该小说的时间线事件
+  const {
+    data: timelineEvents = [],
+    isLoading: isTimelineEventsLoading,
+    refetch: refetchTimelineEvents
+  } = useQuery<TimelineEvent[]>({
+    queryKey: [`/api/novels/${params?.id}/timeline-events`],
     enabled: !!params?.id,
   });
   
@@ -396,11 +418,14 @@ export default function NovelDetail() {
                     )}
                     
                     {activeTab === "timeline" && (
-                      <div className="mt-4 bg-gray-50 rounded-lg border border-gray-100 text-center py-12">
-                        <h3 className="text-lg font-medium text-gray-400">时间线功能即将推出</h3>
-                        <p className="mt-1 text-sm text-gray-500">
-                          该功能正在开发中，敬请期待。
-                        </p>
+                      <div className="mt-4">
+                        <TimelineView
+                          events={timelineEvents}
+                          characters={parsedCharacters}
+                          novelId={parseInt(params?.id || "0")}
+                          isLoading={isTimelineEventsLoading}
+                          onUpdate={() => refetchTimelineEvents()}
+                        />
                       </div>
                     )}
                   </div>

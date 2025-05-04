@@ -10,6 +10,7 @@ import genresRoutes from "./genres";
 import booksRoutes from "./books";
 import adminRoutes from "./admin";
 import wereadRoutes from "./weread";
+import timelineEventsRoutes from "./timeline-events";
 
 /**
  * 注册所有API路由
@@ -45,4 +46,7 @@ export function registerRoutes(app: Express): void {
 
   // 微信读书API代理路由 - 不需要登录即可访问
   app.use("/api/weread", wereadRoutes);
+
+  // 时间线事件相关路由
+  app.use("/api", timelineEventsRoutes);
 }

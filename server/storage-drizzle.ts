@@ -3,12 +3,19 @@ import session from 'express-session';
 import pgSessionStore from 'connect-pg-simple';
 import pg from 'pg';
 import {
-  users, novels, characters, relationshipTypes, relationships, novelGenres, bookInfos,
-  type User, type Novel, type Character, type RelationshipType, type Relationship, type NovelGenre, type BookInfo,
-  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre, type InsertBookInfo
+  users, novels, characters, relationshipTypes, relationships, novelGenres, bookInfos, timelineEvents,
+  type User, type Novel, type Character, type RelationshipType, type Relationship, type NovelGenre, type BookInfo, type TimelineEvent,
+  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre, type InsertBookInfo, type InsertTimelineEvent
 } from '@shared/schema';
 import { db } from './db';
 import { eq, and, or, desc, like, ilike, or as orExpr, and as andExpr, sql } from 'drizzle-orm';
+import {
+  getNovelTimelineEvents,
+  getTimelineEvent,
+  createTimelineEvent,
+  updateTimelineEvent,
+  deleteTimelineEvent
+} from './storage-drizzle-timeline';
 
 const { Pool } = pg;
 
@@ -500,5 +507,26 @@ export class DrizzleStorage implements IStorage {
         return [];
       }
     }
+  }
+  
+  // 时间线事件相关操作
+  async getNovelTimelineEvents(novelId: number): Promise<TimelineEvent[]> {
+    return getNovelTimelineEvents(novelId);
+  }
+
+  async getTimelineEvent(id: number): Promise<TimelineEvent | undefined> {
+    return getTimelineEvent(id);
+  }
+
+  async createTimelineEvent(event: InsertTimelineEvent): Promise<TimelineEvent> {
+    return createTimelineEvent(event);
+  }
+
+  async updateTimelineEvent(id: number, eventData: Partial<TimelineEvent>): Promise<TimelineEvent | undefined> {
+    return updateTimelineEvent(id, eventData);
+  }
+
+  async deleteTimelineEvent(id: number): Promise<boolean> {
+    return deleteTimelineEvent(id);
   }
 }
