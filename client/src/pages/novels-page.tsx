@@ -9,20 +9,20 @@ import Topbar from "@/components/layout/topbar";
 import NovelCard from "@/components/novel/novel-card";
 import NovelForm from "@/components/novel/novel-form";
 import { Button } from "@/components/ui/button";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription, 
-  DialogFooter 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
 } from "@/components/ui/dialog";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { RefreshCcw, Plus, FilterIcon, BookIcon, ArrowRight } from "lucide-react";
@@ -58,13 +58,13 @@ export default function NovelsPage() {
       queryClient.invalidateQueries({ queryKey: ["allCharacters"] });
       queryClient.invalidateQueries({ queryKey: ["allRelationships"] });
       toast({
-        title: "Novel deleted",
-        description: "The novel has been successfully deleted",
+        title: "小说已删除",
+        description: "小说已成功删除",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to delete novel",
+        title: "删除小说失败",
         description: error.message,
         variant: "destructive",
       });
@@ -80,7 +80,7 @@ export default function NovelsPage() {
       // Apply search query
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
-        return novel.title.toLowerCase().includes(query) || 
+        return novel.title.toLowerCase().includes(query) ||
                (novel.description && novel.description.toLowerCase().includes(query));
       }
 
@@ -103,7 +103,7 @@ export default function NovelsPage() {
   const uniqueGenres = Array.from(new Set(novels.map((novel: any) => novel.genre).filter(Boolean)));
 
   const handleDeleteNovel = (id: number) => {
-    if (window.confirm("Are you sure you want to delete this novel? This action cannot be undone.")) {
+    if (window.confirm("您确定要删除这部小说吗？此操作无法撤销。")) {
       deleteMutation.mutate(id);
     }
   };
@@ -130,9 +130,9 @@ export default function NovelsPage() {
             {/* Search and Filters */}
             <div className="flex flex-wrap gap-2 mb-4">
               <div className="relative flex-1 min-w-[200px]">
-                <Input 
-                  type="text" 
-                  placeholder="搜索小说..." 
+                <Input
+                  type="text"
+                  placeholder="搜索小说..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -186,7 +186,7 @@ export default function NovelsPage() {
                     </div>
                     <p className="text-gray-600 text-center font-medium">添加新小说</p>
                   </div>
-                  
+
                   {/* 导入书籍卡片 */}
                   <div className="flex flex-col items-center justify-center h-full min-h-[300px] border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-primary-500 transition-colors cursor-pointer"
                       onClick={() => navigate('/import-book')}>
@@ -196,12 +196,12 @@ export default function NovelsPage() {
                     <p className="text-gray-600 text-center font-medium">从书籍导入</p>
                     <p className="text-gray-400 text-center text-xs mt-2">从外部数据源导入书籍信息</p>
                   </div>
-                  
+
                   {/* 现有小说卡片 */}
                   {filteredNovels.map((novel: any) => (
-                    <NovelCard 
-                      key={novel.id} 
-                      novel={novel} 
+                    <NovelCard
+                      key={novel.id}
+                      novel={novel}
                       onView={() => navigate(`/novels/${novel.id}`)}
                       onEdit={() => navigate(`/novels/${novel.id}`)}
                       onDelete={() => handleDeleteNovel(novel.id)}
@@ -220,7 +220,7 @@ export default function NovelsPage() {
                 </div>
                 <h3 className="mt-4 text-lg font-medium text-gray-900">未找到小说</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  {searchQuery || genreFilter !== "all" 
+                  {searchQuery || genreFilter !== "all"
                     ? "尝试改变您的搜索或过滤条件"
                     : "从添加您的第一部小说开始"}
                 </p>
@@ -270,9 +270,9 @@ export default function NovelsPage() {
             <div>
               <p className="text-sm text-blue-700">想从现有图书数据自动填充信息？</p>
               <div className="mt-2">
-                <Button 
-                  variant="link" 
-                  className="h-auto p-0 text-blue-600" 
+                <Button
+                  variant="link"
+                  className="h-auto p-0 text-blue-600"
                   onClick={() => {
                     setIsCreateModalOpen(false);
                     navigate('/import-book');
@@ -284,7 +284,7 @@ export default function NovelsPage() {
             </div>
           </div>
 
-          <NovelForm 
+          <NovelForm
             onSuccess={() => {
               setIsCreateModalOpen(false);
               queryClient.invalidateQueries({ queryKey: ["/api/novels"] });

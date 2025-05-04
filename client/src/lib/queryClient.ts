@@ -21,6 +21,13 @@ export async function apiRequest<TResponse, TData = unknown>(
   });
 
   await throwIfResNotOk(res);
+
+  // 处理204 No Content响应
+  if (res.status === 204) {
+    console.log(`[apiRequest] 收到204 No Content响应，返回空对象`);
+    return {} as TResponse;
+  }
+
   return await res.json();
 }
 
@@ -39,6 +46,13 @@ export const getQueryFn: <TResponse>(options: {
     }
 
     await throwIfResNotOk(res);
+
+    // 处理204 No Content响应
+    if (res.status === 204) {
+      console.log(`[getQueryFn] 收到204 No Content响应，返回空对象`);
+      return {} as TResponse;
+    }
+
     return await res.json();
   };
 
