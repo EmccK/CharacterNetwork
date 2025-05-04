@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { BookIcon, ArrowLeftIcon, PlusIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
 
 interface BookDetailProps {
   book: BookInfo;
@@ -21,47 +22,55 @@ interface ErrorResponseData {
 // 直接从搜索结果创建小说的API请求函数
 const createNovelFromSearchBook = async (book: BookInfo): Promise<any> => {
   try {
-    console.log('从搜索结果中创建小说，书籍数据:', {
+    console.log('[BookDetail] 开始从搜索结果创建小说，准备发送请求');
+    console.log('[BookDetail] 书籍数据:', {
       title: book.title,
       externalId: book.externalId,
       externalIdType: typeof book.externalId,
       categories: book.categories,
       rating: (book as any).rating
     });
-    
+
+    // 构建请求数据
+    const requestData = {
+      bookData: {
+        externalId: book.externalId,
+        title: book.title,
+        author: book.author || '',
+        description: book.description || '',
+        coverImage: book.coverImage || '',
+        publishedDate: book.publishedDate || '',
+        publisher: book.publisher || '',
+        isbn: book.isbn || '',
+        pageCount: book.pageCount || 0,
+        categories: book.categories || [],
+        language: book.language || 'zh',
+        // 传递微信读书特有字段
+        rating: (book as any).rating,
+        ratingCount: (book as any).ratingCount,
+        payType: (book as any).payType
+      },
+      status: 'In Progress'
+    };
+
+    console.log('[BookDetail] 发送请求数据:', JSON.stringify(requestData));
+
     // 直接发送全部数据给新的API端点
     const response = await fetch('/api/novels/from-search-book', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        bookData: {
-          externalId: book.externalId,
-          title: book.title,
-          author: book.author || '',
-          description: book.description || '',
-          coverImage: book.coverImage || '',
-          publishedDate: book.publishedDate || '',
-          publisher: book.publisher || '',
-          isbn: book.isbn || '',
-          pageCount: book.pageCount || 0,
-          categories: book.categories || [],
-          language: book.language || 'zh',
-          // 传递微信读书特有字段
-          rating: (book as any).rating,
-          ratingCount: (book as any).ratingCount,
-          payType: (book as any).payType
-        },
-        status: 'In Progress'
-      }),
+      body: JSON.stringify(requestData),
     });
+
+    console.log('[BookDetail] 收到响应状态:', response.status, response.statusText);
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('请求失败:', response.status, response.statusText);
-      console.error('创建小说失败响应:', errorData);
-      
+      console.error('[BookDetail] 请求失败:', response.status, response.statusText);
+      console.error('[BookDetail] 创建小说失败响应:', errorData);
+
       // 创建自定义错误对象，包含响应数据
       const error: any = new Error(errorData.message || '创建小说失败');
       error.response = { data: errorData };
@@ -69,10 +78,11 @@ const createNovelFromSearchBook = async (book: BookInfo): Promise<any> => {
     }
 
     const novel = await response.json();
-    console.log('小说创建成功响应:', novel);
+    console.log('[BookDetail] 小说创建成功响应:', novel);
+    console.log('[BookDetail] 新创建的小说ID:', novel.id);
     return novel;
   } catch (error) {
-    console.error('创建小说过程中出错:', error);
+    console.error('[BookDetail] 创建小说过程中出错:', error);
     throw error;
   }
 };
@@ -85,13 +95,23 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
   const { mutate, isPending } = useMutation({
     mutationFn: createNovelFromSearchBook,
     onSuccess: (data) => {
+      console.log('[BookDetail] 创建小说成功，准备更新缓存');
+
+      // 使小说列表缓存失效，强制重新获取
+      queryClient.invalidateQueries({ queryKey: ["/api/novels"] });
+      console.log('[BookDetail] 已使小说列表缓存失效');
+
       toast({
         title: '小说创建成功',
         description: `已从"${book.title}"创建小说`,
       });
+
+      // 导航到新创建的小说详情页
+      console.log('[BookDetail] 导航到新创建的小说页面:', `/novels/${data.id}`);
       navigate(`/novels/${data.id}`);
     },
     onError: (error) => {
+      console.error('[BookDetail] 创建小说失败:', error);
       toast({
         variant: 'destructive',
         title: '创建失败',
@@ -105,8 +125,8 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
   };
 
   // 提取和格式化分类
-  const categories = book.categories && Array.isArray(book.categories) 
-    ? book.categories as string[] 
+  const categories = book.categories && Array.isArray(book.categories)
+    ? book.categories as string[]
     : [];
 
   return (
@@ -124,9 +144,9 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
         <CardContent>
           <div className="flex flex-col md:flex-row gap-6">
             {book.coverImage ? (
-              <img 
-                src={book.coverImage} 
-                alt={book.title} 
+              <img
+                src={book.coverImage}
+                alt={book.title}
                 className="w-36 h-48 object-cover self-center md:self-start"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
@@ -157,7 +177,7 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
                   {/* 显示额外的微信读书信息 */}
                   {(book as any).rating && (
                     <li className="text-sm text-orange-500 font-medium">
-                      评分: {((book as any).rating / 100).toFixed(1)} 
+                      评分: {((book as any).rating / 100).toFixed(1)}
                       {(book as any).ratingCount && (
                         <span className="text-gray-500 font-normal">({Math.floor((book as any).ratingCount/10000)}w+评)</span>
                       )}
@@ -165,7 +185,7 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
                   )}
                   {typeof (book as any).payType === 'number' && (
                     <li className="text-sm">
-                      类型: 
+                      类型:
                       <span className={`ml-1 px-1.5 py-0.5 rounded text-xs ${(book as any).payType === 1048577 ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
                         {(book as any).payType === 1048577 ? '付费' : '免费'}
                       </span>
@@ -181,8 +201,8 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
                     <li className="text-sm">页数: {book.pageCount}</li>
                   )}
                   {book.language && (
-                    <li className="text-sm">语言: {book.language === 'zh' ? '中文' : 
-                                               book.language === 'en' ? '英文' : 
+                    <li className="text-sm">语言: {book.language === 'zh' ? '中文' :
+                                               book.language === 'en' ? '英文' :
                                                book.language}</li>
                   )}
                 </ul>
@@ -220,8 +240,8 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
           </div>
         </CardContent>
         <CardFooter className="flex justify-end">
-          <Button 
-            onClick={handleCreateNovel} 
+          <Button
+            onClick={handleCreateNovel}
             disabled={isPending}
             className="w-full sm:w-auto"
           >
