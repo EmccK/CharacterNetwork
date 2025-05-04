@@ -271,7 +271,7 @@ export default function NovelDetail() {
                   
                   {/* 选项卡 */}
                   <div className="mt-6 border-b border-gray-200">
-                    <Tabs value={activeTab} onValueChange={setActiveTab}>
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
                       <TabsList className="border-b-0">
                         <TabsTrigger value="characters">角色</TabsTrigger>
                         <TabsTrigger value="relationships">关系图</TabsTrigger>
