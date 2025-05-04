@@ -63,6 +63,9 @@ export const createCharacter = async (req: Request, res: Response, next: NextFun
     } else if (req.body.avatarUrl) {
       // 直接使用提供的URL
       avatar = req.body.avatarUrl;
+    } else if (req.body.avatarData) {
+      // 处理预设或自动生成的头像数据
+      avatar = req.body.avatarData;
     }
     
     const characterData = {
@@ -71,8 +74,9 @@ export const createCharacter = async (req: Request, res: Response, next: NextFun
       novelId: parseInt(req.body.novelId),
     };
     
-    // 移除avatarUrl字段，因为它不在我们的schema中
+    // 移除不在schema中的字段
     delete characterData.avatarUrl;
+    delete characterData.avatarData;
     
     // 检查小说是否存在
     const novel = await storage.getNovel(characterData.novelId);
@@ -125,6 +129,9 @@ export const updateCharacter = async (req: Request, res: Response, next: NextFun
     } else if (req.body.avatarUrl) {
       // 直接使用提供的URL
       avatar = req.body.avatarUrl;
+    } else if (req.body.avatarData) {
+      // 处理预设或自动生成的头像数据
+      avatar = req.body.avatarData;
     }
     
     const characterData = {
@@ -132,8 +139,9 @@ export const updateCharacter = async (req: Request, res: Response, next: NextFun
       avatar,
     };
     
-    // 移除avatarUrl字段，因为它不在我们的schema中
+    // 移除不在schema中的字段
     delete characterData.avatarUrl;
+    delete characterData.avatarData;
     
     // 如果提供了novelId，确保它是数字类型
     if (characterData.novelId) {

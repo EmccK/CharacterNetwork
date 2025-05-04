@@ -10,6 +10,8 @@ import {
   createNovelFromBook,
   createNovelFromSearchBook
 } from "../controllers/novelController";
+import { getNovelCharacters } from "../controllers/characterController";
+import { getNovelRelationships } from "../controllers/relationshipController";
 
 const router = Router();
 
@@ -33,5 +35,11 @@ router.post("/from-book/:externalId", isAuthenticated, createNovelFromBook);
 
 // 从搜索结果创建小说
 router.post("/from-search-book", isAuthenticated, createNovelFromSearchBook);
+
+// 获取特定小说的所有角色
+router.get("/:novelId/characters", isAuthenticated, getNovelCharacters);
+
+// 获取特定小说的所有关系
+router.get("/:novelId/relationships", isAuthenticated, getNovelRelationships);
 
 export default router;

@@ -5,6 +5,7 @@ import authRoutes from "./auth";
 import novelsRoutes from "./novels";
 import charactersRoutes from "./characters";
 import relationshipsRoutes from "./relationships";
+import relationshipTypesRoutes from "./relationship-types";
 import genresRoutes from "./genres";
 import booksRoutes from "./books";
 import adminRoutes from "./admin";
@@ -29,6 +30,9 @@ export function registerRoutes(app: Express): void {
 
   // 关系相关路由
   app.use("/api/relationships", relationshipsRoutes);
+
+  // 关系类型相关路由
+  app.use("/api/relationship-types", relationshipTypesRoutes);
 
   // 小说类型相关路由
   app.use("/api/genres", genresRoutes);

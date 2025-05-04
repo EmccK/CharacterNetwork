@@ -211,11 +211,18 @@ export const deleteRelationship = async (req: Request, res: Response, next: Next
  */
 export const getRelationshipTypes = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = parseInt(req.params.userId);
+    // 如果没有提供 userId 参数，则使用当前用户的 ID
+    let userId: number;
     
-    // 只允许获取自己的关系类型或系统默认类型
-    if (userId !== req.user!.id && !req.user!.isAdmin) {
-      return res.status(403).json({ message: "Forbidden" });
+    if (req.params.userId) {
+      userId = parseInt(req.params.userId);
+      // 只允许获取自己的关系类型或系统默认类型
+      if (userId !== req.user!.id && !req.user!.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+    } else {
+      // 如果是从 relationship-types 路由访问，直接使用当前用户 ID
+      userId = req.user!.id;
     }
     
     const relationshipTypes = await storage.getRelationshipTypes(userId);
