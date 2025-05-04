@@ -91,7 +91,7 @@ export const loginUser = (req: Request, res: Response, next: NextFunction) => {
 export const logoutUser = (req: Request, res: Response, next: NextFunction) => {
   req.logout((err) => {
     if (err) return next(err);
-    res.sendStatus(200);
+    res.status(200).json({ message: "登出成功" });
   });
 };
 

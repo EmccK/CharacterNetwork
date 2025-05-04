@@ -22,13 +22,22 @@ export async function apiRequest<TResponse, TData = unknown>(
 
   await throwIfResNotOk(res);
 
-  // 处理204 No Content响应
-  if (res.status === 204) {
-    console.log(`[apiRequest] 收到204 No Content响应，返回空对象`);
+  // 处理204 No Content响应或空响应
+  if (res.status === 204 || res.headers.get("content-length") === "0") {
+    console.log(`[apiRequest] 收到空响应，返回空对象`);
     return {} as TResponse;
   }
 
-  return await res.json();
+  // 检查内容类型是否为JSON
+  const contentType = res.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    return await res.json();
+  } else {
+    // 非JSON响应，将文本内容包装为对象返回
+    const text = await res.text();
+    console.log(`[apiRequest] 收到非JSON响应: ${text}`);
+    return { message: text } as TResponse;
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -47,13 +56,22 @@ export const getQueryFn: <TResponse>(options: {
 
     await throwIfResNotOk(res);
 
-    // 处理204 No Content响应
-    if (res.status === 204) {
-      console.log(`[getQueryFn] 收到204 No Content响应，返回空对象`);
+    // 处理204 No Content响应或空响应
+    if (res.status === 204 || res.headers.get("content-length") === "0") {
+      console.log(`[getQueryFn] 收到空响应，返回空对象`);
       return {} as TResponse;
     }
 
-    return await res.json();
+    // 检查内容类型是否为JSON
+    const contentType = res.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return await res.json();
+    } else {
+      // 非JSON响应，将文本内容包装为对象返回
+      const text = await res.text();
+      console.log(`[getQueryFn] 收到非JSON响应: ${text}`);
+      return { message: text } as TResponse;
+    }
   };
 
 // 通用请求辅助函数
