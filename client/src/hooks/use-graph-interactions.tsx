@@ -56,13 +56,25 @@ export function useGraphInteractions({
   // 处理节点点击
   const handleNodeClick = useCallback((id: number) => {
     console.log('Node clicked with id:', id);
+    
+    // 检查是否是已选中的节点
+    if (id === selectedNode) {
+      // 已选中的节点被点击，则设置为反选
+      if (onNodeSelect) {
+        onNodeSelect(null);
+      }
+      setSelectedNode(null);
+      return;
+    }
+    
+    // 正常选中节点
     if (onNodeSelect) {
       // 查找对应的角色对象
       const character = characters?.find(c => c.id === id) || null;
       onNodeSelect(character);
     }
     setSelectedNode(id);
-  }, [onNodeSelect, setSelectedNode, characters]);
+  }, [onNodeSelect, setSelectedNode, characters, selectedNode]);
 
   // 处理节点鼠标按下
   const handleNodeMouseDown = useCallback((event: React.MouseEvent, id: number) => {

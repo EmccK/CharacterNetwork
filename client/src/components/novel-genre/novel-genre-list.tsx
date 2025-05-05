@@ -34,7 +34,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, MoreHorizontal, Loader2 } from "lucide-react";
+import { Plus, MoreHorizontal, Loader2, BookType } from "lucide-react";
 import NovelGenreForm from "./novel-genre-form";
 
 type NovelGenre = {
@@ -134,39 +134,54 @@ export default function NovelGenreList() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">小说类型管理</h2>
-        <Button onClick={handleAddGenre}>
-          <Plus className="h-4 w-4 mr-2" /> 添加类型
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-bold text-gray-800">小说类型</h2>
+          <span className="text-xs bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full">
+            {genres.length} 种类型
+          </span>
+        </div>
+        <Button onClick={handleAddGenre} size="sm" className="gap-1.5">
+          <Plus className="h-3.5 w-3.5" /> 添加类型
         </Button>
       </div>
 
       {genres.length === 0 ? (
         <Card>
           <CardContent className="pt-6 pb-4 text-center">
-            <p className="text-muted-foreground">
+            <div className="flex justify-center mb-3">
+              <div className="p-3 bg-gray-100 rounded-full">
+                <BookType className="h-6 w-6 text-gray-400" />
+              </div>
+            </div>
+            <p className="text-sm text-gray-500">
               您还没有创建任何小说类型。点击"添加类型"按钮开始创建。
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {genres.map((genre: NovelGenre) => (
-            <Card key={genre.id}>
+            <Card key={genre.id} className="hover:shadow-sm transition-all hover:border-primary-100 bg-white">
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
-                  <CardTitle>{genre.name}</CardTitle>
+                  <CardTitle className="text-base font-medium">{genre.name}</CardTitle>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-gray-100">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>操作</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => handleEditGenre(genre)}>编辑</DropdownMenuItem>
+                    <DropdownMenuContent align="end" className="w-36">
+                      <DropdownMenuLabel className="text-xs font-medium">操作</DropdownMenuLabel>
+                      <DropdownMenuItem 
+                        onClick={() => handleEditGenre(genre)}
+                        className="text-sm cursor-pointer"
+                      >
+                        编辑
+                      </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => handleDeleteGenre(genre)}
-                        className="text-red-600"
+                        className="text-sm text-red-600 cursor-pointer"
                       >
                         删除
                       </DropdownMenuItem>
@@ -174,13 +189,13 @@ export default function NovelGenreList() {
                   </DropdownMenu>
                 </div>
                 {genre.isPublic && (
-                  <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
+                  <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
                     公开
                   </span>
                 )}
               </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-sm text-muted-foreground">
+              <CardContent className="pt-0 pb-4">
+                <p className="text-xs text-gray-500 line-clamp-2">
                   {genre.description || "无描述"}
                 </p>
               </CardContent>

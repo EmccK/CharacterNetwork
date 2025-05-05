@@ -29,20 +29,37 @@ export default function CharacterNetworkGraph({
 
   // 处理节点选择
   const handleNodeSelect = (character: Character | null) => {
-    setSelectedCharacter(character);
+    // 如果点击已选中的角色，则将其反选
+    if (character && selectedCharacter && character.id === selectedCharacter.id) {
+      setSelectedCharacter(null);
+      if (onSelectCharacter) {
+        onSelectCharacter(null);
+      }
+      return;
+    }
     
-    if (character && onSelectCharacter && !notifiedCharacterIds.has(character.id)) {
-      // 只有当这个角色第一次被选中时才触发回调
-      onSelectCharacter(character);
+    // 选中一个新的角色，自动切换到信息标签
+    if (character) {
+      setSelectedCharacter(character);
       
-      // 添加到已通知集合
-      setNotifiedCharacterIds(prev => {
-        const newSet = new Set(prev);
-        newSet.add(character.id);
-        return newSet;
-      });
-    } else if (!character && onSelectCharacter) {
-      onSelectCharacter(null);
+      if (onSelectCharacter) {
+        onSelectCharacter(character);
+        
+        // 添加到已通知集合，便于展示通知需求
+        if (!notifiedCharacterIds.has(character.id)) {
+          setNotifiedCharacterIds(prev => {
+            const newSet = new Set(prev);
+            newSet.add(character.id);
+            return newSet;
+          });
+        }
+      }
+    } else if (!character) {
+      // 取消选中（点击空白处）
+      setSelectedCharacter(null);
+      if (onSelectCharacter) {
+        onSelectCharacter(null);
+      }
     }
   };
 

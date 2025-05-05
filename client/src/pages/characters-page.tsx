@@ -5,6 +5,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import Sidebar from "@/components/layout/sidebar";
 import Topbar from "@/components/layout/topbar";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Dialog, 
   DialogContent, 
@@ -200,51 +201,59 @@ export default function CharactersPage() {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
               </div>
             ) : displayedCharacters.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
-                {displayedCharacters.map((character: any, index: number) => (
-                  <Card key={character.id} className="overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 active:scale-95 scale-in" style={{ animationDelay: `${0.05 + index * 0.03}s` }}>
-                    <div className="aspect-[1/1] relative bg-gray-100 max-h-24">
-                      {character.avatar ? (
-                        <img 
-                          src={character.avatar} 
-                          alt={character.name} 
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <User className="h-10 w-10 text-gray-300" />
-                        </div>
-                      )}
-                    </div>
-                    <CardHeader className="p-2 pb-1">
-                      <CardTitle className="text-sm whitespace-normal break-words">{character.name}</CardTitle>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {displayedCharacters.map((character: any) => (
+                  <Card 
+                    key={character.id} 
+                    className="overflow-hidden hover:shadow-md transition-all hover:border-primary-200 group bg-white min-h-[140px]"
+                  >
+                    <CardHeader className="pb-1 pt-3 px-3">
+                      <div className="flex flex-col items-center text-center w-full">
+                        <Avatar className="h-12 w-12 mb-2 ring-2 ring-gray-50 group-hover:ring-primary-50">
+                          {character.avatar ? (
+                            character.avatar.startsWith('data:image/svg+xml;base64,') ? (
+                              <div className="w-full h-full">
+                                <img src={character.avatar} alt={character.name} className="w-full h-full object-cover" />
+                              </div>
+                            ) : (
+                              <AvatarImage src={character.avatar} alt={character.name} />
+                            )
+                          ) : (
+                            <AvatarFallback className="bg-primary-100 text-primary-800">
+                              {character.name.substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          )}
+                        </Avatar>
+                        <CardTitle className="text-sm font-medium w-full px-1 whitespace-normal break-words" title={character.name}>
+                          {character.name}
+                        </CardTitle>
+                      </div>
                     </CardHeader>
-                    <CardContent className="p-2 pt-0">
-                      <p className="text-xs text-gray-500 line-clamp-1">
-                        {character.description || "未提供描述"}
+                    <CardContent className="pb-2 px-3">
+                      <p className="text-xs text-gray-600 line-clamp-2 text-center">
+                        {character.description || "暂无描述。"}
                       </p>
                       {selectedNovelId === "all" && character.novelTitle && (
-                        <div className="mt-1">
-                          <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded-full">
+                        <div className="mt-1 text-center">
+                          <span className="text-xs bg-gray-50 px-2 py-0.5 rounded-full">
                             {character.novelTitle}
                           </span>
                         </div>
                       )}
                     </CardContent>
-                    <CardFooter className="p-2 pt-0 flex justify-end gap-1">
+                    <CardFooter className="flex justify-center gap-2 pt-0 pb-2 px-3 bg-gray-50 group-hover:bg-gray-100 transition-colors">
                       <Button 
                         variant="ghost" 
-                        size="icon" 
-                        className="h-7 w-7 transition-transform hover:scale-110 active:scale-95" 
+                        size="sm" 
+                        className="h-7 w-7 p-0 rounded-full bg-white hover:bg-white hover:text-blue-600" 
                         onClick={() => navigate(`/novels/${character.novelId}`)}
                       >
                         <Eye className="h-3.5 w-3.5" />
                       </Button>
                       <Button 
                         variant="ghost" 
-                        size="icon" 
-                        className="h-7 w-7 transition-transform hover:scale-110 active:scale-95" 
+                        size="sm" 
+                        className="h-7 w-7 p-0 rounded-full bg-white hover:bg-white hover:text-primary-600" 
                         onClick={() => {
                           setSelectedCharacter(character);
                           setIsEditCharacterModalOpen(true);
@@ -252,10 +261,10 @@ export default function CharactersPage() {
                       >
                         <Edit className="h-3.5 w-3.5" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-7 w-7 transition-transform hover:scale-110 active:scale-95"
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 rounded-full bg-white hover:bg-white hover:text-red-600"
                         onClick={() => handleDeleteCharacter(character.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />

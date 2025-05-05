@@ -106,9 +106,19 @@ export default function CharacterList({
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">角色</h3>
-        <Button variant="outline" size="sm" onClick={onAddCharacter}>
-          <Plus className="h-4 w-4 mr-1" /> 添加角色
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-gray-800">小说角色</h3>
+          <span className="text-sm bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full">
+            {characters.length} 个角色
+          </span>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={onAddCharacter}
+          className="bg-white hover:bg-gray-50 border-gray-200 text-gray-700 hover:text-gray-900 transition-colors"
+        >
+          <Plus className="h-4 w-4 mr-1 text-primary-500" /> 添加角色
         </Button>
       </div>
       
@@ -124,12 +134,15 @@ export default function CharacterList({
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {characters.map((character) => (
-            <Card key={character.id} className="overflow-hidden hover:shadow-md transition-shadow min-h-[120px]">
-              <CardHeader className="pb-0 pt-2 px-2">
+            <Card 
+              key={character.id} 
+              className="overflow-hidden hover:shadow-md transition-all hover:border-primary-200 group bg-white min-h-[140px]"
+            >
+              <CardHeader className="pb-1 pt-3 px-3">
                 <div className="flex flex-col items-center text-center w-full">
-                  <Avatar className="h-8 w-8 mb-1">
+                  <Avatar className="h-12 w-12 mb-2 ring-2 ring-gray-50 group-hover:ring-primary-50">
                     {character.avatar ? (
                       character.avatar.startsWith('data:image/svg+xml;base64,') ? (
                         <div className="w-full h-full">
@@ -144,25 +157,32 @@ export default function CharacterList({
                       </AvatarFallback>
                     )}
                   </Avatar>
-                  <CardTitle className="text-xs font-medium w-full px-1 whitespace-normal break-words min-h-[32px]" title={character.name}>{character.name}</CardTitle>
+                  <CardTitle className="text-sm font-medium w-full px-1 whitespace-normal break-words" title={character.name}>
+                    {character.name}
+                  </CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="pb-0 px-2">
-                <p className="text-[10px] text-gray-600 line-clamp-2 text-center">
+              <CardContent className="pb-2 px-3">
+                <p className="text-xs text-gray-600 line-clamp-2 text-center">
                   {character.description || "暂无描述。"}
                 </p>
               </CardContent>
-              <CardFooter className="flex justify-center gap-1 pt-0 pb-1 px-2">
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => handleEditClick(character)}>
-                  <EditIcon className="h-3 w-3" />
+              <CardFooter className="flex justify-center gap-2 pt-0 pb-2 px-3 bg-gray-50 group-hover:bg-gray-100 transition-colors">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-7 w-7 p-0 rounded-full bg-white hover:bg-white hover:text-primary-600" 
+                  onClick={() => handleEditClick(character)}
+                >
+                  <EditIcon className="h-3.5 w-3.5" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0"
+                  className="h-7 w-7 p-0 rounded-full bg-white hover:bg-white hover:text-red-600"
                   onClick={() => setCharacterToDelete(character)}
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </CardFooter>
             </Card>

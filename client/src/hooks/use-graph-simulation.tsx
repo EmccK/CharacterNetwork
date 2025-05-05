@@ -45,7 +45,10 @@ export function useGraphSimulation({
 
   // 初始化图谱数据
   useEffect(() => {
-    if (!characters.length) return;
+    // 无论角色是否为空，都需要重建模拟，以处理角色被删除的情况
+    if (simulationRef.current) {
+      simulationRef.current.stop();
+    }
 
     // 计算节点的连接度
     const nodeDegrees = new Map<number, number>();
@@ -92,18 +95,33 @@ export function useGraphSimulation({
 
   // 初始化D3模拟
   const initializeSimulation = useCallback((graphNodes: GraphNode[], graphLinks: GraphLink[]) => {
+    // 停止现有模拟
     if (simulationRef.current) {
       simulationRef.current.stop();
+      simulationRef.current = null;
+    }
+    
+    // 如果没有节点，直接返回
+    if (!graphNodes.length) {
+      setIsSimulationReady(false);
+      return;
     }
 
     // 创建力导向图模拟
     try {
+      // 确保所有链接中的source和target在节点列表中存在
+      const validLinks = graphLinks.filter(link => {
+        const sourceExists = graphNodes.some(node => node.id === link.source);
+        const targetExists = graphNodes.some(node => node.id === link.target);
+        return sourceExists && targetExists;
+      });
+      
       const simulation = d3.forceSimulation<GraphNode>()
         .nodes(graphNodes)
         .force('charge', d3.forceManyBody().strength(-150))
         .force('center', d3.forceCenter(dimensions.width / 2, dimensions.height / 2))
         .force('collision', d3.forceCollide().radius(30))
-        .force('link', d3.forceLink<GraphNode, any>(graphLinks)
+        .force('link', d3.forceLink<GraphNode, any>(validLinks)
           .id((d: any) => d.id)
           .distance(100))
         .alpha(1)

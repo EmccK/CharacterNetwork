@@ -272,11 +272,31 @@ export default function NovelDetail() {
                   {/* 选项卡 */}
                   <div className="mt-6 border-b border-gray-200">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-                      <TabsList className="border-b-0">
-                        <TabsTrigger value="characters">角色</TabsTrigger>
-                        <TabsTrigger value="relationships">关系图</TabsTrigger>
-                        <TabsTrigger value="notes">笔记</TabsTrigger>
-                        <TabsTrigger value="timeline">时间线</TabsTrigger>
+                      <TabsList className="border-b-0 bg-gray-50 p-1 rounded-lg">
+                        <TabsTrigger 
+                          value="characters"
+                          className="text-sm px-4 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary-600 data-[state=active]:shadow-sm"
+                        >
+                          角色
+                        </TabsTrigger>
+                        <TabsTrigger 
+                          value="relationships"
+                          className="text-sm px-4 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary-600 data-[state=active]:shadow-sm"
+                        >
+                          关系图
+                        </TabsTrigger>
+                        <TabsTrigger 
+                          value="notes"
+                          className="text-sm px-4 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary-600 data-[state=active]:shadow-sm"
+                        >
+                          笔记
+                        </TabsTrigger>
+                        <TabsTrigger 
+                          value="timeline"
+                          className="text-sm px-4 py-1.5 data-[state=active]:bg-white data-[state=active]:text-primary-600 data-[state=active]:shadow-sm"
+                        >
+                          时间线
+                        </TabsTrigger>
                       </TabsList>
                     </Tabs>
                   </div>
@@ -326,20 +346,19 @@ export default function NovelDetail() {
                         </div>
                         
                         <div className="bg-gray-50 rounded-lg border border-gray-100 overflow-hidden p-1">
-                          <CharacterNetworkGraph 
-                            characters={parsedCharacters}
-                            relationships={relationships}
-                            relationshipTypes={relationshipTypes}
-                            isLoading={isCharactersLoading || isRelationshipsLoading || isRelationshipTypesLoading}
-                            onSelectCharacter={(character) => {
-                              if (character) {
-                                // 使用非弹出的方式显示角色信息，
-                                // 如切换到角色信息页面或更新状态栏
-                                // 这里可以不显示任何通知
-                                console.log(`已选择角色：${character.name}`);
-                              }
-                            }}
-                          />
+                            <CharacterNetworkGraph 
+                              characters={parsedCharacters}
+                              relationships={relationships}
+                              relationshipTypes={relationshipTypes}
+                              isLoading={isCharactersLoading || isRelationshipsLoading || isRelationshipTypesLoading}
+                              onSelectCharacter={(character) => { // 这是修改的部分
+                                if (character) {
+                                  // 当选中角色时，自动切换到“角色信息”标签
+                                  // 这里不需要设置标签，图谱组件内部已处理
+                                  console.log(`已选择角色：${character.name}`);
+                                }
+                              }}
+                            />
                           
                           {/* 关系列表 */}
                           {relationships.length > 0 && (

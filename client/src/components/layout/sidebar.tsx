@@ -35,8 +35,8 @@ function SidebarLink({ href, icon, children, active, onClick, count }: SidebarLi
         if (onClick) onClick();
       }}
     >
-      {icon}
-      <span className="ml-3 flex-grow">{children}</span>
+      <span className="w-6 h-6 flex items-center justify-center mr-3">{icon}</span>
+      <span className="flex-grow text-sm font-medium">{children}</span>
       {count !== undefined && (
         <span className="ml-auto bg-gray-100 text-gray-700 rounded-full px-2 py-0.5 text-xs font-medium">
           {count}
