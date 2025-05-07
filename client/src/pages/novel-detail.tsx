@@ -438,6 +438,18 @@ export default function NovelDetail() {
                     
                     {activeTab === "timeline" && (
                       <div className="mt-4">
+                        <div className="flex justify-between items-center mb-6">
+                          <h3 className="text-lg font-semibold text-gray-800">故事时间线</h3>
+                          <Button 
+                            variant="outline" 
+                            onClick={() => navigate(`/novels/${params?.id}/timeline`)}
+                          >
+                            <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                            高级时间线
+                          </Button>
+                        </div>
                         <TimelineView
                           events={timelineEvents}
                           characters={parsedCharacters}

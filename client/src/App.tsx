@@ -19,6 +19,7 @@ import RelationshipsPage from "@/pages/relationships-page";
 import AdminPanel from "@/pages/admin-panel";
 import SettingsPage from "@/pages/settings-page";
 import ImportBookPage from "@/pages/import-book-page";
+import TimelinePage from "@/pages/timeline-page";
 
 function Router() {
   return (
@@ -52,6 +53,9 @@ function Router() {
       </Route>
       <Route path="/import-book">
         <ImportBookPage />
+      </Route>
+      <Route path="/novels/:id/timeline">
+        <TimelinePage />
       </Route>
       <Route>
         <NotFound />
