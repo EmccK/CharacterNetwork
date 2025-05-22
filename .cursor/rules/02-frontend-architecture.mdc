@@ -1,0 +1,37 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 前端架构
+
+前端使用React和TypeScript构建，采用模块化设计，配合TailwindCSS和Shadcn/UI组件库。
+
+## 目录结构
+
+- `client/src/components/`: UI组件
+- `client/src/pages/`: 页面组件
+- `client/src/hooks/`: 自定义React钩子
+- `client/src/store/`: 状态管理
+- `client/src/lib/`: 工具函数和库
+- `client/src/types/`: TypeScript类型定义
+- `client/src/assets/`: 静态资源
+
+## 主要文件
+
+- 应用入口：[client/src/main.tsx](mdc:client/src/main.tsx)
+- 主应用组件：[client/src/App.tsx](mdc:client/src/App.tsx)
+- 全局样式：[client/src/index.css](mdc:client/src/index.css)
+- HTML模板：[client/index.html](mdc:client/index.html)
+
+## 状态管理
+
+应用使用Zustand进行状态管理，相关文件位于`client/src/store/`目录。
+
+## 路由管理
+
+应用使用wouter进行路由管理，路由定义在[client/src/App.tsx](mdc:client/src/App.tsx)中。
+
+## API请求
+
+使用React Query (@tanstack/react-query)进行API请求管理。

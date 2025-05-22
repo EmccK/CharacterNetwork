@@ -1,0 +1,62 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# API路由
+
+应用使用Express.js提供REST API。API路由定义在`server/routes/`目录下，入口文件为[server/routes/index.ts](mdc:server/routes/index.ts)。
+
+## 路由结构
+
+所有API端点都以`/api`为前缀。
+
+### 认证路由
+- 文件：[server/routes/auth.ts](mdc:server/routes/auth.ts)
+- 路径：`/api/auth`
+- 功能：用户注册、登录、登出和会话管理
+
+### 小说路由
+- 文件：[server/routes/novels.ts](mdc:server/routes/novels.ts)
+- 路径：`/api/novels`
+- 功能：小说的CRUD操作
+
+### 角色路由
+- 文件：[server/routes/characters.ts](mdc:server/routes/characters.ts)
+- 路径：`/api/characters`
+- 功能：角色的CRUD操作
+
+### 关系路由
+- 文件：[server/routes/relationships.ts](mdc:server/routes/relationships.ts)
+- 路径：`/api/relationships`
+- 功能：关系的CRUD操作
+
+### 关系类型路由
+- 文件：[server/routes/relationship-types.ts](mdc:server/routes/relationship-types.ts)
+- 路径：`/api/relationship-types`
+- 功能：关系类型的CRUD操作
+
+### 小说类型路由
+- 文件：[server/routes/genres.ts](mdc:server/routes/genres.ts)
+- 路径：`/api/genres`
+- 功能：小说类型的CRUD操作
+
+### 书籍信息路由
+- 文件：[server/routes/books.ts](mdc:server/routes/books.ts)
+- 路径：`/api/books`
+- 功能：书籍信息的CRUD操作和外部API检索
+
+### 时间线事件路由
+- 文件：[server/routes/timeline-events.ts](mdc:server/routes/timeline-events.ts)
+- 路径：`/api/timeline-events`
+- 功能：时间线事件的CRUD操作
+
+### 管理员路由
+- 文件：[server/routes/admin.ts](mdc:server/routes/admin.ts)
+- 路径：`/api/admin`
+- 功能：管理员特权操作，如用户管理和系统统计
+
+### 外部API代理路由
+- 文件：[server/routes/weread.ts](mdc:server/routes/weread.ts)
+- 路径：`/api/weread`
+- 功能：微信读书API代理，用于检索外部书籍信息

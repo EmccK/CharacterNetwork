@@ -1,0 +1,44 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 数据库架构
+
+数据库使用PostgreSQL，通过Drizzle ORM进行管理。数据模型定义在[shared/schema.ts](mdc:shared/schema.ts)中。
+
+## 主要实体
+
+### 用户(Users)
+- 用户信息，包括用户名、密码、邮箱和管理员状态
+- 主表：`users`
+
+### 小说(Novels)
+- 小说基本信息，包括标题、描述、封面图片、流派和状态
+- 主表：`novels`
+- 关联表：`novel_genres`（小说流派）
+
+### 角色(Characters)
+- 小说中的角色信息，包括名称、描述和头像
+- 主表：`characters`
+
+### 关系(Relationships)
+- 定义角色之间的关系
+- 主表：`relationships`
+- 关联表：`relationship_types`（关系类型）
+
+### 时间线事件(Timeline Events)
+- 小说中的时间线事件，用于追踪故事发展
+- 主表：`timeline_events`
+
+### 书籍信息(Book Infos)
+- 外部API获取的书籍信息
+- 主表：`book_infos`
+
+## 实体关系
+
+- 用户创建小说 (users -> novels)
+- 小说包含多个角色 (novels -> characters)
+- 角色之间建立关系 (characters -> relationships -> characters)
+- 小说包含时间线事件 (novels -> timeline_events)
+- 小说可以关联外部书籍信息 (novels -> book_infos)

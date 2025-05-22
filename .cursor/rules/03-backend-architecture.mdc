@@ -1,0 +1,32 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 后端架构
+
+后端使用Express.js和TypeScript构建，采用MVC架构。
+
+## 目录结构
+
+- `server/controllers/`: 控制器，处理业务逻辑
+- `server/routes/`: 路由定义
+- `server/services/`: 服务层，封装复杂业务逻辑
+- `server/middleware/`: Express中间件
+- `server/utils/`: 工具函数
+- `server/db/`: 数据库相关代码
+
+## 主要文件
+
+- 服务器入口：[server/index.ts](mdc:server/index.ts)
+- 数据库连接：[server/db.ts](mdc:server/db.ts)
+- 认证逻辑：[server/auth.ts](mdc:server/auth.ts)
+- 存储逻辑：[server/storage.ts](mdc:server/storage.ts)、[server/storage-drizzle.ts](mdc:server/storage-drizzle.ts)
+
+## 身份验证
+
+应用使用Passport.js和express-session进行身份验证和会话管理。相关配置位于[server/auth.ts](mdc:server/auth.ts)中。
+
+## 数据库交互
+
+应用使用Drizzle ORM进行数据库交互，数据库模式定义在[shared/schema.ts](mdc:shared/schema.ts)中。

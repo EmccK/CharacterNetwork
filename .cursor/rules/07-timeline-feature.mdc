@@ -1,0 +1,45 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 时间线功能
+
+应用提供时间线功能，用于管理小说中的事件发展顺序。
+
+## 数据模型
+
+时间线功能的核心数据模型是时间线事件（TimelineEvent），定义在[shared/schema.ts](mdc:shared/schema.ts)中。
+
+每个时间线事件包含以下字段：
+
+- `id`：事件ID
+- `title`：事件标题
+- `description`：事件描述
+- `date`：事件日期/时间点
+- `importance`：事件重要性（minor, normal, important, critical）
+- `characterIds`：相关角色ID数组
+- `novelId`：所属小说ID
+- `createdAt`：创建时间
+
+## API接口
+
+时间线事件的API接口定义在[shared/api-types.ts](mdc:shared/api-types.ts)中，相关路由定义在[server/routes/timeline-events.ts](mdc:server/routes/timeline-events.ts)中。
+
+主要API包括：
+
+- 获取时间线事件列表
+- 获取时间线事件详情
+- 创建时间线事件
+- 更新时间线事件
+- 删除时间线事件
+
+## 前端实现
+
+前端实现时间线组件，允许用户：
+
+- 可视化查看小说事件时间线
+- 按时间顺序排列事件
+- 标记事件重要性
+- 关联事件与角色
+- 添加、编辑和删除事件

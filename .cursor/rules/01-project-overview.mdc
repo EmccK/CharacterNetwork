@@ -1,0 +1,30 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 项目概览
+
+这是一个用于管理小说中人物关系的Web应用程序。用户可以创建小说，添加角色，并定义角色之间的关系。
+
+## 主要技术栈
+
+- 前端：React, TypeScript, TailwindCSS, Shadcn/UI组件
+- 后端：Express.js, TypeScript
+- 数据库：PostgreSQL
+- ORM：Drizzle ORM
+
+## 重要文件
+
+- 项目入口：[package.json](mdc:package.json)
+- 前端入口：[client/src/main.tsx](mdc:client/src/main.tsx)
+- 后端入口：[server/index.ts](mdc:server/index.ts)
+- 数据库模型：[shared/schema.ts](mdc:shared/schema.ts)
+- API类型：[shared/api-types.ts](mdc:shared/api-types.ts)
+
+## 项目结构
+
+- `client/`: 前端React应用
+- `server/`: 后端Express API
+- `shared/`: 前后端共享代码
+- `uploads/`: 上传的文件存储目录（头像等）
