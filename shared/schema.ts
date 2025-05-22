@@ -179,6 +179,18 @@ export const timelineEvents = pgTable("timeline_events", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Notes Schema
+export const notes = pgTable("notes", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  content: text("content"),
+  novelId: integer("novel_id").notNull().references(() => novels.id, { onDelete: "cascade" }),
+  characterIds: integer("character_ids").array(), // 可选的关联角色
+  labels: text("labels").array(), // 笔记标签
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Timeline Events insert schema
 export const insertTimelineEventSchema = createInsertSchema(timelineEvents).pick({
   title: true,
@@ -189,9 +201,22 @@ export const insertTimelineEventSchema = createInsertSchema(timelineEvents).pick
   novelId: true,
 });
 
+// Notes insert schema
+export const insertNoteSchema = createInsertSchema(notes).pick({
+  title: true,
+  content: true,
+  novelId: true,
+  characterIds: true,
+  labels: true,
+});
+
 // Timeline Event type
 export type InsertTimelineEvent = z.infer<typeof insertTimelineEventSchema>;
 export type TimelineEvent = typeof timelineEvents.$inferSelect;
+
+// Note type
+export type InsertNote = z.infer<typeof insertNoteSchema>;
+export type Note = typeof notes.$inferSelect;
 
 // Login type
 export type LoginData = Pick<InsertUser, "username" | "password">;

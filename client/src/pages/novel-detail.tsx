@@ -19,6 +19,7 @@ import CharacterForm from "@/components/character/character-form";
 import CharacterList from "@/components/character/character-list";
 import RelationshipForm from "@/components/relationship/relationship-form";
 import NovelForm from "@/components/novel/novel-form";
+import NoteList from "@/components/note/note-list";
 
 interface Novel {
   title: string;
@@ -61,6 +62,17 @@ interface TimelineEvent {
   characterIds: number[];
   novelId: number;
   createdAt: string;
+}
+
+interface Note {
+  id: number;
+  title: string;
+  content: string | null;
+  novelId: number;
+  characterIds: number[] | null;
+  labels: string[] | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface RelationshipType {
@@ -129,6 +141,16 @@ export default function NovelDetail() {
     refetch: refetchTimelineEvents
   } = useQuery<TimelineEvent[]>({
     queryKey: [`/api/novels/${params?.id}/timeline-events`],
+    enabled: !!params?.id,
+  });
+  
+  // 获取该小说的笔记
+  const {
+    data: notes = [],
+    isLoading: isNotesLoading,
+    refetch: refetchNotes
+  } = useQuery<Note[]>({
+    queryKey: [`/api/novels/${params?.id}/notes`],
     enabled: !!params?.id,
   });
   
@@ -441,11 +463,14 @@ export default function NovelDetail() {
                 )}
                 
                 {activeTab === "notes" && (
-                  <div className="bg-white p-6 rounded-lg border border-gray-100 text-center">
-                    <h3 className="text-lg font-medium text-gray-800 mb-2">笔记功能正在开发中</h3>
-                    <p className="text-gray-500 text-sm mb-4">
-                      此功能即将推出，敬请期待！
-                    </p>
+                  <div className="mt-4">
+                    <NoteList 
+                      notes={notes}
+                      characters={characters}
+                      novelId={parseInt(params?.id || "0")}
+                      isLoading={isNotesLoading || isCharactersLoading}
+                      onUpdate={() => refetchNotes()}
+                    />
                   </div>
                 )}
                 

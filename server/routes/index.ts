@@ -11,6 +11,7 @@ import booksRoutes from "./books";
 import adminRoutes from "./admin";
 import wereadRoutes from "./weread";
 import timelineEventsRoutes from "./timeline-events";
+import notesRoutes from "./notes";
 
 /**
  * 注册所有API路由
@@ -49,4 +50,7 @@ export function registerRoutes(app: Express): void {
 
   // 时间线事件相关路由
   app.use("/api", timelineEventsRoutes);
+  
+  // 笔记相关路由
+  app.use("/api", notesRoutes);
 }
