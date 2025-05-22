@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
-import { queryClient, getRequest } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import { BookOpen, Users, Link as LinkIcon, BookMarked, ArrowRight } from "lucide-react";
 
 import { CardGrid } from "@/components/ui/card-grid";
@@ -22,49 +22,87 @@ export default function HomePage() {
     }
   }, [user, navigate]);
 
-  // Get novels count
+  // Get novels
   const { data: novels = [] } = useQuery<any[]>({
     queryKey: ["/api/novels"],
   });
 
-  // 获取所有角色总数
-  const [charactersCount, setCharactersCount] = useState(0);
-  const [relationshipsCount, setRelationshipsCount] = useState(0);
-  const [inProgressCount, setInProgressCount] = useState(0);
+  // 获取角色数据
+  const { data: characters = [] } = useQuery<any[]>({
+    queryKey: ["allCharacters"],
+    queryFn: async () => {
+      try {
+        let allCharacters: any[] = [];
+        
+        // 如果有小说，尝试获取每个小说的角色
+        if (novels.length > 0) {
+          for (const novel of novels) {
+            try {
+              const response = await fetch(`/api/novels/${novel.id}/characters`, {
+                credentials: "include"
+              });
+              if (!response.ok) throw new Error(`获取小说ID ${novel.id}的角色失败`);
+              const data = await response.json();
+              if (Array.isArray(data)) {
+                allCharacters = [...allCharacters, ...data];
+              }
+            } catch (error) {
+              console.error(`获取小说ID ${novel.id}的角色失败:`, error);
+            }
+          }
+        }
+        return allCharacters;
+      } catch (error) {
+        console.error("获取所有角色失败:", error);
+        return [];
+      }
+    },
+    enabled: novels.length > 0
+  });
 
-  useEffect(() => {
-    // 获取所有角色总数
-    getRequest("/api/characters/count").then((response: any) => {
-      setCharactersCount(response.count || 0);
-    });
+  // 获取关系数据
+  const { data: relationships = [] } = useQuery<any[]>({
+    queryKey: ["allRelationships"],
+    queryFn: async () => {
+      try {
+        let allRelationships: any[] = [];
+        
+        // 如果有小说，尝试获取每个小说的关系
+        if (novels.length > 0) {
+          for (const novel of novels) {
+            try {
+              const response = await fetch(`/api/novels/${novel.id}/relationships`, {
+                credentials: "include"
+              });
+              if (!response.ok) throw new Error(`获取小说ID ${novel.id}的关系失败`);
+              const data = await response.json();
+              if (Array.isArray(data)) {
+                allRelationships = [...allRelationships, ...data];
+              }
+            } catch (error) {
+              console.error(`获取小说ID ${novel.id}的关系失败:`, error);
+            }
+          }
+        }
+        return allRelationships;
+      } catch (error) {
+        console.error("获取所有关系失败:", error);
+        return [];
+      }
+    },
+    enabled: novels.length > 0
+  });
 
-    // 获取所有关系总数
-    getRequest("/api/relationships/count").then((response: any) => {
-      setRelationshipsCount(response.count || 0);
-    });
-
-    // 获取进行中的小说
-    getRequest("/api/novels/count?status=in_progress").then((response: any) => {
-      setInProgressCount(response.count || 0);
-    });
-  }, []);
+  // 计算进行中的小说数量
+  const inProgressCount = novels.filter(novel => novel.status === "in_progress").length;
+  const charactersCount = characters.length;
+  const relationshipsCount = relationships.length;
 
   // 刷新函数
   const refreshData = () => {
     queryClient.invalidateQueries({ queryKey: ["/api/novels"] });
-    
-    // 重新获取统计数据
-    getRequest("/api/characters/count").then((response: any) => {
-      setCharactersCount(response.count || 0);
-    });
-
-    getRequest("/api/relationships/count").then((response: any) => {
-      setRelationshipsCount(response.count || 0);
-    });
-
-    getRequest("/api/novels/count?status=in_progress").then((response: any) => {
-      setInProgressCount(response.count || 0);
-    });
+    queryClient.invalidateQueries({ queryKey: ["allCharacters"] });
+    queryClient.invalidateQueries({ queryKey: ["allRelationships"] });
   };
 
   return (
