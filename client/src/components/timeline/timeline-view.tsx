@@ -67,13 +67,15 @@ const TimelineView: React.FC<TimelineViewProps> = ({
   // 处理删除事件
   const deleteMutation = useMutation({
     mutationFn: (eventId: number) =>
-      apiRequest('DELETE', `/api/timeline-events/${eventId}`, {}),
+      apiRequest('DELETE', `/api/timeline-events/${eventId}`),
     onSuccess: () => {
       toast({
         title: '事件已删除',
         description: '时间线事件已成功删除',
       });
-      onUpdate();
+      if (onUpdate && typeof onUpdate === 'function') {
+        onUpdate();
+      }
     },
     onError: (error) => {
       toast({
@@ -290,7 +292,9 @@ const TimelineView: React.FC<TimelineViewProps> = ({
             characters={characters}
             onSuccess={() => {
               setIsAddEventModalOpen(false);
-              onUpdate();
+              if (onUpdate && typeof onUpdate === 'function') {
+                onUpdate();
+              }
               toast({
                 title: '事件已添加',
                 description: '时间线事件已成功添加',
@@ -319,7 +323,9 @@ const TimelineView: React.FC<TimelineViewProps> = ({
               timelineEvent={eventToEdit}
               onSuccess={() => {
                 setEventToEdit(null);
-                onUpdate();
+                if (onUpdate && typeof onUpdate === 'function') {
+                  onUpdate();
+                }
                 toast({
                   title: '事件已更新',
                   description: '时间线事件已成功更新',

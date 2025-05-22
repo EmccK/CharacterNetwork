@@ -100,7 +100,9 @@ const TimelineForm: React.FC<TimelineFormProps> = ({
       }
       
       // 提交成功后调用回调函数
-      onSuccess();
+      if (onSuccess && typeof onSuccess === 'function') {
+        onSuccess();
+      }
     } catch (error) {
       console.error('提交时间线事件表单出错:', error);
       toast({

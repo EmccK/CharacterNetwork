@@ -456,7 +456,7 @@ export default function NovelDetail() {
                       characters={characters}
                       novelId={parseInt(params?.id || "0")}
                       isLoading={isTimelineEventsLoading || isCharactersLoading}
-                      onEventAdded={() => refetchTimelineEvents()}
+                      onUpdate={() => refetchTimelineEvents()}
                     />
                   </div>
                 )}
