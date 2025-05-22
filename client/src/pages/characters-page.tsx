@@ -2,8 +2,6 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import Sidebar from "@/components/layout/sidebar";
-import Topbar from "@/components/layout/topbar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -151,150 +149,142 @@ export default function CharactersPage() {
   const displayedCharacters = selectedNovelId === "all" ? allCharacters : characters;
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
+    <main className="flex-1 overflow-y-auto bg-gray-50">
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-800">角色管理</h3>
+          <Button
+            onClick={() => setIsAddCharacterModalOpen(true)}
+            disabled={novels.length === 0}
+          >
+            添加角色
+          </Button>
+        </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Topbar title="角色" />
+        {/* Novel selector */}
+        <div className="mb-6">
+          <Select value={selectedNovelId} onValueChange={handleNovelChange}>
+            <SelectTrigger className="w-full max-w-xs">
+              <SelectValue placeholder="选择小说" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">所有小说</SelectItem>
+              {novels.map((novel: any) => (
+                <SelectItem key={novel.id} value={novel.id.toString()}>
+                  {novel.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">角色管理</h3>
-              <Button
-                onClick={() => setIsAddCharacterModalOpen(true)}
-                disabled={novels.length === 0}
+        {/* Characters Grid */}
+        {novels.length === 0 ? (
+          <Card>
+            <CardContent className="p-6 text-center">
+              <p className="text-gray-500 mb-4">您需要先创建小说再添加角色。</p>
+              <Button onClick={() => navigate("/novels")}>
+                创建小说
+              </Button>
+            </CardContent>
+          </Card>
+        ) : isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          </div>
+        ) : displayedCharacters.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {displayedCharacters.map((character: any) => (
+              <Card 
+                key={character.id} 
+                className="overflow-hidden hover:shadow-md transition-all hover:border-primary-200 group bg-white min-h-[140px]"
               >
+                <CardHeader className="pb-1 pt-3 px-3">
+                  <div className="flex flex-col items-center text-center w-full">
+                    <Avatar className="h-12 w-12 mb-2 ring-2 ring-gray-50 group-hover:ring-primary-50">
+                      {character.avatar ? (
+                        character.avatar.startsWith('data:image/svg+xml;base64,') ? (
+                          <div className="w-full h-full">
+                            <img src={character.avatar} alt={character.name} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <AvatarImage src={character.avatar} alt={character.name} />
+                        )
+                      ) : (
+                        <AvatarFallback className="bg-primary-100 text-primary-800">
+                          {character.name.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <CardTitle className="text-sm font-medium w-full px-1 whitespace-normal break-words" title={character.name}>
+                      {character.name}
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="pb-2 px-3">
+                  <p className="text-xs text-gray-600 line-clamp-2 text-center">
+                    {character.description || "暂无描述。"}
+                  </p>
+                  {selectedNovelId === "all" && character.novelTitle && (
+                    <div className="mt-1 text-center">
+                      <span className="text-xs bg-gray-50 px-2 py-0.5 rounded-full">
+                        {character.novelTitle}
+                      </span>
+                    </div>
+                  )}
+                </CardContent>
+                <CardFooter className="flex justify-center gap-2 pt-0 pb-2 px-3 bg-gray-50 group-hover:bg-gray-100 transition-colors">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 w-7 p-0 rounded-full bg-white hover:bg-white hover:text-blue-600" 
+                    onClick={() => navigate(`/novels/${character.novelId}`)}
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 w-7 p-0 rounded-full bg-white hover:bg-white hover:text-primary-600" 
+                    onClick={() => {
+                      setSelectedCharacter(character);
+                      setIsEditCharacterModalOpen(true);
+                    }}
+                  >
+                    <Edit className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 rounded-full bg-white hover:bg-white hover:text-red-600"
+                    onClick={() => handleDeleteCharacter(character.id)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+            <div className="flex justify-center">
+              <div className="bg-gray-100 p-3 rounded-full">
+                <User className="h-10 w-10 text-gray-400" />
+              </div>
+            </div>
+            <h3 className="mt-4 text-lg font-medium text-gray-900">未找到角色</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {selectedNovelId === "all" 
+                ? "您在任何小说中都还没有创建角色。" 
+                : "这部小说还没有任何角色。"}
+            </p>
+            <div className="mt-6">
+              <Button onClick={() => setIsAddCharacterModalOpen(true)}>
                 添加角色
               </Button>
             </div>
-
-            {/* Novel selector */}
-            <div className="mb-6">
-              <Select value={selectedNovelId} onValueChange={handleNovelChange}>
-                <SelectTrigger className="w-full max-w-xs">
-                  <SelectValue placeholder="选择小说" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">所有小说</SelectItem>
-                  {novels.map((novel: any) => (
-                    <SelectItem key={novel.id} value={novel.id.toString()}>
-                      {novel.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Characters Grid */}
-            {novels.length === 0 ? (
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <p className="text-gray-500 mb-4">您需要先创建小说再添加角色。</p>
-                  <Button onClick={() => navigate("/novels")}>
-                    创建小说
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : isLoading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-              </div>
-            ) : displayedCharacters.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {displayedCharacters.map((character: any) => (
-                  <Card 
-                    key={character.id} 
-                    className="overflow-hidden hover:shadow-md transition-all hover:border-primary-200 group bg-white min-h-[140px]"
-                  >
-                    <CardHeader className="pb-1 pt-3 px-3">
-                      <div className="flex flex-col items-center text-center w-full">
-                        <Avatar className="h-12 w-12 mb-2 ring-2 ring-gray-50 group-hover:ring-primary-50">
-                          {character.avatar ? (
-                            character.avatar.startsWith('data:image/svg+xml;base64,') ? (
-                              <div className="w-full h-full">
-                                <img src={character.avatar} alt={character.name} className="w-full h-full object-cover" />
-                              </div>
-                            ) : (
-                              <AvatarImage src={character.avatar} alt={character.name} />
-                            )
-                          ) : (
-                            <AvatarFallback className="bg-primary-100 text-primary-800">
-                              {character.name.substring(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          )}
-                        </Avatar>
-                        <CardTitle className="text-sm font-medium w-full px-1 whitespace-normal break-words" title={character.name}>
-                          {character.name}
-                        </CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pb-2 px-3">
-                      <p className="text-xs text-gray-600 line-clamp-2 text-center">
-                        {character.description || "暂无描述。"}
-                      </p>
-                      {selectedNovelId === "all" && character.novelTitle && (
-                        <div className="mt-1 text-center">
-                          <span className="text-xs bg-gray-50 px-2 py-0.5 rounded-full">
-                            {character.novelTitle}
-                          </span>
-                        </div>
-                      )}
-                    </CardContent>
-                    <CardFooter className="flex justify-center gap-2 pt-0 pb-2 px-3 bg-gray-50 group-hover:bg-gray-100 transition-colors">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-7 w-7 p-0 rounded-full bg-white hover:bg-white hover:text-blue-600" 
-                        onClick={() => navigate(`/novels/${character.novelId}`)}
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-7 w-7 p-0 rounded-full bg-white hover:bg-white hover:text-primary-600" 
-                        onClick={() => {
-                          setSelectedCharacter(character);
-                          setIsEditCharacterModalOpen(true);
-                        }}
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 rounded-full bg-white hover:bg-white hover:text-red-600"
-                        onClick={() => handleDeleteCharacter(character.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                <div className="flex justify-center">
-                  <div className="bg-gray-100 p-3 rounded-full">
-                    <User className="h-10 w-10 text-gray-400" />
-                  </div>
-                </div>
-                <h3 className="mt-4 text-lg font-medium text-gray-900">未找到角色</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  {selectedNovelId === "all" 
-                    ? "您在任何小说中都还没有创建角色。" 
-                    : "这部小说还没有任何角色。"}
-                </p>
-                <div className="mt-6">
-                  <Button onClick={() => setIsAddCharacterModalOpen(true)}>
-                    添加角色
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
-        </main>
+        )}
       </div>
 
       {/* Add Character Dialog */}
@@ -410,6 +400,6 @@ export default function CharactersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </main>
   );
 }

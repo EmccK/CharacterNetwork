@@ -105,8 +105,9 @@ export default function Sidebar() {
     refetchOnWindowFocus: true
   });
   
-  const handleLogout = () => {
-    logoutMutation.mutate();
+  const handleLogout = async () => {
+    await logoutMutation.mutateAsync();
+    navigate("/auth");
   };
   
   return (

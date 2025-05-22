@@ -10,7 +10,6 @@ const urlsToCache = [
   '/index.html',
   '/favicon.png',
   '/manifest.json',
-  '/offline.html',
   '/icons/icon-192x192.png'
 ];
 
@@ -25,54 +24,49 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// 网络请求拦截，提供离线支持
+// 网络请求拦截，提供优先网络的策略
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then((response) => {
-        // 如果找到缓存的响应，则返回缓存
-        if (response) {
+        // 检查是否收到有效响应
+        if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
         
-        // 否则发送网络请求
-        return fetch(event.request)
-          .then((response) => {
-            // 检查是否收到有效响应
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
+        // 检查URL是否有效（不是chrome-extension等不支持的协议）
+        const url = new URL(event.request.url);
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+          return response;
+        }
+        
+        // 克隆响应以便我们可以将其存入缓存并返回
+        const responseToCache = response.clone();
+        
+        caches.open(CACHE_NAME)
+          .then((cache) => {
+            try {
+              // 添加响应到缓存
+              cache.put(event.request, responseToCache);
+            } catch (err) {
+              console.warn('缓存存储失败:', err);
             }
-            
-            // 检查URL是否有效（不是chrome-extension等不支持的协议）
-            const url = new URL(event.request.url);
-            if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-              return response;
+          });
+          
+        return response;
+      })
+      .catch(() => {
+        // 当网络失败时，尝试从缓存中获取
+        return caches.match(event.request)
+          .then((cachedResponse) => {
+            if (cachedResponse) {
+              return cachedResponse;
             }
-            
-            // 克隆响应以便我们可以将其存入缓存并返回
-            const responseToCache = response.clone();
-            
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                try {
-                  // 添加响应到缓存
-                  cache.put(event.request, responseToCache);
-                } catch (err) {
-                  console.warn('缓存存储失败:', err);
-                }
-              });
-              
-            return response;
-          })
-          .catch(() => {
-            // 当网络失败时，尝试返回离线页面
-            if (event.request.mode === 'navigate') {
-              return caches.match('/offline.html');
-            }
-            // 如果是图片请求，返回一个默认的图标
-            if (event.request.destination === 'image') {
-              return caches.match('/icons/icon-192x192.png');
-            }
+            // 如果缓存中也没有，则返回网络错误
+            return new Response('网络错误', { 
+              status: 408, 
+              headers: { 'Content-Type': 'text/plain' } 
+            });
           });
       })
   );

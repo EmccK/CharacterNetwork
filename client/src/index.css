@@ -151,4 +151,82 @@
   .mobile-menu-exit {
     animation: slideOutToLeft 0.3s forwards;
   }
+
+  /* 移动端优化 */
+  .touch-callout-none {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* 适配移动端的底部栏 */
+  .mobile-tabbar {
+    @apply fixed bottom-0 left-0 right-0 flex items-center justify-around bg-background border-t border-border py-2 px-1 safe-bottom z-50 shadow-md;
+    position: fixed !important; /* 确保固定在底部 */
+    height: 60px; /* 固定高度 */
+  }
+
+  .mobile-tabbar-item {
+    @apply flex flex-col items-center justify-center flex-1 py-1 touch-callout-none transition-colors duration-200;
+  }
+
+  .mobile-tabbar-item-active {
+    @apply text-primary font-medium;
+  }
+
+  .mobile-tabbar-item-active svg {
+    @apply text-primary;
+    filter: drop-shadow(0 0 2px rgba(var(--primary-rgb), 0.3));
+    transform: scale(1.1);
+  }
+
+  .mobile-tabbar-label {
+    @apply text-xs mt-1 transition-all;
+  }
+  
+  .mobile-tabbar-item-active .mobile-tabbar-label {
+    @apply font-medium;
+    transform: translateY(-1px);
+  }
+
+  /* 移动端下拉刷新动画 */
+  .pull-to-refresh {
+    @apply w-full flex items-center justify-center py-3;
+  }
+  
+  .pull-to-refresh-icon {
+    @apply animate-spin h-5 w-5 text-primary;
+  }
+
+  /* 列表组件优化 */
+  .mobile-list {
+    @apply divide-y divide-border overflow-auto;
+  }
+
+  .mobile-list-item {
+    @apply py-3 px-4 flex items-center gap-3 active:bg-accent/50 transition-colors;
+  }
+
+  /* 移动端点击反馈 */
+  .tap-highlight {
+    @apply active:opacity-70 transition-opacity duration-100;
+  }
+
+  /* 移动端手势滑动区域 */
+  .swipe-area {
+    @apply touch-pan-y overscroll-y-contain;
+  }
+
+  /* 自适应内容区域 */
+  .mobile-content-area {
+    @apply max-w-md mx-auto px-4 pb-20 pt-4;
+  }
 }

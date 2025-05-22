@@ -4,8 +4,6 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import Sidebar from "@/components/layout/sidebar";
-import Topbar from "@/components/layout/topbar";
 import NovelCard from "@/components/novel/novel-card";
 import NovelForm from "@/components/novel/novel-form";
 import { Button } from "@/components/ui/button";
@@ -109,150 +107,142 @@ export default function NovelsPage() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
+    <main className="flex-1 overflow-y-auto bg-gray-50">
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-800">我的小说</h3>
+          <Button
+            className="bg-primary-600 hover:bg-primary-700"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            <Plus className="mr-1 h-4 w-4" /> 添加小说
+          </Button>
+        </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Topbar title="小说" />
+        {/* Search and Filters */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          <div className="relative flex-1 min-w-[200px]">
+            <Input
+              type="text"
+              placeholder="搜索小说..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+            <FilterIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+          </div>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">我的小说</h3>
-              <Button
-                className="bg-primary-600 hover:bg-primary-700"
-                onClick={() => setIsCreateModalOpen(true)}
-              >
+          <Select value={genreFilter} onValueChange={setGenreFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="所有类型" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">所有类型</SelectItem>
+              {uniqueGenres.map((genre: string) => (
+                <SelectItem key={genre} value={genre}>
+                  {genre}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="排序方式" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="updated">最近更新</SelectItem>
+              <SelectItem value="created">最近创建</SelectItem>
+              <SelectItem value="title">按字母排序</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button variant="outline" size="icon" onClick={() => refetch()}>
+            <RefreshCcw className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Novel Waterfall Grid */}
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          </div>
+        ) : filteredNovels.length > 0 ? (
+          <>
+            <div className="waterfall-grid mb-6">
+              {/* 添加小说卡片 */}
+              <div className="flex flex-col items-center justify-center h-full min-h-[300px] border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-primary-500 transition-colors cursor-pointer"
+                  onClick={() => setIsCreateModalOpen(true)}>
+                <div className="w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center mb-4">
+                  <Plus className="h-8 w-8 text-primary-600" />
+                </div>
+                <p className="text-gray-600 text-center font-medium">添加新小说</p>
+              </div>
+
+              {/* 导入书籍卡片 */}
+              <div className="flex flex-col items-center justify-center h-full min-h-[300px] border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-primary-500 transition-colors cursor-pointer"
+                  onClick={() => navigate('/import-book')}>
+                <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                  <BookIcon className="h-8 w-8 text-blue-600" />
+                </div>
+                <p className="text-gray-600 text-center font-medium">从书籍导入</p>
+                <p className="text-gray-400 text-center text-xs mt-2">从外部数据源导入书籍信息</p>
+              </div>
+
+              {/* 现有小说卡片 */}
+              {filteredNovels.map((novel: any) => (
+                <NovelCard
+                  key={novel.id}
+                  novel={novel}
+                  onView={() => navigate(`/novels/${novel.id}`)}
+                  onEdit={() => navigate(`/novels/${novel.id}`)}
+                  onDelete={() => handleDeleteNovel(novel.id)}
+                />
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+            <div className="flex justify-center">
+              <div className="bg-gray-100 p-3 rounded-full">
+                <svg className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+            </div>
+            <h3 className="mt-4 text-lg font-medium text-gray-900">未找到小说</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {searchQuery || genreFilter !== "all"
+                ? "尝试改变您的搜索或过滤条件"
+                : "从添加您的第一部小说开始"}
+            </p>
+            <div className="mt-6 flex gap-2 justify-center">
+              <Button onClick={() => setIsCreateModalOpen(true)}>
                 <Plus className="mr-1 h-4 w-4" /> 添加小说
               </Button>
-            </div>
-
-            {/* Search and Filters */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              <div className="relative flex-1 min-w-[200px]">
-                <Input
-                  type="text"
-                  placeholder="搜索小说..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-                <FilterIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-              </div>
-
-              <Select value={genreFilter} onValueChange={setGenreFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="所有类型" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">所有类型</SelectItem>
-                  {uniqueGenres.map((genre: string) => (
-                    <SelectItem key={genre} value={genre}>
-                      {genre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="排序方式" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="updated">最近更新</SelectItem>
-                  <SelectItem value="created">最近创建</SelectItem>
-                  <SelectItem value="title">按字母排序</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Button variant="outline" size="icon" onClick={() => refetch()}>
-                <RefreshCcw className="h-4 w-4" />
+              <Button variant="outline" onClick={() => navigate('/import-book')}>
+                <BookIcon className="mr-1 h-4 w-4" /> 从书籍导入
               </Button>
             </div>
-
-            {/* Novel Waterfall Grid */}
-            {isLoading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-              </div>
-            ) : filteredNovels.length > 0 ? (
-              <>
-                <div className="waterfall-grid mb-6">
-                  {/* 添加小说卡片 */}
-                  <div className="flex flex-col items-center justify-center h-full min-h-[300px] border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-primary-500 transition-colors cursor-pointer"
-                      onClick={() => setIsCreateModalOpen(true)}>
-                    <div className="w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center mb-4">
-                      <Plus className="h-8 w-8 text-primary-600" />
-                    </div>
-                    <p className="text-gray-600 text-center font-medium">添加新小说</p>
-                  </div>
-
-                  {/* 导入书籍卡片 */}
-                  <div className="flex flex-col items-center justify-center h-full min-h-[300px] border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-primary-500 transition-colors cursor-pointer"
-                      onClick={() => navigate('/import-book')}>
-                    <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-                      <BookIcon className="h-8 w-8 text-blue-600" />
-                    </div>
-                    <p className="text-gray-600 text-center font-medium">从书籍导入</p>
-                    <p className="text-gray-400 text-center text-xs mt-2">从外部数据源导入书籍信息</p>
-                  </div>
-
-                  {/* 现有小说卡片 */}
-                  {filteredNovels.map((novel: any) => (
-                    <NovelCard
-                      key={novel.id}
-                      novel={novel}
-                      onView={() => navigate(`/novels/${novel.id}`)}
-                      onEdit={() => navigate(`/novels/${novel.id}`)}
-                      onDelete={() => handleDeleteNovel(novel.id)}
-                    />
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                <div className="flex justify-center">
-                  <div className="bg-gray-100 p-3 rounded-full">
-                    <svg className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </div>
-                </div>
-                <h3 className="mt-4 text-lg font-medium text-gray-900">未找到小说</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  {searchQuery || genreFilter !== "all"
-                    ? "尝试改变您的搜索或过滤条件"
-                    : "从添加您的第一部小说开始"}
-                </p>
-                <div className="mt-6 flex gap-2 justify-center">
-                  <Button onClick={() => setIsCreateModalOpen(true)}>
-                    <Plus className="mr-1 h-4 w-4" /> 添加小说
-                  </Button>
-                  <Button variant="outline" onClick={() => navigate('/import-book')}>
-                    <BookIcon className="mr-1 h-4 w-4" /> 从书籍导入
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Pagination (simplified) */}
-            {filteredNovels.length > 0 && (
-              <div className="mt-6 flex justify-center">
-                <nav className="inline-flex rounded-md shadow">
-                  <Button variant="outline" size="sm" className="rounded-l-md">
-                    &larr;
-                  </Button>
-                  <Button variant="outline" size="sm" className="rounded-none bg-primary-600 border-primary-600 text-white">
-                    1
-                  </Button>
-                  <Button variant="outline" size="sm" className="rounded-r-md">
-                    &rarr;
-                  </Button>
-                </nav>
-              </div>
-            )}
           </div>
-        </main>
+        )}
+
+        {/* Pagination (simplified) */}
+        {filteredNovels.length > 0 && (
+          <div className="mt-6 flex justify-center">
+            <nav className="inline-flex rounded-md shadow">
+              <Button variant="outline" size="sm" className="rounded-l-md">
+                &larr;
+              </Button>
+              <Button variant="outline" size="sm" className="rounded-none bg-primary-600 border-primary-600 text-white">
+                1
+              </Button>
+              <Button variant="outline" size="sm" className="rounded-r-md">
+                &rarr;
+              </Button>
+            </nav>
+          </div>
+        )}
       </div>
 
       {/* Create Novel Dialog */}
@@ -295,6 +285,6 @@ export default function NovelsPage() {
           />
         </DialogContent>
       </Dialog>
-    </div>
+    </main>
   );
 }

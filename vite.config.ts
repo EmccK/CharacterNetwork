@@ -36,7 +36,7 @@ export default defineConfig({
     themePlugin(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['favicon.png', 'robots.txt', 'icons/*.png', 'offline.html'],
+      includeAssets: ['favicon.png', 'robots.txt', 'icons/*.png'],
       manifest: false, // 我们使用自定义的manifest.json
       strategies: 'generateSW',
       workbox: {
@@ -45,8 +45,7 @@ export default defineConfig({
         clientsClaim: true,
         sourcemap: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,json}'],
-        navigateFallback: 'offline.html',
-        navigateFallbackDenylist: [/\/api\//], // API请求不应该回退到offline.html
+        navigateFallbackDenylist: [/\/api\//], // API请求不应该回退
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
