@@ -118,7 +118,7 @@ cat backup.sql | docker exec -i character-network-db psql -U postgres -d charact
 ### 前提条件
 
 - [Node.js](https://nodejs.org/) (v18或更高版本)
-- [Supabase](https://supabase.com/) 账户和项目
+- [PostgreSQL](https://www.postgresql.org/download/) (v14或更高版本)
 
 ### 设置步骤
 
@@ -127,24 +127,14 @@ cat backup.sql | docker exec -i character-network-db psql -U postgres -d charact
    npm install
    ```
 
-2. 配置 Supabase 连接：
-   - 创建 `.env` 文件并添加 Supabase 连接信息：
-   ```
-   SUPABASE_URL=https://your-project-url.supabase.co
-   SUPABASE_ANON_KEY=your-anon-key
-   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-   DATABASE_URL=postgresql://postgres:your-db-password@db.your-project-url.supabase.co:5432/postgres
-   PGDATABASE=postgres
-   PGHOST=db.your-project-url.supabase.co
-   PGPORT=5432
-   PGUSER=postgres
-   PGPASSWORD=your-db-password
-   SESSION_SECRET=your-secure-session-secret
+2. 创建本地PostgreSQL数据库：
+   ```bash
+   npm run db:create
    ```
 
-3. 设置 Supabase 数据库架构：
+3. 设置数据库架构：
    ```bash
-   npm run supabase:setup
+   npm run db:setup
    ```
 
 4. 启动开发服务器：
@@ -152,28 +142,49 @@ cat backup.sql | docker exec -i character-network-db psql -U postgres -d charact
    npm run dev
    ```
 
+5. 如果需要重置数据库：
+   ```bash
+   npm run db:reset
+   ```
+
 ### 环境变量
 
-开发环境的环境变量需要在`.env`文件中设置，包括：
+开发环境的环境变量已在`.env`文件中设置，包括：
 
-- `SUPABASE_URL`: Supabase 项目 URL
-- `SUPABASE_ANON_KEY`: Supabase 匿名密钥
-- `SUPABASE_SERVICE_ROLE_KEY`: Supabase 服务角色密钥
-- `DATABASE_URL`: Supabase PostgreSQL 连接字符串
+- `DATABASE_URL`: 数据库连接字符串
 - `SESSION_SECRET`: 会话密钥
 - `NODE_ENV`: 环境设置
 
+如果需要修改数据库连接信息，请编辑`.env`文件中的以下变量：
+
+```
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/characternetwork?sslmode=disable
+PGDATABASE=characternetwork
+PGHOST=localhost
+PGPORT=5432
+PGUSER=postgres
+PGPASSWORD=postgres
+```
+
+确保这些设置与您的本地PostgreSQL配置匹配。
+
 ### 故障排除
 
-如果遇到 Supabase 连接问题，请检查：
+如果遇到数据库连接问题，请检查：
 
-1. Supabase 项目是否处于活动状态
-2. 环境变量中的 URL 和密钥是否正确
-3. 网络连接是否正常
+1. PostgreSQL服务是否正在运行
+2. 数据库用户名和密码是否正确
+3. 数据库名称是否存在
+
+您可以使用以下命令测试数据库连接：
+
+```bash
+psql -U postgres -d characternetwork
+```
 
 ## 安全注意事项
 
-- 在生产环境中，请确保保护好 Supabase 密钥
+- 在生产环境中，请确保更改默认的数据库密码
 - 设置一个强随机的`SESSION_SECRET`
 - 考虑对`docker-compose.yml`中的端口映射进行调整
 - 在生产部署中，考虑使用Nginx作为反向代理
