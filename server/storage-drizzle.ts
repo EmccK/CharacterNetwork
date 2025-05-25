@@ -2,6 +2,7 @@ import { IStorage } from './storage';
 import session from 'express-session';
 import pgSessionStore from 'connect-pg-simple';
 import pg from 'pg';
+import 'dotenv/config';
 import {
   users, novels, characters, relationshipTypes, relationships, novelGenres, bookInfos, timelineEvents,
   type User, type Novel, type Character, type RelationshipType, type Relationship, type NovelGenre, type BookInfo, type TimelineEvent,
@@ -24,9 +25,7 @@ const PgStore = pgSessionStore(session);
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   // 只有在生产环境或明确指定时才启用 SSL
-  ssl: process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('sslmode=require') 
-    ? { rejectUnauthorized: false } 
-    : false,
+  ssl: { rejectUnauthorized: false },
   password: process.env.PGPASSWORD // Explicitly set password
 });
 

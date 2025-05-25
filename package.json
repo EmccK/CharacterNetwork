@@ -11,11 +11,11 @@
     "dotenv": "dotenv",
     "check": "tsc",
     "db:push": "dotenv drizzle-kit push",
-    "db:migrate": "dotenv psql $DATABASE_URL -f migrations/add_book_infos_table.sql",
+    "db:migrate": "dotenv psql \"$DATABASE_URL\" -f supabase/migrations/20250525131355_azure_lagoon.sql",
     "db:setup": "node scripts/setup-local-db.js",
-    "db:create": "createdb -U postgres characternetwork || echo '数据库已存在，继续执行'",
-    "db:drop": "dropdb -U postgres characternetwork || echo '数据库不存在，无需删除'",
-    "db:reset": "npm run db:drop && npm run db:create && npm run db:setup"
+    "db:create": "echo '使用远程Supabase数据库，无需创建'",
+    "db:drop": "echo '使用远程Supabase数据库，无需删除'",
+    "db:reset": "npm run db:setup"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
