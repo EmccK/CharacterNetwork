@@ -115,16 +115,21 @@ cat backup.sql | docker exec -i character-network-db psql -U postgres -d charact
 
 ## 不使用Docker的开发环境设置
 
-### 使用本地PostgreSQL数据库
+### 前提条件
+
+- [Node.js](https://nodejs.org/) (v18或更高版本)
+- [PostgreSQL](https://www.postgresql.org/download/) (v14或更高版本)
+
+### 设置步骤
 
 1. 安装依赖：
    ```bash
    npm install
    ```
 
-2. 启动开发用PostgreSQL数据库：
+2. 创建本地PostgreSQL数据库：
    ```bash
-   npm run db:start
+   npm run db:create
    ```
 
 3. 设置数据库架构：
@@ -137,9 +142,9 @@ cat backup.sql | docker exec -i character-network-db psql -U postgres -d charact
    npm run dev
    ```
 
-5. 完成后停止数据库：
+5. 如果需要重置数据库：
    ```bash
-   npm run db:stop
+   npm run db:reset
    ```
 
 ### 环境变量
@@ -150,7 +155,32 @@ cat backup.sql | docker exec -i character-network-db psql -U postgres -d charact
 - `SESSION_SECRET`: 会话密钥
 - `NODE_ENV`: 环境设置
 
-如果需要修改数据库连接信息，请编辑`.env`文件。
+如果需要修改数据库连接信息，请编辑`.env`文件中的以下变量：
+
+```
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/characternetwork?sslmode=disable
+PGDATABASE=characternetwork
+PGHOST=localhost
+PGPORT=5432
+PGUSER=postgres
+PGPASSWORD=postgres
+```
+
+确保这些设置与您的本地PostgreSQL配置匹配。
+
+### 故障排除
+
+如果遇到数据库连接问题，请检查：
+
+1. PostgreSQL服务是否正在运行
+2. 数据库用户名和密码是否正确
+3. 数据库名称是否存在
+
+您可以使用以下命令测试数据库连接：
+
+```bash
+psql -U postgres -d characternetwork
+```
 
 ## 安全注意事项
 
