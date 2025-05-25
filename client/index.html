@@ -17,6 +17,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    // 注入 Supabase 环境变量
+    window.ENV = {
+      SUPABASE_URL: "%VITE_SUPABASE_URL%",
+      SUPABASE_ANON_KEY: "%VITE_SUPABASE_ANON_KEY%"
+    };
+  </script>
   <title>小说人物关系管理器</title>
   <style>
     .waterfall-grid {

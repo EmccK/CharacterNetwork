@@ -1,8 +1,15 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import * as schema from '@shared/schema';
+import { createClient } from '@supabase/supabase-js';
 
 const { Pool } = pg;
+
+// 创建 Supabase 客户端
+export const supabase = createClient(
+  process.env.SUPABASE_URL || '',
+  process.env.SUPABASE_ANON_KEY || ''
+);
 
 // Create a PostgreSQL connection pool
 const pool = new Pool({

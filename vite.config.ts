@@ -4,6 +4,7 @@ import themePlugin from "@replit/vite-plugin-shadcn-theme-json";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import { VitePWA } from "vite-plugin-pwa";
+import { loadEnv } from "vite";
 
 // 自定义插件，覆盖默认的runtimeErrorOverlay插件
 function customRuntimeErrorOverlay() {
@@ -22,19 +23,31 @@ function customRuntimeErrorOverlay() {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-export default defineConfig({
-  server: {
-    hmr: {
-      host: 'localhost',
-      port: 5001,
-      overlay: false // 禁用错误覆盖层
-    }
-  },
-  plugins: [
-    react(),
-    customRuntimeErrorOverlay(),
-    themePlugin(),
-    VitePWA({
+// 配置函数，接收环境变量
+export default defineConfig(({ mode }) => {
+  // 加载环境变量
+  const env = loadEnv(mode, process.cwd(), '');
+  
+  // 创建环境变量替换对象
+  const envReplacements = {
+    'process.env.NODE_ENV': JSON.stringify(mode),
+    '%VITE_SUPABASE_URL%': JSON.stringify(env.SUPABASE_URL || ''),
+    '%VITE_SUPABASE_ANON_KEY%': JSON.stringify(env.SUPABASE_ANON_KEY || '')
+  };
+  
+  return {
+    server: {
+      hmr: {
+        host: 'localhost',
+        port: 5001,
+        overlay: false // 禁用错误覆盖层
+      }
+    },
+    plugins: [
+      react(),
+      customRuntimeErrorOverlay(),
+      themePlugin(),
+      VitePWA({
       registerType: 'prompt',
       includeAssets: ['favicon.png', 'robots.txt', 'icons/*.png'],
       manifest: false, // 我们使用自定义的manifest.json
