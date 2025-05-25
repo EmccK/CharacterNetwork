@@ -11,7 +11,10 @@
     "dotenv": "dotenv",
     "check": "tsc",
     "db:push": "dotenv drizzle-kit push",
-    "db:migrate": "dotenv psql $DATABASE_URL -f migrations/add_book_infos_table.sql"
+    "db:migrate": "dotenv psql $DATABASE_URL -f migrations/add_book_infos_table.sql",
+    "db:setup": "dotenv node --loader ts-node/esm scripts/setup-db.js",
+    "db:start": "docker-compose -f docker-compose.dev.yml up -d",
+    "db:stop": "docker-compose -f docker-compose.dev.yml down"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

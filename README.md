@@ -115,19 +115,42 @@ cat backup.sql | docker exec -i character-network-db psql -U postgres -d charact
 
 ## 不使用Docker的开发环境设置
 
-如果您希望在开发环境中不使用Docker运行：
+### 使用本地PostgreSQL数据库
 
 1. 安装依赖：
    ```bash
    npm install
    ```
 
-2. 配置数据库信息（`.env`文件）
+2. 启动开发用PostgreSQL数据库：
+   ```bash
+   npm run db:start
+   ```
 
-3. 启动开发服务器：
+3. 设置数据库架构：
+   ```bash
+   npm run db:setup
+   ```
+
+4. 启动开发服务器：
    ```bash
    npm run dev
    ```
+
+5. 完成后停止数据库：
+   ```bash
+   npm run db:stop
+   ```
+
+### 环境变量
+
+开发环境的环境变量已在`.env`文件中设置，包括：
+
+- `DATABASE_URL`: 数据库连接字符串
+- `SESSION_SECRET`: 会话密钥
+- `NODE_ENV`: 环境设置
+
+如果需要修改数据库连接信息，请编辑`.env`文件。
 
 ## 安全注意事项
 
