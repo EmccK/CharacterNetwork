@@ -1,8 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import themePlugin from "@replit/vite-plugin-shadcn-theme-json";
-import path, { dirname } from "path";
-import { fileURLToPath } from "url";
+import path from "path";
 import { VitePWA } from "vite-plugin-pwa";
 import { loadEnv } from "vite";
 
@@ -19,9 +18,6 @@ function customRuntimeErrorOverlay() {
     },
   };
 }
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 // 配置函数，接收环境变量
 export default defineConfig(async ({ mode }) => {
@@ -127,13 +123,13 @@ export default defineConfig(async ({ mode }) => {
     ],
     resolve: {
       alias: {
-        "@": path.resolve(__dirname, "client", "src"),
-        "@shared": path.resolve(__dirname, "shared"),
+        "@": path.resolve("./client/src"),
+        "@shared": path.resolve("./shared"),
       },
     },
-    root: path.resolve(__dirname, "client"),
+    root: path.resolve("./client"),
     build: {
-      outDir: path.resolve(__dirname, "dist/public"),
+      outDir: path.resolve("./dist/public"),
       emptyOutDir: true,
     },
   };
