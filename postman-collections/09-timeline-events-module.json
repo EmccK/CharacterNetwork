@@ -1,0 +1,326 @@
+{
+  "module_info": {
+    "name": "时间线事件模块",
+    "description": "小说时间线事件的完整管理，构建故事发展脉络",
+    "route_prefix": "/api/novels/:novelId/timeline-events, /api/timeline-events",
+    "dependencies": ["认证管理模块", "小说管理模块", "角色管理模块"]
+  },
+  "folder": {
+    "name": "时间线事件模块",
+    "description": "### 时间线事件模块\n\n#### 业务逻辑\n- 时间线事件的完整CRUD操作\n- 事件按时间顺序排列和管理\n- 事件重要性分级（minor/normal/important/critical）\n- 事件与角色的关联管理\n- 支持灵活的日期时间表示\n- 构建小说故事发展脉络\n\n#### 业务约束\n- 事件必须属于特定小说\n- 用户只能管理自己小说中的事件\n- 事件标题和日期为必填字段\n- 关联的角色必须属于同一小说\n- 日期支持多种格式（年份、具体日期、相对时间等）\n\n#### 权限控制\n- 需要登录才能访问所有接口\n- 用户只能操作自己小说中的事件\n- 管理员可以查看和管理所有事件",
+    "item": [
+      {
+        "name": "获取小说的所有时间线事件",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/novels/{{novel_id}}/timeline-events",
+            "variable": [
+              {
+                "key": "novel_id",
+                "value": "1",
+                "description": "小说ID"
+              }
+            ]
+          },
+          "description": "#### 获取小说的所有时间线事件\n\n**功能说明**: 获取指定小说中的所有时间线事件，按时间顺序排列\n\n**权限要求**: \n- 角色：已登录用户\n- 权限：需要有效会话，只能访问自己小说的事件\n\n**限流规则**: \n- QPS限制：100次/秒\n- 无特殊限制\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 未登录 | 用户需要先登录 |\n| 400 | 400 | 无效的小说ID | 检查小说ID格式 |\n| 404 | 404 | 小说不存在 | 检查小说ID是否正确 |\n| 403 | 403 | 权限不足 | 只能访问自己的小说 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 只返回指定小说中的事件\n- 按事件日期升序排列\n- 包含事件的完整信息\n- 用户只能查看自己小说的事件"
+        },
+        "response": [
+          {
+            "name": "获取成功",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/novels/1/timeline-events"
+              }
+            },
+            "status": "OK",
+            "code": 200,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "[\n  {\n    \"id\": 1,\n    \"title\": \"萧炎斗气消失\",\n    \"description\": \"萧炎的斗气神秘消失，从天才变成废物，这是整个故事的起点\",\n    \"date\": \"第1年春\",\n    \"importance\": \"critical\",\n    \"characterIds\": [1],\n    \"novelId\": 1,\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  },\n  {\n    \"id\": 2,\n    \"title\": \"遇见药老\",\n    \"description\": \"萧炎在戒指中发现药老的灵魂，开始了真正的修炼之路\",\n    \"date\": \"第1年夏\",\n    \"importance\": \"critical\",\n    \"characterIds\": [1, 3],\n    \"novelId\": 1,\n    \"createdAt\": \"2024-01-15T11:00:00.000Z\"\n  },\n  {\n    \"id\": 3,\n    \"title\": \"初入魔兽山脉\",\n    \"description\": \"萧炎第一次进入魔兽山脉历练，遇到了各种危险和机遇\",\n    \"date\": \"第1年秋\",\n    \"importance\": \"important\",\n    \"characterIds\": [1],\n    \"novelId\": 1,\n    \"createdAt\": \"2024-01-15T12:00:00.000Z\"\n  },\n  {\n    \"id\": 4,\n    \"title\": \"与薰儿重逢\",\n    \"description\": \"萧炎实力恢复后与薰儿重逢，两人关系进一步发展\",\n    \"date\": \"第2年春\",\n    \"importance\": \"normal\",\n    \"characterIds\": [1, 2],\n    \"novelId\": 1,\n    \"createdAt\": \"2024-01-15T13:00:00.000Z\"\n  }\n]",
+            "description": "### 获取时间线事件成功响应\n\n**响应字段**:\n\n| 字段名 | 类型 | 描述 |\n|--------|------|------|\n| id | number | 事件唯一标识 |\n| title | string | 事件标题 |\n| description | string | 事件描述 |\n| date | string | 事件日期/时间点 |\n| importance | string | 重要性(minor/normal/important/critical) |\n| characterIds | array | 相关角色ID数组 |\n| novelId | number | 所属小说ID |\n| createdAt | string | 创建时间(ISO格式) |\n\n**重要性级别**:\n- critical: 关键事件，影响整个故事走向\n- important: 重要事件，对故事发展有重大影响\n- normal: 普通事件，推动情节发展\n- minor: 次要事件，丰富故事细节"
+          },
+          {
+            "name": "小说不存在",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/novels/999/timeline-events"
+              }
+            },
+            "status": "Not Found",
+            "code": 404,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"error\": \"未找到指定的小说\"\n}",
+            "description": "### 小说不存在错误响应\n\n**触发条件**:\n- 提供的小说ID不存在\n- 小说已被删除\n- 用户无权访问该小说\n\n**处理建议**:\n- 检查小说ID是否正确\n- 确认用户权限\n- 刷新小说列表"
+          }
+        ],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// 检查登录状态",
+                "if (pm.environment.get('is_logged_in') !== 'true') {",
+                "    console.log('警告：用户未登录，此请求可能失败');",
+                "}",
+                "",
+                "// 检查是否有小说ID",
+                "if (!pm.environment.get('novel_id')) {",
+                "    console.log('警告：未设置novel_id环境变量');",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.expect([200, 400, 404, 403, 401]).to.include(pm.response.code);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                "});",
+                "",
+                "// 成功获取时的验证",
+                "if (pm.response.code === 200) {",
+                "    pm.test('时间线事件列表响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.be.an('array');",
+                "    });",
+                "    ",
+                "    // 事件数据结构验证",
+                "    const responseJson = pm.response.json();",
+                "    if (responseJson.length > 0) {",
+                "        pm.test('事件数据结构验证', function () {",
+                "            const event = responseJson[0];",
+                "            pm.expect(event).to.have.property('id');",
+                "            pm.expect(event).to.have.property('title');",
+                "            pm.expect(event).to.have.property('date');",
+                "            pm.expect(event).to.have.property('importance');",
+                "            pm.expect(event).to.have.property('characterIds');",
+                "            pm.expect(event).to.have.property('novelId');",
+                "            pm.expect(event.novelId).to.equal(parseInt(pm.environment.get('novel_id')));",
+                "        });",
+                "        ",
+                "        // 验证重要性级别",
+                "        pm.test('重要性级别验证', function () {",
+                "            const validImportance = ['minor', 'normal', 'important', 'critical'];",
+                "            responseJson.forEach(event => {",
+                "                pm.expect(validImportance).to.include(event.importance);",
+                "            });",
+                "        });",
+                "        ",
+                "        // 保存第一个事件ID用于后续测试",
+                "        pm.environment.set('timeline_event_id', responseJson[0].id);",
+                "    }",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证事件属于指定小说",
+                "   - 检查事件数据的完整性",
+                "   - 确认时间排序的正确性",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      },
+      {
+        "name": "创建时间线事件",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json",
+              "description": "请求内容类型"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"title\": \"新的重要事件\",\n  \"description\": \"这是故事中的一个重要转折点，改变了主人公的命运轨迹。\",\n  \"date\": \"第3年冬\",\n  \"importance\": \"important\",\n  \"characterIds\": [{{character_id}}]\n}",
+            "options": {
+              "raw": {
+                "language": "json",
+                "description": "### 请求参数说明\n\n| 字段名 | 类型 | 必填 | 描述 | 示例值 |\n|--------|------|------|------|--------|\n| title | string | 是 | 事件标题 | \"新的重要事件\" |\n| description | string | 否 | 事件描述 | \"详细的事件描述\" |\n| date | string | 是 | 事件日期/时间点 | \"第3年冬\" |\n| importance | string | 否 | 重要性级别，默认normal | \"important\" |\n| characterIds | array | 否 | 相关角色ID数组 | [1, 2] |"
+              }
+            }
+          },
+          "url": {
+            "raw": "{{base_url}}/api/novels/{{novel_id}}/timeline-events"
+          },
+          "description": "#### 创建时间线事件\n\n**功能说明**: 在指定小说中创建新的时间线事件\n\n**权限要求**: \n- 角色：已登录用户\n- 权限：需要有效会话，只能在自己的小说中创建事件\n\n**限流规则**: \n- QPS限制：30次/秒\n- 同用户限制：1000个事件/小说\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 未登录 | 用户需要先登录 |\n| 400 | 400 | 标题和日期为必填项 | 提供事件标题和日期 |\n| 400 | 400 | 无效的小说ID | 检查小说ID格式 |\n| 403 | 403 | 权限不足 | 只能在自己的小说中创建事件 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 标题和日期为必填字段\n- 重要性级别：minor/normal/important/critical\n- 关联的角色必须属于同一小说\n- 日期格式灵活，支持多种表示方式\n- 自动设置创建时间"
+        },
+        "response": [
+          {
+            "name": "创建成功",
+            "originalRequest": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"title\": \"新的重要事件\",\n  \"description\": \"这是故事中的一个重要转折点\",\n  \"date\": \"第3年冬\",\n  \"importance\": \"important\",\n  \"characterIds\": [1]\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/novels/1/timeline-events"
+              }
+            },
+            "status": "Created",
+            "code": 201,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"id\": 10,\n  \"title\": \"新的重要事件\",\n  \"description\": \"这是故事中的一个重要转折点，改变了主人公的命运轨迹。\",\n  \"date\": \"第3年冬\",\n  \"importance\": \"important\",\n  \"characterIds\": [1],\n  \"novelId\": 1,\n  \"createdAt\": \"2024-01-15T18:30:00.000Z\"\n}",
+            "description": "### 创建时间线事件成功响应\n\n**响应字段**: 包含完整的事件信息\n\n**日期格式建议**:\n- 绝对时间：\"2024-01-15\", \"公元前221年\"\n- 相对时间：\"第1年春\", \"故事开始3个月后\"\n- 虚构时间：\"龙历1000年\", \"魔法纪元第二年\"\n- 描述性时间：\"萧炎18岁生日\", \"大战前夜\""
+          },
+          {
+            "name": "必填字段缺失",
+            "originalRequest": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"description\": \"没有标题的事件\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/novels/1/timeline-events"
+              }
+            },
+            "status": "Bad Request",
+            "code": 400,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"error\": \"标题和日期为必填项\"\n}",
+            "description": "### 必填字段缺失错误响应\n\n**触发条件**:\n- 未提供事件标题\n- 未提供事件日期\n- 字段值为空字符串\n\n**处理建议**:\n- 检查所有必填字段\n- 验证字段值的有效性\n- 提供字段验证提示"
+          }
+        ],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// 检查登录状态",
+                "if (pm.environment.get('is_logged_in') !== 'true') {",
+                "    console.log('错误：用户未登录，此请求将失败');",
+                "    return;",
+                "}",
+                "",
+                "// 检查小说ID",
+                "if (!pm.environment.get('novel_id')) {",
+                "    console.log('错误：未设置novel_id环境变量');",
+                "    return;",
+                "}",
+                "",
+                "// 生成随机事件标题用于测试",
+                "const timestamp = new Date().getTime();",
+                "const randomTitle = `测试事件_${timestamp}`;",
+                "pm.environment.set('random_event_title', randomTitle);"
+              ],
+              "type": "text/javascript"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.expect([201, 400, 401, 403]).to.include(pm.response.code);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                "});",
+                "",
+                "// 创建成功时的验证",
+                "if (pm.response.code === 201) {",
+                "    pm.test('创建成功响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('id');",
+                "        pm.expect(jsonData).to.have.property('title');",
+                "        pm.expect(jsonData).to.have.property('date');",
+                "        pm.expect(jsonData).to.have.property('importance');",
+                "        pm.expect(jsonData).to.have.property('novelId');",
+                "        pm.expect(jsonData.novelId).to.equal(parseInt(pm.environment.get('novel_id')));",
+                "    });",
+                "    ",
+                "    // 验证重要性默认值",
+                "    pm.test('重要性级别验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        const validImportance = ['minor', 'normal', 'important', 'critical'];",
+                "        pm.expect(validImportance).to.include(jsonData.importance);",
+                "    });",
+                "    ",
+                "    // 保存新创建的事件ID",
+                "    const responseJson = pm.response.json();",
+                "    pm.environment.set('new_timeline_event_id', responseJson.id);",
+                "}",
+                "",
+                "// 验证错误响应格式",
+                "if (pm.response.code === 400) {",
+                "    pm.test('验证错误响应格式', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('error');",
+                "    });",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证事件与小说的关联",
+                "   - 检查字段验证的有效性",
+                "   - 确认权限控制的正确性",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,410 @@
+{
+  "module_info": {
+    "name": "小说类型模块",
+    "description": "小说分类管理，支持用户自定义类型和公共类型",
+    "route_prefix": "/api/genres",
+    "dependencies": ["认证管理模块"]
+  },
+  "folder": {
+    "name": "小说类型模块",
+    "description": "### 小说类型模块\n\n#### 业务逻辑\n- 支持用户创建自定义小说类型\n- 提供系统预设的公共类型\n- 类型可设置为公共或私有\n- 支持类型的描述和分类管理\n- 管理员可管理所有类型\n\n#### 业务约束\n- 用户只能管理自己创建的类型\n- 公共类型对所有用户可见\n- 类型名称在用户范围内唯一\n- 删除类型前需检查是否被小说使用\n\n#### 权限控制\n- 需要登录才能访问\n- 用户只能操作自己的类型\n- 管理员拥有全部权限",
+    "item": [
+      {
+        "name": "获取用户小说类型",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/genres"
+          },
+          "description": "#### 获取用户小说类型\n\n**功能说明**: 获取当前用户的所有小说类型，包括用户自定义类型和公共类型\n\n**权限要求**: \n- 角色：已登录用户\n- 权限：需要有效会话\n\n**限流规则**: \n- QPS限制：100次/秒\n- 无特殊限制\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 未登录 | 用户需要先登录 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 返回用户自定义类型和公共类型\n- 按创建时间倒序排列\n- 包含类型的使用统计信息"
+        },
+        "response": [
+          {
+            "name": "获取成功",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/genres"
+              }
+            },
+            "status": "OK",
+            "code": 200,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"玄幻\",\n    \"description\": \"以超自然力量为主题的小说类型\",\n    \"userId\": 0,\n    \"isPublic\": true,\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  },\n  {\n    \"id\": 2,\n    \"name\": \"都市言情\",\n    \"description\": \"现代都市背景的爱情小说\",\n    \"userId\": 1,\n    \"isPublic\": false,\n    \"createdAt\": \"2024-01-15T11:00:00.000Z\"\n  },\n  {\n    \"id\": 3,\n    \"name\": \"科幻\",\n    \"description\": \"科学幻想类小说\",\n    \"userId\": 0,\n    \"isPublic\": true,\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  }\n]",
+            "description": "### 获取小说类型成功响应\n\n**响应字段**:\n\n| 字段名 | 类型 | 描述 |\n|--------|------|------|\n| id | number | 类型唯一标识 |\n| name | string | 类型名称 |\n| description | string | 类型描述 |\n| userId | number | 创建者ID，0表示系统类型 |\n| isPublic | boolean | 是否为公共类型 |\n| createdAt | string | 创建时间(ISO格式) |"
+          }
+        ],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// 检查登录状态",
+                "if (pm.environment.get('is_logged_in') !== 'true') {",
+                "    console.log('警告：用户未登录，此请求可能失败');",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.response.to.have.status(200);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                "});",
+                "",
+                "// 响应格式验证",
+                "pm.test('响应格式验证', function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData).to.be.an('array');",
+                "    ",
+                "    if (jsonData.length > 0) {",
+                "        pm.expect(jsonData[0]).to.have.property('id');",
+                "        pm.expect(jsonData[0]).to.have.property('name');",
+                "        pm.expect(jsonData[0]).to.have.property('userId');",
+                "        pm.expect(jsonData[0]).to.have.property('isPublic');",
+                "    }",
+                "});",
+                "",
+                "// 保存第一个类型ID用于后续测试",
+                "const responseJson = pm.response.json();",
+                "if (responseJson.length > 0) {",
+                "    pm.environment.set('genre_id', responseJson[0].id);",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证返回的类型包含公共类型和用户类型",
+                "   - 检查类型数据的完整性",
+                "   - 确认权限字段的正确性",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      },
+      {
+        "name": "获取公共小说类型",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/genres/public"
+          },
+          "description": "#### 获取公共小说类型\n\n**功能说明**: 获取所有公共小说类型，无需登录即可访问\n\n**权限要求**: \n- 角色：无需登录\n- 权限：公开接口\n\n**限流规则**: \n- QPS限制：200次/秒\n- 无特殊限制\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 只返回isPublic为true的类型\n- 按名称字母顺序排列\n- 包含系统预设类型"
+        },
+        "response": [
+          {
+            "name": "获取成功",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/genres/public"
+              }
+            },
+            "status": "OK",
+            "code": 200,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"玄幻\",\n    \"description\": \"以超自然力量为主题的小说类型\",\n    \"userId\": 0,\n    \"isPublic\": true,\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  },\n  {\n    \"id\": 3,\n    \"name\": \"科幻\",\n    \"description\": \"科学幻想类小说\",\n    \"userId\": 0,\n    \"isPublic\": true,\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  },\n  {\n    \"id\": 5,\n    \"name\": \"武侠\",\n    \"description\": \"中国传统武侠小说\",\n    \"userId\": 0,\n    \"isPublic\": true,\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  }\n]",
+            "description": "### 获取公共类型成功响应\n\n**响应字段**:\n\n| 字段名 | 类型 | 描述 |\n|--------|------|------|\n| id | number | 类型唯一标识 |\n| name | string | 类型名称 |\n| description | string | 类型描述 |\n| userId | number | 创建者ID，0表示系统类型 |\n| isPublic | boolean | 是否为公共类型(均为true) |\n| createdAt | string | 创建时间(ISO格式) |"
+          }
+        ],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.response.to.have.status(200);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                "});",
+                "",
+                "// 响应格式验证",
+                "pm.test('响应格式验证', function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData).to.be.an('array');",
+                "});",
+                "",
+                "// 验证所有返回的类型都是公共类型",
+                "pm.test('公共类型验证', function () {",
+                "    const jsonData = pm.response.json();",
+                "    jsonData.forEach(genre => {",
+                "        pm.expect(genre.isPublic).to.be.true;",
+                "    });",
+                "});",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证只返回公共类型",
+                "   - 检查类型数据的完整性",
+                "   - 确认无需登录即可访问",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      },
+      {
+        "name": "获取特定小说类型",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/genres/{{genre_id}}",
+            "variable": [
+              {
+                "key": "genre_id",
+                "value": "1",
+                "description": "小说类型ID"
+              }
+            ]
+          },
+          "description": "#### 获取特定小说类型\n\n**功能说明**: 根据ID获取特定小说类型的详细信息\n\n**权限要求**: \n- 角色：已登录用户\n- 权限：需要有效会话\n\n**限流规则**: \n- QPS限制：200次/秒\n- 无特殊限制\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 未登录 | 用户需要先登录 |\n| 404 | 404 | 类型不存在 | 检查类型ID是否正确 |\n| 403 | 403 | 权限不足 | 只能访问自己的或公共类型 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 用户只能查看自己创建的类型或公共类型\n- 管理员可以查看所有类型\n- 返回类型的详细信息"
+        },
+        "response": [
+          {
+            "name": "获取成功",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/genres/1"
+              }
+            },
+            "status": "OK",
+            "code": 200,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"id\": 1,\n  \"name\": \"玄幻\",\n  \"description\": \"以超自然力量为主题的小说类型，包含修仙、魔法、异能等元素\",\n  \"userId\": 0,\n  \"isPublic\": true,\n  \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n}",
+            "description": "### 获取类型详情成功响应\n\n**响应字段**:\n\n| 字段名 | 类型 | 描述 |\n|--------|------|------|\n| id | number | 类型唯一标识 |\n| name | string | 类型名称 |\n| description | string | 类型详细描述 |\n| userId | number | 创建者ID，0表示系统类型 |\n| isPublic | boolean | 是否为公共类型 |\n| createdAt | string | 创建时间(ISO格式) |"
+          },
+          {
+            "name": "类型不存在",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/genres/999"
+              }
+            },
+            "status": "Not Found",
+            "code": 404,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Genre not found\"\n}",
+            "description": "### 类型不存在错误响应\n\n**触发条件**:\n- 提供的类型ID不存在\n- 类型已被删除\n\n**处理建议**:\n- 检查类型ID是否正确\n- 刷新类型列表"
+          }
+        ],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// 检查登录状态",
+                "if (pm.environment.get('is_logged_in') !== 'true') {",
+                "    console.log('警告：用户未登录，此请求可能失败');",
+                "}",
+                "",
+                "// 检查是否有类型ID",
+                "if (!pm.environment.get('genre_id')) {",
+                "    console.log('警告：未设置genre_id环境变量');",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.expect([200, 404, 403, 401]).to.include(pm.response.code);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                "});",
+                "",
+                "// 成功获取时的验证",
+                "if (pm.response.code === 200) {",
+                "    pm.test('类型详情响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('id');",
+                "        pm.expect(jsonData).to.have.property('name');",
+                "        pm.expect(jsonData).to.have.property('description');",
+                "        pm.expect(jsonData).to.have.property('userId');",
+                "        pm.expect(jsonData).to.have.property('isPublic');",
+                "    });",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证类型信息的完整性",
+                "   - 检查权限控制的正确性",
+                "   - 确认数据格式的一致性",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      },
+      {
+        "name": "创建小说类型",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json",
+              "description": "请求内容类型"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"name\": \"悬疑推理\",\n  \"description\": \"以推理解谜为主要情节的小说类型\",\n  \"isPublic\": false\n}",
+            "options": {
+              "raw": {
+                "language": "json",
+                "description": "### 请求参数说明\n\n| 字段名 | 类型 | 必填 | 描述 | 示例值 |\n|--------|------|------|------|--------|\n| name | string | 是 | 类型名称，用户范围内唯一 | \"悬疑推理\" |\n| description | string | 否 | 类型描述 | \"以推理解谜为主要情节的小说类型\" |\n| isPublic | boolean | 否 | 是否为公共类型，默认false | false |"
+              }
+            }
+          },
+          "url": {
+            "raw": "{{base_url}}/api/genres"
+          },
+          "description": "#### 创建小说类型\n\n**功能说明**: 创建新的小说类型，可设置为公共或私有\n\n**权限要求**: \n- 角色：已登录用户\n- 权限：需要有效会话\n\n**限流规则**: \n- QPS限制：10次/秒\n- 同用户限制：20个/小时\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 未登录 | 用户需要先登录 |\n| 400 | 400 | 类型名称已存在 | 更换类型名称 |\n| 400 | 400 | 参数验证失败 | 检查必填参数 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 类型名称在用户范围内必须唯一\n- 普通用户创建的类型默认为私有\n- 管理员可以创建公共类型\n- 类型名称长度1-50字符"
+        },
+        "response": [
+          {
+            "name": "创建成功",
+            "originalRequest": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"悬疑推理\",\n  \"description\": \"以推理解谜为主要情节的小说类型\",\n  \"isPublic\": false\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/genres"
+              }
+            },
+            "status": "Created",
+            "code": 201,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"id\": 10,\n  \"name\": \"悬疑推理\",\n  \"description\": \"以推理解谜为主要情节的小说类型\",\n  \"userId\": 1,\n  \"isPublic\": false,\n  \"createdAt\": \"2024-01-15T12:00:00.000Z\"\n}",
+            "description": "### 创建类型成功响应\n\n**响应字段**:\n\n| 字段名 | 类型 | 描述 |\n|--------|------|------|\n| id | number | 新创建的类型ID |\n| name | string | 类型名称 |\n| description | string | 类型描述 |\n| userId | number | 创建者ID |\n| isPublic | boolean | 是否为公共类型 |\n| createdAt | string | 创建时间(ISO格式) |"
+          }
+        ],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// 检查登录状态",
+                "if (pm.environment.get('is_logged_in') !== 'true') {",
+                "    console.log('错误：用户未登录，此请求将失败');",
+                "    return;",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.expect([201, 400, 401]).to.include(pm.response.code);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                "});",
+                "",
+                "// 创建成功时的验证",
+                "if (pm.response.code === 201) {",
+                "    pm.test('创建成功响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('id');",
+                "        pm.expect(jsonData).to.have.property('name');",
+                "        pm.expect(jsonData).to.have.property('userId');",
+                "        pm.expect(jsonData.userId).to.equal(parseInt(pm.environment.get('current_user_id')));",
+                "    });",
+                "    ",
+                "    // 保存新创建的类型ID",
+                "    const responseJson = pm.response.json();",
+                "    pm.environment.set('new_genre_id', responseJson.id);",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证创建者ID的正确性",
+                "   - 检查类型属性的设置",
+                "   - 确认权限控制的有效性",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,563 @@
+{
+  "module_info": {
+    "name": "关系类型模块",
+    "description": "角色关系类型的管理，定义角色间关系的分类和样式",
+    "route_prefix": "/api/relationship-types",
+    "dependencies": ["认证管理模块"]
+  },
+  "folder": {
+    "name": "关系类型模块",
+    "description": "### 关系类型模块\n\n#### 业务逻辑\n- 关系类型的完整CRUD操作\n- 支持用户自定义关系类型\n- 提供系统预设的默认关系类型\n- 关系类型的颜色和样式管理\n- 关系类型在关系图谱中的视觉表现\n\n#### 业务约束\n- 用户只能管理自己创建的关系类型\n- 系统默认类型对所有用户可见\n- 关系类型名称在用户范围内唯一\n- 颜色值使用十六进制格式\n- 删除类型前需检查是否被关系使用\n\n#### 权限控制\n- 需要登录才能访问所有接口\n- 用户只能操作自己的关系类型\n- 管理员可以管理系统默认类型",
+    "item": [
+      {
+        "name": "获取用户关系类型",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/relationship-types"
+          },
+          "description": "#### 获取用户关系类型\n\n**功能说明**: 获取当前用户的所有关系类型，包括用户自定义类型和系统默认类型\n\n**权限要求**: \n- 角色：已登录用户\n- 权限：需要有效会话\n\n**限流规则**: \n- QPS限制：100次/秒\n- 无特殊限制\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 未登录 | 用户需要先登录 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 返回用户自定义类型和系统默认类型\n- 按创建时间倒序排列\n- 包含类型的颜色和样式信息\n- 显示类型的使用统计"
+        },
+        "response": [
+          {
+            "name": "获取成功",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/relationship-types"
+              }
+            },
+            "status": "OK",
+            "code": 200,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"朋友\",\n    \"color\": \"#4CAF50\",\n    \"userId\": 0,\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  },\n  {\n    \"id\": 2,\n    \"name\": \"敌人\",\n    \"color\": \"#F44336\",\n    \"userId\": 0,\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  },\n  {\n    \"id\": 3,\n    \"name\": \"恋人\",\n    \"color\": \"#E91E63\",\n    \"userId\": 0,\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  },\n  {\n    \"id\": 10,\n    \"name\": \"师徒\",\n    \"color\": \"#9C27B0\",\n    \"userId\": 1,\n    \"createdAt\": \"2024-01-15T14:00:00.000Z\"\n  },\n  {\n    \"id\": 11,\n    \"name\": \"竞争对手\",\n    \"color\": \"#FF9800\",\n    \"userId\": 1,\n    \"createdAt\": \"2024-01-15T15:00:00.000Z\"\n  }\n]",
+            "description": "### 获取关系类型成功响应\n\n**响应字段**:\n\n| 字段名 | 类型 | 描述 |\n|--------|------|------|\n| id | number | 关系类型唯一标识 |\n| name | string | 关系类型名称 |\n| color | string | 颜色值(十六进制格式) |\n| userId | number | 创建者ID，0表示系统默认 |\n| createdAt | string | 创建时间(ISO格式) |\n\n**系统默认类型**:\n- userId为0的类型是系统预设的\n- 所有用户都可以使用系统默认类型\n- 系统默认类型不能被普通用户修改或删除"
+          }
+        ],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// 检查登录状态",
+                "if (pm.environment.get('is_logged_in') !== 'true') {",
+                "    console.log('警告：用户未登录，此请求可能失败');",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.response.to.have.status(200);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                "});",
+                "",
+                "// 响应格式验证",
+                "pm.test('响应格式验证', function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData).to.be.an('array');",
+                "});",
+                "",
+                "// 关系类型数据结构验证",
+                "const responseJson = pm.response.json();",
+                "if (responseJson.length > 0) {",
+                "    pm.test('关系类型数据结构验证', function () {",
+                "        const type = responseJson[0];",
+                "        pm.expect(type).to.have.property('id');",
+                "        pm.expect(type).to.have.property('name');",
+                "        pm.expect(type).to.have.property('color');",
+                "        pm.expect(type).to.have.property('userId');",
+                "    });",
+                "    ",
+                "    // 保存第一个关系类型ID用于后续测试",
+                "    pm.environment.set('relationship_type_id', responseJson[0].id);",
+                "    ",
+                "    // 验证颜色格式",
+                "    pm.test('颜色格式验证', function () {",
+                "        responseJson.forEach(type => {",
+                "            pm.expect(type.color).to.match(/^#[0-9A-Fa-f]{6}$/);",
+                "        });",
+                "    });",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证系统默认类型和用户类型的区分",
+                "   - 检查颜色值的格式正确性",
+                "   - 确认数据的完整性",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      },
+      {
+        "name": "获取特定关系类型",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/relationship-types/{{relationship_type_id}}",
+            "variable": [
+              {
+                "key": "relationship_type_id",
+                "value": "1",
+                "description": "关系类型ID"
+              }
+            ]
+          },
+          "description": "#### 获取特定关系类型\n\n**功能说明**: 根据ID获取特定关系类型的详细信息\n\n**权限要求**: \n- 角色：已登录用户\n- 权限：需要有效会话\n\n**限流规则**: \n- QPS限制：200次/秒\n- 无特殊限制\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 未登录 | 用户需要先登录 |\n| 404 | 404 | 关系类型不存在 | 检查类型ID是否正确 |\n| 403 | 403 | 权限不足 | 只能访问自己的或系统默认类型 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 用户只能查看自己创建的类型或系统默认类型\n- 管理员可以查看所有类型\n- 返回类型的详细信息和使用统计"
+        },
+        "response": [
+          {
+            "name": "获取成功",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/relationship-types/1"
+              }
+            },
+            "status": "OK",
+            "code": 200,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"id\": 1,\n  \"name\": \"朋友\",\n  \"color\": \"#4CAF50\",\n  \"userId\": 0,\n  \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n}",
+            "description": "### 获取关系类型详情成功响应\n\n**响应字段**: 与获取关系类型列表相同\n\n**系统默认类型**:\n- 朋友 (#4CAF50 - 绿色)\n- 敌人 (#F44336 - 红色)\n- 恋人 (#E91E63 - 粉色)\n- 亲人 (#2196F3 - 蓝色)\n- 师徒 (#9C27B0 - 紫色)"
+          },
+          {
+            "name": "关系类型不存在",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/relationship-types/999"
+              }
+            },
+            "status": "Not Found",
+            "code": 404,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Relationship type not found\"\n}",
+            "description": "### 关系类型不存在错误响应\n\n**触发条件**:\n- 提供的类型ID不存在\n- 类型已被删除\n- 用户无权访问该类型\n\n**处理建议**:\n- 检查类型ID是否正确\n- 确认用户权限\n- 刷新类型列表"
+          }
+        ],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// 检查登录状态",
+                "if (pm.environment.get('is_logged_in') !== 'true') {",
+                "    console.log('警告：用户未登录，此请求可能失败');",
+                "}",
+                "",
+                "// 检查是否有关系类型ID",
+                "if (!pm.environment.get('relationship_type_id')) {",
+                "    console.log('警告：未设置relationship_type_id环境变量');",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.expect([200, 404, 403, 401]).to.include(pm.response.code);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                "});",
+                "",
+                "// 成功获取时的验证",
+                "if (pm.response.code === 200) {",
+                "    pm.test('关系类型详情响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('id');",
+                "        pm.expect(jsonData).to.have.property('name');",
+                "        pm.expect(jsonData).to.have.property('color');",
+                "        pm.expect(jsonData).to.have.property('userId');",
+                "    });",
+                "    ",
+                "    // 验证颜色格式",
+                "    pm.test('颜色格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData.color).to.match(/^#[0-9A-Fa-f]{6}$/);",
+                "    });",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证关系类型信息的完整性",
+                "   - 检查权限控制的正确性",
+                "   - 确认颜色值的有效性",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      },
+      {
+        "name": "创建关系类型",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json",
+              "description": "请求内容类型"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"name\": \"盟友\",\n  \"color\": \"#00BCD4\"\n}",
+            "options": {
+              "raw": {
+                "language": "json",
+                "description": "### 请求参数说明\n\n| 字段名 | 类型 | 必填 | 描述 | 示例值 |\n|--------|------|------|------|--------|\n| name | string | 是 | 关系类型名称，用户范围内唯一 | \"盟友\" |\n| color | string | 是 | 颜色值，十六进制格式 | \"#00BCD4\" |"
+              }
+            }
+          },
+          "url": {
+            "raw": "{{base_url}}/api/relationship-types"
+          },
+          "description": "#### 创建关系类型\n\n**功能说明**: 创建新的关系类型，用于定义角色间关系的分类\n\n**权限要求**: \n- 角色：已登录用户\n- 权限：需要有效会话\n\n**限流规则**: \n- QPS限制：10次/秒\n- 同用户限制：50个/天\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 未登录 | 用户需要先登录 |\n| 400 | 400 | 类型名称已存在 | 更换类型名称 |\n| 400 | 400 | 颜色格式无效 | 使用正确的十六进制格式 |\n| 400 | 400 | 参数验证失败 | 检查必填参数 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 类型名称在用户范围内必须唯一\n- 颜色值必须是有效的十六进制格式(#RRGGBB)\n- 自动设置创建者为当前用户\n- 类型名称长度1-20字符\n- 建议使用有意义的颜色来区分不同关系"
+        },
+        "response": [
+          {
+            "name": "创建成功",
+            "originalRequest": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"盟友\",\n  \"color\": \"#00BCD4\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/relationship-types"
+              }
+            },
+            "status": "Created",
+            "code": 201,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"id\": 20,\n  \"name\": \"盟友\",\n  \"color\": \"#00BCD4\",\n  \"userId\": 1,\n  \"createdAt\": \"2024-01-15T16:30:00.000Z\"\n}",
+            "description": "### 创建关系类型成功响应\n\n**响应字段**: 包含完整的关系类型信息\n\n**颜色建议**:\n- 正面关系：绿色系 (#4CAF50, #8BC34A)\n- 负面关系：红色系 (#F44336, #FF5722)\n- 中性关系：蓝色系 (#2196F3, #00BCD4)\n- 特殊关系：紫色系 (#9C27B0, #673AB7)"
+          },
+          {
+            "name": "类型名称已存在",
+            "originalRequest": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"朋友\",\n  \"color\": \"#4CAF50\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/relationship-types"
+              }
+            },
+            "status": "Bad Request",
+            "code": 400,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Relationship type name already exists\"\n}",
+            "description": "### 类型名称冲突错误响应\n\n**触发条件**:\n- 用户已创建同名的关系类型\n- 与系统默认类型名称冲突\n\n**处理建议**:\n- 提示用户更换类型名称\n- 显示已存在的类型列表\n- 建议使用更具体的描述"
+          },
+          {
+            "name": "颜色格式无效",
+            "originalRequest": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"新类型\",\n  \"color\": \"red\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/relationship-types"
+              }
+            },
+            "status": "Bad Request",
+            "code": 400,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Invalid color format. Use hex format like #FF0000\"\n}",
+            "description": "### 颜色格式错误响应\n\n**触发条件**:\n- 颜色值不是十六进制格式\n- 缺少#前缀\n- 长度不是7位字符\n\n**处理建议**:\n- 使用颜色选择器组件\n- 验证颜色格式：#RRGGBB\n- 提供常用颜色预设"
+          }
+        ],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// 检查登录状态",
+                "if (pm.environment.get('is_logged_in') !== 'true') {",
+                "    console.log('错误：用户未登录，此请求将失败');",
+                "    return;",
+                "}",
+                "",
+                "// 生成随机关系类型名称用于测试",
+                "const timestamp = new Date().getTime();",
+                "const randomName = `测试关系_${timestamp}`;",
+                "pm.environment.set('random_relationship_type_name', randomName);",
+                "",
+                "// 生成随机颜色",
+                "const colors = ['#FF5722', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5', '#2196F3', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800'];",
+                "const randomColor = colors[Math.floor(Math.random() * colors.length)];",
+                "pm.environment.set('random_color', randomColor);"
+              ],
+              "type": "text/javascript"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.expect([201, 400, 401]).to.include(pm.response.code);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                "});",
+                "",
+                "// 创建成功时的验证",
+                "if (pm.response.code === 201) {",
+                "    pm.test('创建成功响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('id');",
+                "        pm.expect(jsonData).to.have.property('name');",
+                "        pm.expect(jsonData).to.have.property('color');",
+                "        pm.expect(jsonData).to.have.property('userId');",
+                "        pm.expect(jsonData.userId).to.equal(parseInt(pm.environment.get('current_user_id')));",
+                "    });",
+                "    ",
+                "    // 验证颜色格式",
+                "    pm.test('颜色格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData.color).to.match(/^#[0-9A-Fa-f]{6}$/);",
+                "    });",
+                "    ",
+                "    // 保存新创建的关系类型ID",
+                "    const responseJson = pm.response.json();",
+                "    pm.environment.set('new_relationship_type_id', responseJson.id);",
+                "}",
+                "",
+                "// 验证错误响应格式",
+                "if (pm.response.code === 400) {",
+                "    pm.test('验证错误响应格式', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('message');",
+                "    });",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证创建者ID的正确设置",
+                "   - 检查颜色值的格式验证",
+                "   - 确认名称唯一性检查",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      },
+      {
+        "name": "删除关系类型",
+        "request": {
+          "method": "DELETE",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/relationship-types/{{new_relationship_type_id}}",
+            "variable": [
+              {
+                "key": "new_relationship_type_id",
+                "value": "20",
+                "description": "要删除的关系类型ID"
+              }
+            ]
+          },
+          "description": "#### 删除关系类型\n\n**功能说明**: 删除用户创建的关系类型\n\n**权限要求**: \n- 角色：已登录用户\n- 权限：需要有效会话，只能删除自己创建的类型\n\n**限流规则**: \n- QPS限制：10次/秒\n- 无特殊限制\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 未登录 | 用户需要先登录 |\n| 404 | 404 | 关系类型不存在 | 检查类型ID是否正确 |\n| 403 | 403 | 权限不足 | 只能删除自己创建的类型 |\n| 400 | 400 | 类型正在使用中 | 先删除使用该类型的关系 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 用户只能删除自己创建的关系类型\n- 系统默认类型不能被删除\n- 删除前检查是否有关系正在使用该类型\n- 管理员可以删除任何用户创建的类型"
+        },
+        "response": [
+          {
+            "name": "删除成功",
+            "originalRequest": {
+              "method": "DELETE",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/relationship-types/20"
+              }
+            },
+            "status": "OK",
+            "code": 200,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Relationship type deleted successfully\"\n}",
+            "description": "### 删除关系类型成功响应\n\n**响应字段**:\n\n| 字段名 | 类型 | 描述 |\n|--------|------|------|\n| message | string | 操作结果消息 |\n\n**后续影响**:\n- 该类型不再出现在用户的类型列表中\n- 使用该类型的关系需要重新分配类型"
+          },
+          {
+            "name": "类型正在使用中",
+            "originalRequest": {
+              "method": "DELETE",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/relationship-types/10"
+              }
+            },
+            "status": "Bad Request",
+            "code": 400,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Cannot delete relationship type that is in use\",\n  \"usageCount\": 3\n}",
+            "description": "### 类型使用中错误响应\n\n**触发条件**:\n- 有关系正在使用该类型\n- 类型被其他数据引用\n\n**处理建议**:\n- 先删除或修改使用该类型的关系\n- 提供批量修改关系类型的功能\n- 显示使用该类型的关系列表"
+          }
+        ],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// 检查登录状态",
+                "if (pm.environment.get('is_logged_in') !== 'true') {",
+                "    console.log('警告：用户未登录，此请求可能失败');",
+                "}",
+                "",
+                "// 检查是否有关系类型ID",
+                "if (!pm.environment.get('new_relationship_type_id')) {",
+                "    console.log('警告：未设置new_relationship_type_id环境变量');",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.expect([200, 400, 401, 403, 404]).to.include(pm.response.code);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                "});",
+                "",
+                "// 删除成功时的验证",
+                "if (pm.response.code === 200) {",
+                "    pm.test('删除成功响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('message');",
+                "        pm.expect(jsonData.message).to.include('successful');",
+                "    });",
+                "}",
+                "",
+                "// 使用中错误的验证",
+                "if (pm.response.code === 400) {",
+                "    pm.test('使用中错误响应验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('message');",
+                "        if (jsonData.usageCount !== undefined) {",
+                "            pm.expect(jsonData.usageCount).to.be.a('number');",
+                "        }",
+                "    });",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证权限控制的正确性",
+                "   - 检查使用状态的检查",
+                "   - 确认删除操作的安全性",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

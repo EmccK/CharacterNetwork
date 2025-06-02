@@ -1,0 +1,469 @@
+{
+  "module_info": {
+    "name": "角色管理模块",
+    "description": "小说角色的完整管理，包括CRUD操作、头像上传和角色信息维护",
+    "route_prefix": "/api/characters",
+    "dependencies": ["认证管理模块", "小说管理模块"]
+  },
+  "folder": {
+    "name": "角色管理模块",
+    "description": "### 角色管理模块\n\n#### 业务逻辑\n- 角色的完整CRUD操作\n- 支持头像图片上传和URL设置\n- 角色与小说的关联管理\n- 角色描述和属性信息维护\n- 角色在关系网络中的节点管理\n\n#### 业务约束\n- 角色必须属于特定小说\n- 用户只能管理自己小说中的角色\n- 角色名称在同一小说中建议唯一\n- 头像图片支持JPG、PNG、GIF格式，最大10MB\n- 删除角色时会同时删除相关关系\n\n#### 权限控制\n- 需要登录才能访问所有接口\n- 用户只能操作自己小说中的角色\n- 管理员可以查看和管理所有角色",
+    "item": [
+      {
+        "name": "获取小说的所有角色",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/characters/{{novel_id}}",
+            "variable": [
+              {
+                "key": "novel_id",
+                "value": "1",
+                "description": "小说ID"
+              }
+            ]
+          },
+          "description": "#### 获取小说的所有角色\n\n**功能说明**: 获取指定小说中的所有角色列表\n\n**权限要求**: \n- 角色：已登录用户\n- 权限：需要有效会话，只能访问自己小说的角色\n\n**限流规则**: \n- QPS限制：100次/秒\n- 无特殊限制\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 未登录 | 用户需要先登录 |\n| 404 | 404 | 小说不存在 | 检查小说ID是否正确 |\n| 403 | 403 | 权限不足 | 只能访问自己的小说 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 只返回指定小说中的角色\n- 按创建时间倒序排列\n- 包含角色的基本信息和头像\n- 用户只能查看自己小说的角色"
+        },
+        "response": [
+          {
+            "name": "获取成功",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/characters/1"
+              }
+            },
+            "status": "OK",
+            "code": 200,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"萧炎\",\n    \"description\": \"主人公，天才少年，拥有强大的斗气天赋\",\n    \"avatar\": \"/uploads/character_abc123.jpg\",\n    \"novelId\": 1,\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  },\n  {\n    \"id\": 2,\n    \"name\": \"薰儿\",\n    \"description\": \"女主角，古族小姐，萧炎的青梅竹马\",\n    \"avatar\": \"https://example.com/xuner-avatar.jpg\",\n    \"novelId\": 1,\n    \"createdAt\": \"2024-01-15T11:00:00.000Z\"\n  },\n  {\n    \"id\": 3,\n    \"name\": \"药老\",\n    \"description\": \"萧炎的师父，炼药师，灵魂状态\",\n    \"avatar\": null,\n    \"novelId\": 1,\n    \"createdAt\": \"2024-01-15T11:30:00.000Z\"\n  }\n]",
+            "description": "### 获取角色列表成功响应\n\n**响应字段**:\n\n| 字段名 | 类型 | 描述 |\n|--------|------|------|\n| id | number | 角色唯一标识 |\n| name | string | 角色名称 |\n| description | string | 角色描述 |\n| avatar | string/null | 头像图片路径或URL |\n| novelId | number | 所属小说ID |\n| createdAt | string | 创建时间(ISO格式) |"
+          },
+          {
+            "name": "小说不存在",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/characters/999"
+              }
+            },
+            "status": "Not Found",
+            "code": 404,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Novel not found\"\n}",
+            "description": "### 小说不存在错误响应\n\n**触发条件**:\n- 提供的小说ID不存在\n- 小说已被删除\n- 用户无权访问该小说\n\n**处理建议**:\n- 检查小说ID是否正确\n- 确认用户权限\n- 刷新小说列表"
+          }
+        ],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// 检查登录状态",
+                "if (pm.environment.get('is_logged_in') !== 'true') {",
+                "    console.log('警告：用户未登录，此请求可能失败');",
+                "}",
+                "",
+                "// 检查是否有小说ID",
+                "if (!pm.environment.get('novel_id')) {",
+                "    console.log('警告：未设置novel_id环境变量');",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.expect([200, 404, 403, 401]).to.include(pm.response.code);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                "});",
+                "",
+                "// 成功获取时的验证",
+                "if (pm.response.code === 200) {",
+                "    pm.test('角色列表响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.be.an('array');",
+                "    });",
+                "    ",
+                "    // 角色数据结构验证",
+                "    const responseJson = pm.response.json();",
+                "    if (responseJson.length > 0) {",
+                "        pm.test('角色数据结构验证', function () {",
+                "            const character = responseJson[0];",
+                "            pm.expect(character).to.have.property('id');",
+                "            pm.expect(character).to.have.property('name');",
+                "            pm.expect(character).to.have.property('novelId');",
+                "            pm.expect(character.novelId).to.equal(parseInt(pm.environment.get('novel_id')));",
+                "        });",
+                "        ",
+                "        // 保存第一个角色ID用于后续测试",
+                "        pm.environment.set('character_id', responseJson[0].id);",
+                "    }",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证角色属于指定小说",
+                "   - 检查角色数据的完整性",
+                "   - 确认权限控制的正确性",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      },
+      {
+        "name": "获取特定角色",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/characters/single/{{character_id}}",
+            "variable": [
+              {
+                "key": "character_id",
+                "value": "1",
+                "description": "角色ID"
+              }
+            ]
+          },
+          "description": "#### 获取特定角色\n\n**功能说明**: 根据ID获取特定角色的详细信息\n\n**权限要求**: \n- 角色：已登录用户\n- 权限：需要有效会话，只能访问自己小说的角色\n\n**限流规则**: \n- QPS限制：200次/秒\n- 无特殊限制\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 未登录 | 用户需要先登录 |\n| 404 | 404 | 角色不存在 | 检查角色ID是否正确 |\n| 403 | 403 | 权限不足 | 只能访问自己小说的角色 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 用户只能查看自己小说中的角色\n- 管理员可以查看所有角色\n- 返回完整的角色信息"
+        },
+        "response": [
+          {
+            "name": "获取成功",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/characters/single/1"
+              }
+            },
+            "status": "OK",
+            "code": 200,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"id\": 1,\n  \"name\": \"萧炎\",\n  \"description\": \"主人公，天才少年，拥有强大的斗气天赋。从乌坦城的废物少年成长为斗帝，经历了无数磨难和挑战。\",\n  \"avatar\": \"/uploads/character_abc123.jpg\",\n  \"novelId\": 1,\n  \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n}",
+            "description": "### 获取角色详情成功响应\n\n**响应字段**: 与角色列表相同，但包含更详细的描述信息"
+          },
+          {
+            "name": "角色不存在",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/characters/single/999"
+              }
+            },
+            "status": "Not Found",
+            "code": 404,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Character not found\"\n}",
+            "description": "### 角色不存在错误响应\n\n**触发条件**:\n- 提供的角色ID不存在\n- 角色已被删除\n- 用户无权访问该角色\n\n**处理建议**:\n- 检查角色ID是否正确\n- 确认用户权限\n- 刷新角色列表"
+          }
+        ],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// 检查登录状态",
+                "if (pm.environment.get('is_logged_in') !== 'true') {",
+                "    console.log('警告：用户未登录，此请求可能失败');",
+                "}",
+                "",
+                "// 检查是否有角色ID",
+                "if (!pm.environment.get('character_id')) {",
+                "    console.log('警告：未设置character_id环境变量');",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.expect([200, 404, 403, 401]).to.include(pm.response.code);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(1500);",
+                "});",
+                "",
+                "// 成功获取时的验证",
+                "if (pm.response.code === 200) {",
+                "    pm.test('角色详情响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('id');",
+                "        pm.expect(jsonData).to.have.property('name');",
+                "        pm.expect(jsonData).to.have.property('description');",
+                "        pm.expect(jsonData).to.have.property('novelId');",
+                "    });",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证角色信息的完整性",
+                "   - 检查权限控制的正确性",
+                "   - 确认数据格式的一致性",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      },
+      {
+        "name": "创建角色",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "multipart/form-data",
+              "description": "支持文件上传的表单类型"
+            }
+          ],
+          "body": {
+            "mode": "formdata",
+            "formdata": [
+              {
+                "key": "name",
+                "value": "新角色",
+                "description": "角色名称（必填）",
+                "type": "text"
+              },
+              {
+                "key": "description",
+                "value": "这是一个重要的角色，在故事中扮演关键作用。",
+                "description": "角色描述",
+                "type": "text"
+              },
+              {
+                "key": "novelId",
+                "value": "{{novel_id}}",
+                "description": "所属小说ID（必填）",
+                "type": "text"
+              },
+              {
+                "key": "avatar",
+                "description": "头像图片文件（可选）",
+                "type": "file",
+                "src": []
+              }
+            ]
+          },
+          "url": {
+            "raw": "{{base_url}}/api/characters"
+          },
+          "description": "#### 创建角色\n\n**功能说明**: 在指定小说中创建新角色，支持头像图片上传\n\n**权限要求**: \n- 角色：已登录用户\n- 权限：需要有效会话，只能在自己的小说中创建角色\n\n**限流规则**: \n- QPS限制：20次/秒\n- 同用户限制：100个角色/小说\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 未登录 | 用户需要先登录 |\n| 400 | 400 | 角色名称不能为空 | 提供角色名称 |\n| 400 | 400 | 小说ID无效 | 检查小说ID |\n| 403 | 403 | 权限不足 | 只能在自己的小说中创建角色 |\n| 413 | 413 | 文件过大 | 头像文件不超过10MB |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 角色名称为必填字段\n- 必须指定有效的小说ID\n- 头像图片支持JPG、PNG、GIF格式\n- 文件大小限制：10MB\n- 角色名称在同一小说中建议唯一"
+        },
+        "response": [
+          {
+            "name": "创建成功",
+            "originalRequest": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "multipart/form-data"
+                }
+              ],
+              "body": {
+                "mode": "formdata",
+                "formdata": [
+                  {
+                    "key": "name",
+                    "value": "新角色",
+                    "type": "text"
+                  },
+                  {
+                    "key": "description",
+                    "value": "这是一个重要的角色",
+                    "type": "text"
+                  },
+                  {
+                    "key": "novelId",
+                    "value": "1",
+                    "type": "text"
+                  }
+                ]
+              },
+              "url": {
+                "raw": "{{base_url}}/api/characters"
+              }
+            },
+            "status": "Created",
+            "code": 201,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"id\": 10,\n  \"name\": \"新角色\",\n  \"description\": \"这是一个重要的角色，在故事中扮演关键作用。\",\n  \"avatar\": \"/uploads/character_def456.jpg\",\n  \"novelId\": 1,\n  \"createdAt\": \"2024-01-15T15:30:00.000Z\"\n}",
+            "description": "### 创建角色成功响应\n\n**响应字段**: 包含完整的角色信息\n\n**文件处理**:\n- 上传的头像会保存到 /uploads 目录\n- 文件名会被随机化以避免冲突\n- avatar 字段包含文件的相对路径"
+          },
+          {
+            "name": "角色名称为空错误",
+            "originalRequest": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "multipart/form-data"
+                }
+              ],
+              "body": {
+                "mode": "formdata",
+                "formdata": [
+                  {
+                    "key": "description",
+                    "value": "没有名称的角色",
+                    "type": "text"
+                  },
+                  {
+                    "key": "novelId",
+                    "value": "1",
+                    "type": "text"
+                  }
+                ]
+              },
+              "url": {
+                "raw": "{{base_url}}/api/characters"
+              }
+            },
+            "status": "Bad Request",
+            "code": 400,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Invalid character data\",\n  \"errors\": {\n    \"name\": {\n      \"_errors\": [\"Required\"]\n    }\n  }\n}",
+            "description": "### 数据验证错误响应\n\n**触发条件**:\n- 必填字段缺失\n- 数据格式不正确\n- 小说ID无效\n\n**处理建议**:\n- 检查所有必填字段\n- 验证小说ID的有效性\n- 确认用户对小说的权限"
+          }
+        ],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// 检查登录状态",
+                "if (pm.environment.get('is_logged_in') !== 'true') {",
+                "    console.log('错误：用户未登录，此请求将失败');",
+                "    return;",
+                "}",
+                "",
+                "// 检查小说ID",
+                "if (!pm.environment.get('novel_id')) {",
+                "    console.log('错误：未设置novel_id环境变量');",
+                "    return;",
+                "}",
+                "",
+                "// 生成随机角色名称用于测试",
+                "const timestamp = new Date().getTime();",
+                "const randomName = `测试角色_${timestamp}`;",
+                "pm.environment.set('random_character_name', randomName);"
+              ],
+              "type": "text/javascript"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.expect([201, 400, 401, 403, 413]).to.include(pm.response.code);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                "});",
+                "",
+                "// 创建成功时的验证",
+                "if (pm.response.code === 201) {",
+                "    pm.test('创建成功响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('id');",
+                "        pm.expect(jsonData).to.have.property('name');",
+                "        pm.expect(jsonData).to.have.property('novelId');",
+                "        pm.expect(jsonData.novelId).to.equal(parseInt(pm.environment.get('novel_id')));",
+                "    });",
+                "    ",
+                "    // 保存新创建的角色ID",
+                "    const responseJson = pm.response.json();",
+                "    pm.environment.set('new_character_id', responseJson.id);",
+                "}",
+                "",
+                "// 验证错误响应格式",
+                "if (pm.response.code === 400) {",
+                "    pm.test('验证错误响应格式', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('message');",
+                "    });",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证角色与小说的关联",
+                "   - 检查文件上传的处理",
+                "   - 确认数据验证的有效性",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

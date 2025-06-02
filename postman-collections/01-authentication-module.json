@@ -1,0 +1,674 @@
+{
+  "module_info": {
+    "name": "认证管理模块",
+    "description": "用户认证、会话管理和密码操作相关API",
+    "route_prefix": "/api",
+    "dependencies": []
+  },
+  "folder": {
+    "name": "认证管理模块",
+    "description": "### 认证管理模块\n\n#### 业务逻辑\n- 基于Session的用户认证机制\n- 使用Passport.js进行身份验证\n- 支持用户注册、登录、登出操作\n- 提供密码修改和用户信息获取功能\n- 会话数据存储在PostgreSQL中\n\n#### 业务约束\n- 用户名和邮箱必须唯一\n- 密码使用scrypt算法加密存储\n- 会话有效期为7天\n- 登录状态通过Cookie维护\n\n#### 权限控制\n- 部分接口需要用户已登录\n- 管理员权限通过isAdmin字段控制",
+    "item": [
+      {
+        "name": "用户注册",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json",
+              "description": "请求内容类型"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password123\",\n  \"email\": \"test@example.com\"\n}",
+            "options": {
+              "raw": {
+                "language": "json",
+                "description": "### 请求参数说明\n\n| 字段名 | 类型 | 必填 | 描述 | 示例值 |\n|--------|------|------|------|--------|\n| username | string | 是 | 用户名，必须唯一 | \"testuser\" |\n| password | string | 是 | 密码，建议8位以上 | \"password123\" |\n| email | string | 是 | 邮箱地址，必须唯一 | \"test@example.com\" |"
+              }
+            }
+          },
+          "url": {
+            "raw": "{{base_url}}/api/register"
+          },
+          "description": "#### 用户注册\n\n**功能说明**: 创建新用户账户，完成用户注册流程\n\n**权限要求**: \n- 角色：无需登录\n- 权限：公开接口\n\n**限流规则**: \n- QPS限制：10次/秒\n- 同IP限制：5次/分钟\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 400 | 400 | 用户名已存在 | 更换用户名 |\n| 400 | 400 | 邮箱已存在 | 更换邮箱地址 |\n| 400 | 400 | 参数验证失败 | 检查必填参数格式 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 用户名长度3-20字符，支持字母数字下划线\n- 密码长度至少6位\n- 邮箱格式必须正确\n- 注册成功后自动登录"
+        },
+        "response": [
+          {
+            "name": "注册成功",
+            "originalRequest": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password123\",\n  \"email\": \"test@example.com\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/register"
+              }
+            },
+            "status": "Created",
+            "code": 201,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Set-Cookie",
+                "value": "connect.sid=s%3A...; Path=/; HttpOnly"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"User registered successfully\",\n  \"user\": {\n    \"id\": 1,\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"isAdmin\": false,\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  }\n}",
+            "description": "### 注册成功响应说明\n\n**响应字段**:\n\n| 字段名 | 类型 | 描述 |\n|--------|------|------|\n| message | string | 操作结果消息 |\n| user | object | 用户信息对象 |\n| user.id | number | 用户唯一标识 |\n| user.username | string | 用户名 |\n| user.email | string | 邮箱地址 |\n| user.isAdmin | boolean | 是否为管理员 |\n| user.createdAt | string | 创建时间(ISO格式) |"
+          },
+          {
+            "name": "用户名已存在",
+            "originalRequest": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"username\": \"existinguser\",\n  \"password\": \"password123\",\n  \"email\": \"new@example.com\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/register"
+              }
+            },
+            "status": "Bad Request",
+            "code": 400,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Username already exists\"\n}",
+            "description": "### 用户名冲突错误响应\n\n**触发条件**:\n- 提交的用户名已被其他用户使用\n\n**处理建议**:\n- 提示用户更换用户名\n- 可提供用户名可用性检查功能"
+          }
+        ],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.expect([200, 201, 400]).to.include(pm.response.code);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                "});",
+                "",
+                "// 成功注册时的验证",
+                "if (pm.response.code === 201) {",
+                "    pm.test('注册成功响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('message');",
+                "        pm.expect(jsonData).to.have.property('user');",
+                "        pm.expect(jsonData.user).to.have.property('id');",
+                "        pm.expect(jsonData.user).to.have.property('username');",
+                "        pm.expect(jsonData.user).to.have.property('email');",
+                "    });",
+                "    ",
+                "    // 保存用户信息到环境变量",
+                "    const responseJson = pm.response.json();",
+                "    pm.environment.set('user_id', responseJson.user.id);",
+                "    pm.environment.set('username', responseJson.user.username);",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证用户信息的完整性",
+                "   - 检查返回的用户ID是否为正整数",
+                "   - 验证isAdmin字段默认为false",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      },
+      {
+        "name": "用户登录",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json",
+              "description": "请求内容类型"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password123\"\n}",
+            "options": {
+              "raw": {
+                "language": "json",
+                "description": "### 请求参数说明\n\n| 字段名 | 类型 | 必填 | 描述 | 示例值 |\n|--------|------|------|------|--------|\n| username | string | 是 | 用户名或邮箱 | \"testuser\" |\n| password | string | 是 | 用户密码 | \"password123\" |"
+              }
+            }
+          },
+          "url": {
+            "raw": "{{base_url}}/api/login"
+          },
+          "description": "#### 用户登录\n\n**功能说明**: 验证用户凭据并建立登录会话\n\n**权限要求**: \n- 角色：无需登录\n- 权限：公开接口\n\n**限流规则**: \n- QPS限制：20次/秒\n- 同IP限制：10次/分钟\n- 失败限制：5次/5分钟\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 用户名或密码错误 | 检查登录凭据 |\n| 400 | 400 | 参数缺失 | 提供用户名和密码 |\n| 429 | 429 | 登录尝试过于频繁 | 等待后重试 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 支持用户名或邮箱登录\n- 密码错误5次后账户临时锁定\n- 登录成功后创建会话Cookie\n- 会话有效期7天"
+        },
+        "response": [
+          {
+            "name": "登录成功",
+            "originalRequest": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password123\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/login"
+              }
+            },
+            "status": "OK",
+            "code": 200,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Set-Cookie",
+                "value": "connect.sid=s%3A...; Path=/; HttpOnly"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Login successful\",\n  \"user\": {\n    \"id\": 1,\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"isAdmin\": false,\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  }\n}",
+            "description": "### 登录成功响应说明\n\n**响应字段**:\n\n| 字段名 | 类型 | 描述 |\n|--------|------|------|\n| message | string | 操作结果消息 |\n| user | object | 用户信息对象 |\n| user.id | number | 用户唯一标识 |\n| user.username | string | 用户名 |\n| user.email | string | 邮箱地址 |\n| user.isAdmin | boolean | 是否为管理员 |\n| user.createdAt | string | 创建时间(ISO格式) |"
+          },
+          {
+            "name": "登录失败",
+            "originalRequest": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"wrongpassword\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/login"
+              }
+            },
+            "status": "Unauthorized",
+            "code": 401,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Invalid username or password\"\n}",
+            "description": "### 登录失败错误响应\n\n**触发条件**:\n- 用户名不存在\n- 密码错误\n- 账户被锁定\n\n**处理建议**:\n- 提示用户检查登录凭据\n- 提供找回密码功能\n- 显示剩余尝试次数"
+          }
+        ],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.expect([200, 401, 400]).to.include(pm.response.code);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                "});",
+                "",
+                "// 登录成功时的验证",
+                "if (pm.response.code === 200) {",
+                "    pm.test('登录成功响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('message');",
+                "        pm.expect(jsonData).to.have.property('user');",
+                "        pm.expect(jsonData.user).to.have.property('id');",
+                "    });",
+                "    ",
+                "    // 保存登录状态到环境变量",
+                "    const responseJson = pm.response.json();",
+                "    pm.environment.set('current_user_id', responseJson.user.id);",
+                "    pm.environment.set('is_logged_in', 'true');",
+                "    pm.environment.set('is_admin', responseJson.user.isAdmin);",
+                "    ",
+                "    // 检查是否设置了会话Cookie",
+                "    pm.test('会话Cookie设置验证', function () {",
+                "        pm.expect(pm.response.headers.get('Set-Cookie')).to.include('connect.sid');",
+                "    });",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证会话Cookie的正确设置",
+                "   - 检查用户权限信息",
+                "   - 验证登录状态的持久化",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      },
+      {
+        "name": "用户登出",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json",
+              "description": "请求内容类型"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "",
+            "options": {
+              "raw": {
+                "language": "json",
+                "description": "### 请求参数说明\n\n无需请求体参数，通过会话Cookie识别用户身份"
+              }
+            }
+          },
+          "url": {
+            "raw": "{{base_url}}/api/logout"
+          },
+          "description": "#### 用户登出\n\n**功能说明**: 销毁用户会话，清除登录状态\n\n**权限要求**: \n- 角色：已登录用户\n- 权限：需要有效会话\n\n**限流规则**: \n- QPS限制：50次/秒\n- 无特殊限制\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 未登录 | 用户未登录或会话已过期 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 清除服务器端会话数据\n- 清除客户端会话Cookie\n- 登出后需要重新登录才能访问受保护资源"
+        },
+        "response": [
+          {
+            "name": "登出成功",
+            "originalRequest": {
+              "method": "POST",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/logout"
+              }
+            },
+            "status": "OK",
+            "code": 200,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Set-Cookie",
+                "value": "connect.sid=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Logout successful\"\n}",
+            "description": "### 登出成功响应说明\n\n**响应字段**:\n\n| 字段名 | 类型 | 描述 |\n|--------|------|------|\n| message | string | 操作结果消息 |\n\n**Cookie处理**:\n- 会话Cookie被清除\n- 过期时间设置为过去时间"
+          }
+        ],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.response.to.have.status(200);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                "});",
+                "",
+                "// 登出成功验证",
+                "pm.test('登出成功响应格式验证', function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData).to.have.property('message');",
+                "    pm.expect(jsonData.message).to.include('successful');",
+                "});",
+                "",
+                "// 清除环境变量中的登录状态",
+                "pm.environment.unset('current_user_id');",
+                "pm.environment.set('is_logged_in', 'false');",
+                "pm.environment.unset('is_admin');",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证会话Cookie被正确清除",
+                "   - 确认登录状态被重置",
+                "   - 检查后续请求需要重新认证",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      },
+      {
+        "name": "获取当前用户信息",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/user"
+          },
+          "description": "#### 获取当前用户信息\n\n**功能说明**: 获取当前登录用户的详细信息\n\n**权限要求**: \n- 角色：已登录用户\n- 权限：需要有效会话\n\n**限流规则**: \n- QPS限制：100次/秒\n- 无特殊限制\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 未登录 | 用户需要先登录 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 只能获取当前登录用户的信息\n- 不返回敏感信息如密码\n- 包含用户权限信息"
+        },
+        "response": [
+          {
+            "name": "获取成功",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/user"
+              }
+            },
+            "status": "OK",
+            "code": 200,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"user\": {\n    \"id\": 1,\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"isAdmin\": false,\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  }\n}",
+            "description": "### 获取用户信息成功响应\n\n**响应字段**:\n\n| 字段名 | 类型 | 描述 |\n|--------|------|------|\n| user | object | 用户信息对象 |\n| user.id | number | 用户唯一标识 |\n| user.username | string | 用户名 |\n| user.email | string | 邮箱地址 |\n| user.isAdmin | boolean | 是否为管理员 |\n| user.createdAt | string | 创建时间(ISO格式) |"
+          },
+          {
+            "name": "未登录错误",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/user"
+              }
+            },
+            "status": "Unauthorized",
+            "code": 401,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Unauthorized\"\n}",
+            "description": "### 未登录错误响应\n\n**触发条件**:\n- 用户未登录\n- 会话已过期\n- 会话Cookie无效\n\n**处理建议**:\n- 重定向到登录页面\n- 提示用户重新登录"
+          }
+        ],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// 检查登录状态",
+                "if (pm.environment.get('is_logged_in') !== 'true') {",
+                "    console.log('警告：用户可能未登录，此请求可能失败');",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.expect([200, 401]).to.include(pm.response.code);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                "});",
+                "",
+                "// 成功获取用户信息时的验证",
+                "if (pm.response.code === 200) {",
+                "    pm.test('用户信息响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('user');",
+                "        pm.expect(jsonData.user).to.have.property('id');",
+                "        pm.expect(jsonData.user).to.have.property('username');",
+                "        pm.expect(jsonData.user).to.have.property('email');",
+                "        pm.expect(jsonData.user).to.have.property('isAdmin');",
+                "    });",
+                "    ",
+                "    // 验证不包含敏感信息",
+                "    pm.test('敏感信息保护验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData.user).to.not.have.property('password');",
+                "    });",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证用户信息的完整性",
+                "   - 确认敏感信息不被泄露",
+                "   - 检查权限字段的正确性",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      },
+      {
+        "name": "修改密码",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json",
+              "description": "请求内容类型"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"currentPassword\": \"oldpassword123\",\n  \"newPassword\": \"newpassword456\"\n}",
+            "options": {
+              "raw": {
+                "language": "json",
+                "description": "### 请求参数说明\n\n| 字段名 | 类型 | 必填 | 描述 | 示例值 |\n|--------|------|------|------|--------|\n| currentPassword | string | 是 | 当前密码 | \"oldpassword123\" |\n| newPassword | string | 是 | 新密码，至少6位 | \"newpassword456\" |"
+              }
+            }
+          },
+          "url": {
+            "raw": "{{base_url}}/api/change-password"
+          },
+          "description": "#### 修改密码\n\n**功能说明**: 修改当前登录用户的密码\n\n**权限要求**: \n- 角色：已登录用户\n- 权限：需要有效会话\n\n**限流规则**: \n- QPS限制：5次/秒\n- 同用户限制：3次/小时\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 401 | 401 | 未登录 | 用户需要先登录 |\n| 400 | 400 | 当前密码错误 | 检查当前密码 |\n| 400 | 400 | 新密码格式不正确 | 密码至少6位 |\n| 429 | 429 | 修改过于频繁 | 等待后重试 |\n| 500 | 500 | 服务器内部错误 | 联系技术支持 |\n\n**业务规则**:\n- 必须提供正确的当前密码\n- 新密码长度至少6位\n- 新密码不能与当前密码相同\n- 修改成功后不影响当前会话"
+        },
+        "response": [
+          {
+            "name": "修改成功",
+            "originalRequest": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"currentPassword\": \"oldpassword123\",\n  \"newPassword\": \"newpassword456\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/change-password"
+              }
+            },
+            "status": "OK",
+            "code": 200,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Password changed successfully\"\n}",
+            "description": "### 密码修改成功响应\n\n**响应字段**:\n\n| 字段名 | 类型 | 描述 |\n|--------|------|------|\n| message | string | 操作结果消息 |\n\n**安全说明**:\n- 密码已使用scrypt算法重新加密\n- 当前会话保持有效\n- 建议用户在其他设备重新登录"
+          },
+          {
+            "name": "当前密码错误",
+            "originalRequest": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"currentPassword\": \"wrongpassword\",\n  \"newPassword\": \"newpassword456\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/change-password"
+              }
+            },
+            "status": "Bad Request",
+            "code": 400,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"Current password is incorrect\"\n}",
+            "description": "### 当前密码错误响应\n\n**触发条件**:\n- 提供的当前密码不正确\n\n**处理建议**:\n- 提示用户检查当前密码\n- 提供找回密码功能链接\n- 记录密码错误尝试次数"
+          },
+          {
+            "name": "新密码格式错误",
+            "originalRequest": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"currentPassword\": \"oldpassword123\",\n  \"newPassword\": \"123\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/change-password"
+              }
+            },
+            "status": "Bad Request",
+            "code": 400,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"New password must be at least 6 characters long\"\n}",
+            "description": "### 新密码格式错误响应\n\n**触发条件**:\n- 新密码长度不足6位\n- 新密码格式不符合要求\n\n**处理建议**:\n- 显示密码强度要求\n- 提供密码强度检测\n- 建议使用复杂密码"
+          }
+        ],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// 检查登录状态",
+                "if (pm.environment.get('is_logged_in') !== 'true') {",
+                "    console.log('警告：用户未登录，此请求将失败');",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.expect([200, 400, 401]).to.include(pm.response.code);",
+                "});",
+                "",
+                "// 响应时间验证",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                "});",
+                "",
+                "// 密码修改成功时的验证",
+                "if (pm.response.code === 200) {",
+                "    pm.test('密码修改成功响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('message');",
+                "        pm.expect(jsonData.message).to.include('successful');",
+                "    });",
+                "    ",
+                "    console.log('密码修改成功，建议在其他设备重新登录');",
+                "}",
+                "",
+                "// 错误响应验证",
+                "if (pm.response.code === 400) {",
+                "    pm.test('错误响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('message');",
+                "    });",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证密码修改的安全性",
+                "   - 确认会话状态保持不变",
+                "   - 检查错误信息的准确性",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,216 @@
+{
+  "module_info": {
+    "name": "微信读书代理模块",
+    "description": "微信读书API代理服务，用于搜索外部书籍信息",
+    "route_prefix": "/api/weread",
+    "dependencies": []
+  },
+  "folder": {
+    "name": "微信读书代理模块",
+    "description": "### 微信读书代理模块\n\n#### 业务逻辑\n- 代理微信读书API的搜索请求\n- 解决跨域访问问题\n- 提供统一的搜索接口\n- 处理外部API的错误和异常\n- 格式化返回数据结构\n\n#### 业务约束\n- 无需用户登录即可访问\n- 受外部API限流限制\n- 搜索关键词不能为空\n- 依赖外部服务的可用性\n\n#### 权限控制\n- 公开接口，无需认证\n- 基于IP的访问频率限制\n- 防止恶意请求和滥用",
+    "item": [
+      {
+        "name": "微信读书搜索",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/weread/search?keyword={{search_keyword}}",
+            "query": [
+              {
+                "key": "keyword",
+                "value": "{{search_keyword}}",
+                "description": "搜索关键词"
+              }
+            ]
+          },
+          "description": "#### 微信读书搜索\n\n**功能说明**: 通过微信读书API搜索书籍信息，代理外部请求解决跨域问题\n\n**权限要求**: \n- 角色：无需登录\n- 权限：公开接口\n\n**限流规则**: \n- QPS限制：20次/秒\n- 同IP限制：100次/小时\n- 外部API限制：依赖微信读书API\n\n**错误码对照表**:\n\n| 错误码 | HTTP状态码 | 错误信息 | 解决方案 |\n|--------|------------|----------|----------|\n| 400 | 400 | 搜索关键词不能为空 | 提供有效的搜索关键词 |\n| 503 | 503 | 微信读书API不可用 | 稍后重试 |\n| 500 | 500 | 微信读书API返回非JSON响应 | 检查外部API状态 |\n| 429 | 429 | 请求过于频繁 | 降低请求频率 |\n| 502 | 502 | 外部API错误 | 联系技术支持 |\n\n**业务规则**:\n- 搜索关键词长度至少1个字符\n- 自动处理外部API的响应格式\n- 返回标准化的书籍信息结构\n- 支持中文和英文搜索\n- 实时搜索，不缓存结果"
+        },
+        "response": [
+          {
+            "name": "搜索成功",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/weread/search?keyword=斗破苍穹"
+              }
+            },
+            "status": "OK",
+            "code": 200,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Proxy-Source",
+                "value": "weread"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"books\": [\n    {\n      \"bookId\": \"12345\",\n      \"title\": \"斗破苍穹\",\n      \"author\": \"天蚕土豆\",\n      \"cover\": \"https://weread.qq.com/cover/12345.jpg\",\n      \"intro\": \"这里是斗气大陆，没有花俏的魔法，有的，仅仅是繁衍到巅峰的斗气！\",\n      \"category\": \"玄幻\",\n      \"publishTime\": \"2009-04-14\",\n      \"publisher\": \"起点中文网\",\n      \"isbn\": \"\",\n      \"totalWords\": 5000000,\n      \"finished\": 1,\n      \"payType\": 0\n    },\n    {\n      \"bookId\": \"67890\",\n      \"title\": \"斗破苍穹之大主宰\",\n      \"author\": \"天蚕土豆\",\n      \"cover\": \"https://weread.qq.com/cover/67890.jpg\",\n      \"intro\": \"斗破苍穹续作，讲述萧炎之后的故事\",\n      \"category\": \"玄幻\",\n      \"publishTime\": \"2013-07-12\",\n      \"publisher\": \"起点中文网\",\n      \"isbn\": \"\",\n      \"totalWords\": 4200000,\n      \"finished\": 1,\n      \"payType\": 1\n    }\n  ],\n  \"totalCount\": 2,\n  \"hasMore\": false\n}",
+            "description": "### 搜索成功响应说明\n\n**响应头说明**:\n- X-Proxy-Source: weread 表示数据来源于微信读书API\n\n**响应字段**:\n\n| 字段名 | 类型 | 描述 |\n|--------|------|------|\n| books | array | 书籍信息列表 |\n| books[].bookId | string | 微信读书的书籍ID |\n| books[].title | string | 书籍标题 |\n| books[].author | string | 作者 |\n| books[].cover | string | 封面图片URL |\n| books[].intro | string | 书籍简介 |\n| books[].category | string | 分类 |\n| books[].publishTime | string | 发布时间 |\n| books[].publisher | string | 出版商 |\n| books[].isbn | string | ISBN号码 |\n| books[].totalWords | number | 总字数 |\n| books[].finished | number | 是否完结(0未完结,1完结) |\n| books[].payType | number | 付费类型(0免费,1付费) |\n| totalCount | number | 搜索结果总数 |\n| hasMore | boolean | 是否有更多结果 |"
+          },
+          {
+            "name": "搜索关键词为空",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/weread/search?keyword="
+              }
+            },
+            "status": "Bad Request",
+            "code": 400,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"搜索关键词不能为空\"\n}",
+            "description": "### 搜索关键词为空错误响应\n\n**触发条件**:\n- 未提供keyword参数\n- keyword参数值为空字符串\n- keyword参数只包含空格\n\n**处理建议**:\n- 提示用户输入有效的搜索关键词\n- 前端进行输入验证\n- 提供搜索建议或热门关键词"
+          },
+          {
+            "name": "微信读书API不可用",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/weread/search?keyword=测试"
+              }
+            },
+            "status": "Service Unavailable",
+            "code": 503,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"微信读书API错误: 503\"\n}",
+            "description": "### 外部API不可用错误响应\n\n**触发条件**:\n- 微信读书API服务器故障\n- 网络连接问题\n- 外部API返回错误状态码\n\n**处理建议**:\n- 稍后重试请求\n- 检查网络连接\n- 使用其他数据源作为备选\n- 显示友好的错误提示"
+          },
+          {
+            "name": "外部API返回非JSON响应",
+            "originalRequest": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/weread/search?keyword=特殊字符"
+              }
+            },
+            "status": "Internal Server Error",
+            "code": 500,
+            "_postman_previewlanguage": "json",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "cookie": [],
+            "body": "{\n  \"message\": \"微信读书API返回非JSON响应\",\n  \"contentType\": \"text/html\"\n}",
+            "description": "### 外部API响应格式错误\n\n**触发条件**:\n- 外部API返回HTML页面而非JSON\n- 外部API响应格式异常\n- 搜索关键词包含特殊字符导致错误\n\n**处理建议**:\n- 检查搜索关键词的合法性\n- 联系技术支持检查外部API状态\n- 使用备用搜索方案"
+          }
+        ],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "exec": [
+                "// 设置默认搜索关键词",
+                "if (!pm.environment.get('search_keyword')) {",
+                "    pm.environment.set('search_keyword', '斗破苍穹');",
+                "}",
+                "",
+                "// 记录请求开始时间",
+                "pm.environment.set('request_start_time', new Date().getTime());"
+              ],
+              "type": "text/javascript"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "exec": [
+                "// 基础响应验证",
+                "pm.test('HTTP状态码验证', function () {",
+                "    pm.expect([200, 400, 503, 500]).to.include(pm.response.code);",
+                "});",
+                "",
+                "// 响应时间验证(外部API调用可能较慢)",
+                "pm.test('响应时间验证', function () {",
+                "    pm.expect(pm.response.responseTime).to.be.below(15000);",
+                "});",
+                "",
+                "// 搜索成功时的验证",
+                "if (pm.response.code === 200) {",
+                "    pm.test('搜索结果响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('books');",
+                "        pm.expect(jsonData).to.have.property('totalCount');",
+                "        pm.expect(jsonData).to.have.property('hasMore');",
+                "        pm.expect(jsonData.books).to.be.an('array');",
+                "    });",
+                "    ",
+                "    // 验证书籍信息结构",
+                "    const responseJson = pm.response.json();",
+                "    if (responseJson.books.length > 0) {",
+                "        pm.test('书籍信息结构验证', function () {",
+                "            const book = responseJson.books[0];",
+                "            pm.expect(book).to.have.property('bookId');",
+                "            pm.expect(book).to.have.property('title');",
+                "            pm.expect(book).to.have.property('author');",
+                "            pm.expect(book).to.have.property('cover');",
+                "        });",
+                "        ",
+                "        // 保存第一个搜索结果的bookId",
+                "        pm.environment.set('weread_book_id', responseJson.books[0].bookId);",
+                "    }",
+                "    ",
+                "    // 检查代理来源标识",
+                "    const proxySource = pm.response.headers.get('X-Proxy-Source');",
+                "    if (proxySource) {",
+                "        pm.test('代理来源标识验证', function () {",
+                "            pm.expect(proxySource).to.equal('weread');",
+                "        });",
+                "    }",
+                "}",
+                "",
+                "// 错误响应验证",
+                "if (pm.response.code >= 400) {",
+                "    pm.test('错误响应格式验证', function () {",
+                "        const jsonData = pm.response.json();",
+                "        pm.expect(jsonData).to.have.property('message');",
+                "    });",
+                "}",
+                "",
+                "// 计算实际响应时间",
+                "const startTime = pm.environment.get('request_start_time');",
+                "if (startTime) {",
+                "    const actualResponseTime = new Date().getTime() - parseInt(startTime);",
+                "    console.log(`实际响应时间: ${actualResponseTime}ms`);",
+                "}",
+                "",
+                "/* 业务逻辑验证：",
+                "   - 验证外部API代理的稳定性",
+                "   - 检查数据格式的标准化",
+                "   - 确认错误处理的完整性",
+                "   - 监控外部服务的可用性",
+                "*/"
+              ],
+              "type": "text/javascript"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
