@@ -1,6 +1,8 @@
 import {
   type User, type Novel, type Character, type RelationshipType, type Relationship, type NovelGenre, type BookInfo, type TimelineEvent,
-  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre, type InsertBookInfo, type InsertTimelineEvent
+  type DefaultRelationshipType, type UserHiddenRelationshipType,
+  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre, type InsertBookInfo, type InsertTimelineEvent,
+  type InsertDefaultRelationshipType, type InsertUserHiddenRelationshipType
 } from "@shared/schema";
 import session from "express-session";
 
@@ -39,8 +41,19 @@ export interface IStorage {
   updateCharacter(id: number, character: Partial<Character>): Promise<Character | undefined>;
   deleteCharacter(id: number): Promise<boolean>;
 
-  // Relationship Type operations
+  // Default Relationship Type operations
+  getDefaultRelationshipTypes(): Promise<DefaultRelationshipType[]>;
+  getDefaultRelationshipType(id: number): Promise<DefaultRelationshipType | undefined>;
+  createDefaultRelationshipType(defaultRelationshipType: InsertDefaultRelationshipType): Promise<DefaultRelationshipType>;
+
+  // User Hidden Relationship Type operations
+  getUserHiddenRelationshipTypes(userId: number): Promise<UserHiddenRelationshipType[]>;
+  hideDefaultRelationshipType(userId: number, defaultTypeId: number): Promise<UserHiddenRelationshipType>;
+  unhideDefaultRelationshipType(userId: number, defaultTypeId: number): Promise<boolean>;
+
+  // Relationship Type operations (user custom types)
   getRelationshipTypes(userId: number): Promise<RelationshipType[]>;
+  getAllAvailableRelationshipTypes(userId: number): Promise<(DefaultRelationshipType | RelationshipType)[]>;
   getRelationshipType(id: number): Promise<RelationshipType | undefined>;
   createRelationshipType(relationshipType: InsertRelationshipType): Promise<RelationshipType>;
   updateRelationshipType(id: number, relationshipType: Partial<RelationshipType>): Promise<RelationshipType | undefined>;

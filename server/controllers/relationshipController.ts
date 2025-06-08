@@ -207,13 +207,13 @@ export const deleteRelationship = async (req: Request, res: Response, next: Next
 };
 
 /**
- * 获取关系类型
+ * 获取关系类型（包括默认类型和用户自定义类型）
  */
 export const getRelationshipTypes = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // 如果没有提供 userId 参数，则使用当前用户的 ID
     let userId: number;
-    
+
     if (req.params.userId) {
       userId = parseInt(req.params.userId);
       // 只允许获取自己的关系类型或系统默认类型
@@ -224,9 +224,68 @@ export const getRelationshipTypes = async (req: Request, res: Response, next: Ne
       // 如果是从 relationship-types 路由访问，直接使用当前用户 ID
       userId = req.user!.id;
     }
-    
+
+    const relationshipTypes = await storage.getAllAvailableRelationshipTypes(userId);
+    res.json(relationshipTypes);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * 获取用户自定义关系类型
+ */
+export const getUserCustomRelationshipTypes = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.id;
     const relationshipTypes = await storage.getRelationshipTypes(userId);
     res.json(relationshipTypes);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * 获取默认关系类型
+ */
+export const getDefaultRelationshipTypes = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const defaultTypes = await storage.getDefaultRelationshipTypes();
+    res.json(defaultTypes);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * 隐藏默认关系类型
+ */
+export const hideDefaultRelationshipType = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.id;
+    const defaultTypeId = parseInt(req.params.id);
+
+    const hiddenType = await storage.hideDefaultRelationshipType(userId, defaultTypeId);
+    res.status(201).json(hiddenType);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * 取消隐藏默认关系类型
+ */
+export const unhideDefaultRelationshipType = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.id;
+    const defaultTypeId = parseInt(req.params.id);
+
+    const success = await storage.unhideDefaultRelationshipType(userId, defaultTypeId);
+    if (success) {
+      res.json({ message: "关系类型已恢复显示" });
+    } else {
+      res.status(404).json({ message: "未找到隐藏记录" });
+    }
   } catch (error) {
     next(error);
   }

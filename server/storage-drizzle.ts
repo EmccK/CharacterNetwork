@@ -5,8 +5,11 @@ import pg from 'pg';
 import 'dotenv/config';
 import {
   users, novels, characters, relationshipTypes, relationships, novelGenres, bookInfos, timelineEvents,
+  defaultRelationshipTypes, userHiddenRelationshipTypes,
   type User, type Novel, type Character, type RelationshipType, type Relationship, type NovelGenre, type BookInfo, type TimelineEvent,
-  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre, type InsertBookInfo, type InsertTimelineEvent
+  type DefaultRelationshipType, type UserHiddenRelationshipType,
+  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre, type InsertBookInfo, type InsertTimelineEvent,
+  type InsertDefaultRelationshipType, type InsertUserHiddenRelationshipType
 } from '@shared/schema';
 import { db } from './db';
 import { eq, and, or, desc, like, ilike, or as orExpr, and as andExpr, sql } from 'drizzle-orm';
@@ -41,8 +44,34 @@ export class DrizzleStorage implements IStorage {
   }
 
   private async initializeDefaultRelationshipTypes() {
-    // 由于不再需要默认关系类型，这里仅仅保留初始化方法
-    // 如果需要可以在这里添加自定义初始化逻辑
+    try {
+      // 检查是否已经有默认关系类型
+      const existingTypes = await db.select().from(defaultRelationshipTypes).limit(1);
+      if (existingTypes.length > 0) {
+        return; // 已经初始化过了
+      }
+
+      // 创建默认关系类型
+      const defaultTypes = [
+        { name: '朋友', color: '#10B981' },
+        { name: '敌人', color: '#EF4444' },
+        { name: '恋人', color: '#EC4899' },
+        { name: '家人', color: '#8B5CF6' },
+        { name: '同事', color: '#3B82F6' },
+        { name: '师父', color: '#F59E0B' },
+        { name: '徒弟', color: '#84CC16' },
+        { name: '竞争对手', color: '#F97316' },
+        { name: '盟友', color: '#06B6D4' },
+        { name: '上司', color: '#6366F1' },
+        { name: '下属', color: '#14B8A6' },
+        { name: '邻居', color: '#A855F7' },
+      ];
+
+      await db.insert(defaultRelationshipTypes).values(defaultTypes);
+      console.log('默认关系类型初始化完成');
+    } catch (error) {
+      console.error('初始化默认关系类型失败:', error);
+    }
   }
 
   // Novel Genre operations
@@ -226,11 +255,72 @@ export class DrizzleStorage implements IStorage {
     return result.length > 0;
   }
 
-  // Relationship Type operations
+  // Default Relationship Type operations
+  async getDefaultRelationshipTypes(): Promise<DefaultRelationshipType[]> {
+    return await db.select().from(defaultRelationshipTypes);
+  }
+
+  async getDefaultRelationshipType(id: number): Promise<DefaultRelationshipType | undefined> {
+    const results = await db.select().from(defaultRelationshipTypes).where(eq(defaultRelationshipTypes.id, id)).limit(1);
+    return results.length > 0 ? results[0] : undefined;
+  }
+
+  async createDefaultRelationshipType(defaultRelationshipType: InsertDefaultRelationshipType): Promise<DefaultRelationshipType> {
+    const result = await db.insert(defaultRelationshipTypes).values(defaultRelationshipType).returning();
+    return result[0];
+  }
+
+  // User Hidden Relationship Type operations
+  async getUserHiddenRelationshipTypes(userId: number): Promise<UserHiddenRelationshipType[]> {
+    return await db.select().from(userHiddenRelationshipTypes)
+      .where(eq(userHiddenRelationshipTypes.userId, userId));
+  }
+
+  async hideDefaultRelationshipType(userId: number, defaultTypeId: number): Promise<UserHiddenRelationshipType> {
+    const result = await db.insert(userHiddenRelationshipTypes).values({
+      userId,
+      defaultTypeId
+    }).returning();
+    return result[0];
+  }
+
+  async unhideDefaultRelationshipType(userId: number, defaultTypeId: number): Promise<boolean> {
+    const result = await db.delete(userHiddenRelationshipTypes)
+      .where(and(
+        eq(userHiddenRelationshipTypes.userId, userId),
+        eq(userHiddenRelationshipTypes.defaultTypeId, defaultTypeId)
+      )).returning();
+    return result.length > 0;
+  }
+
+  // Relationship Type operations (user custom types)
   async getRelationshipTypes(userId: number): Promise<RelationshipType[]> {
     // 只获取用户自定义的关系类型
     return await db.select().from(relationshipTypes)
       .where(eq(relationshipTypes.userId, userId));
+  }
+
+  async getAllAvailableRelationshipTypes(userId: number): Promise<(DefaultRelationshipType | RelationshipType)[]> {
+    // 获取所有默认关系类型
+    const defaultTypes = await this.getDefaultRelationshipTypes();
+
+    // 获取用户隐藏的默认关系类型
+    const hiddenTypes = await this.getUserHiddenRelationshipTypes(userId);
+    const hiddenTypeIds = new Set(hiddenTypes.map(h => h.defaultTypeId));
+
+    // 过滤掉用户隐藏的默认关系类型
+    const visibleDefaultTypes = defaultTypes.filter(type => !hiddenTypeIds.has(type.id));
+
+    // 获取用户自定义的关系类型
+    const userCustomTypes = await this.getRelationshipTypes(userId);
+
+    // 合并并返回，添加类型标识
+    const result: (DefaultRelationshipType | RelationshipType)[] = [
+      ...visibleDefaultTypes.map(type => ({ ...type, isDefault: true })),
+      ...userCustomTypes.map(type => ({ ...type, isDefault: false }))
+    ];
+
+    return result;
   }
 
   async getRelationshipType(id: number): Promise<RelationshipType | undefined> {

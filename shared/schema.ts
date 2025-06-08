@@ -50,7 +50,26 @@ export const characters = pgTable("characters", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Relationship Type Schema
+// Default Relationship Type Schema - 系统默认关系类型
+export const defaultRelationshipTypes = pgTable("default_relationship_types", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  color: text("color").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// User Hidden Relationship Types Schema - 用户隐藏的默认关系类型
+export const userHiddenRelationshipTypes = pgTable("user_hidden_relationship_types", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  defaultTypeId: integer("default_type_id").notNull().references(() => defaultRelationshipTypes.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  // 确保用户不能重复隐藏同一个默认关系类型
+  uniqueUserDefaultType: unique().on(table.userId, table.defaultTypeId),
+}));
+
+// Relationship Type Schema - 用户自定义关系类型
 export const relationshipTypes = pgTable("relationship_types", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -100,6 +119,16 @@ export const insertCharacterSchema = createInsertSchema(characters).pick({
   novelId: true,
 });
 
+export const insertDefaultRelationshipTypeSchema = createInsertSchema(defaultRelationshipTypes).pick({
+  name: true,
+  color: true,
+});
+
+export const insertUserHiddenRelationshipTypeSchema = createInsertSchema(userHiddenRelationshipTypes).pick({
+  userId: true,
+  defaultTypeId: true,
+});
+
 export const insertRelationshipTypeSchema = createInsertSchema(relationshipTypes).pick({
   name: true,
   color: true,
@@ -128,6 +157,12 @@ export type Novel = typeof novels.$inferSelect & {
 
 export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
 export type Character = typeof characters.$inferSelect;
+
+export type InsertDefaultRelationshipType = z.infer<typeof insertDefaultRelationshipTypeSchema>;
+export type DefaultRelationshipType = typeof defaultRelationshipTypes.$inferSelect;
+
+export type InsertUserHiddenRelationshipType = z.infer<typeof insertUserHiddenRelationshipTypeSchema>;
+export type UserHiddenRelationshipType = typeof userHiddenRelationshipTypes.$inferSelect;
 
 export type InsertRelationshipType = z.infer<typeof insertRelationshipTypeSchema>;
 export type RelationshipType = typeof relationshipTypes.$inferSelect;
