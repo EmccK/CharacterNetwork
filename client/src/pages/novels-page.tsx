@@ -107,8 +107,8 @@ export default function NovelsPage() {
   };
 
   return (
-    <main className="flex-1 overflow-y-auto bg-gray-50">
-      <div className="mb-6">
+    <div className="space-y-6">
+      <div>
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-800">我的小说</h3>
           <Button
@@ -285,6 +285,6 @@ export default function NovelsPage() {
           />
         </DialogContent>
       </Dialog>
-    </main>
+    </div>
   );
 }

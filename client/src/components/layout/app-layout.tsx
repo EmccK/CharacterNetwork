@@ -26,6 +26,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     if (location === "/characters") return "人物列表"
     if (location === "/relationships") return "角色关系"
     if (location === "/novel-genres") return "小说分类"
+    if (location === "/admin") return "管理员面板"
     if (location === "/settings") return "设置"
     if (location.includes("/timeline")) return "时间线"
     return "人物关系管理器"

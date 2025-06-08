@@ -77,13 +77,9 @@ const BookSearch: React.FC<BookSearchProps> = ({ onSelectBook, setExternalSearch
   // 提供外部调用的方法
   useEffect(() => {
     if (setExternalSearchQuery) {
-      setExternalSearchQuery(query);
-      setSearchQuery(query);
-      if (query.trim().length > 0) {
-        setDebouncedQuery(query);
-      }
+      setExternalSearchQuery(searchQuery);
     }
-  }, [setExternalSearchQuery, query]);
+  }, [setExternalSearchQuery, searchQuery]);
 
   // 当用户输入时，设置一个延迟进行搜索
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

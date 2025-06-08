@@ -4,6 +4,7 @@ import { insertNovelSchema } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { 
   // 表单容器组件

@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useRoute } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import Sidebar from '@/components/layout/sidebar';
-import Topbar from '@/components/layout/topbar';
 import TimelineAdvancedView from '@/components/timeline/visualization/timeline-advanced-view';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -86,46 +84,34 @@ const TimelinePage: React.FC = () => {
   // 渲染加载状态
   if (isLoading) {
     return (
-      <div className="flex h-screen bg-gray-50">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Topbar title="时间线" />
-          <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-            <div className="mb-6">
-              <Skeleton className="h-8 w-64" />
-            </div>
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <Skeleton className="h-6 w-48 mb-4" />
-              <div className="space-y-4">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="flex space-x-4">
-                    <Skeleton className="h-12 w-12 rounded-full" />
-                    <div className="space-y-2 flex-1">
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-4 w-1/2" />
-                    </div>
-                  </div>
-                ))}
+      <div className="space-y-6">
+        <div className="mb-6">
+          <Skeleton className="h-8 w-64" />
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <Skeleton className="h-6 w-48 mb-4" />
+          <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="flex space-x-4">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
               </div>
-            </div>
-          </main>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Topbar title={`${novelTitle} - 时间线`} />
-        
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">《{novelTitle}》时间线</h1>
-            <p className="text-gray-600 mt-1">管理和可视化小说中的重要事件</p>
-          </div>
+    <div className="space-y-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">《{novelTitle}》时间线</h1>
+        <p className="text-gray-600 mt-1">管理和可视化小说中的重要事件</p>
+      </div>
 
           <div className="bg-white rounded-xl shadow-sm p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -181,8 +167,6 @@ const TimelinePage: React.FC = () => {
               </TabsContent>
             </Tabs>
           </div>
-        </main>
-      </div>
     </div>
   );
 };

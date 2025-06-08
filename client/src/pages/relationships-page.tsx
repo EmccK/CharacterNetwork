@@ -152,8 +152,8 @@ export default function RelationshipsPage() {
   };
 
   return (
-    <main className="flex-1 overflow-y-auto bg-gray-50 p-4 md:p-6">
-      <div className="mb-6">
+    <div className="space-y-6">
+      <div>
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-800">角色关系</h3>
           <div className="flex gap-2">
@@ -480,6 +480,6 @@ export default function RelationshipsPage() {
           )}
         </DialogContent>
       </Dialog>
-    </main>
+    </div>
   );
-} 
+}

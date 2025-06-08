@@ -4,8 +4,6 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
-import Sidebar from "@/components/layout/sidebar";
-import Topbar from "@/components/layout/topbar";
 import UserManagement from "@/components/admin/user-management";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -73,99 +71,81 @@ export default function AdminPanel() {
   // If not admin, show error message
   if (!user?.isAdmin) {
     return (
-      <div className="flex h-screen bg-gray-50">
-        <Sidebar />
-        
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Topbar title="管理员面板" />
-          
-          <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-            <Card className="max-w-md mx-auto">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-amber-500" />
-                  <CardTitle>访问被拒绝</CardTitle>
-                </div>
-                <CardDescription>
-                  您需要管理员权限才能访问此页面。
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button onClick={() => navigate("/")}>
-                  返回控制面板
-                </Button>
-              </CardContent>
-            </Card>
-          </main>
-        </div>
-      </div>
+      <Card className="max-w-md mx-auto">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-amber-500" />
+            <CardTitle>访问被拒绝</CardTitle>
+          </div>
+          <CardDescription>
+            您需要管理员权限才能访问此页面。
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={() => navigate("/")}>
+            返回控制面板
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
   
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Topbar title="管理员面板" />
-         
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-2">管理员控制面板</h1>
-            <p className="text-gray-600">管理用户和系统设置</p>
-          </div>
-           
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="users">用户管理</TabsTrigger>
-              <TabsTrigger value="settings">系统设置</TabsTrigger>
-              <TabsTrigger value="logs">活动日志</TabsTrigger>
-            </TabsList>
-             
-            <TabsContent value="users">
-              <UserManagement 
-                users={users}
-                isLoading={isUsersLoading}
-                onDeleteUser={(userId) => deleteUserMutation.mutate(userId)}
-                onUpdateUser={(userId, data) => updateUserMutation.mutate({ userId, data })}
-                currentUserId={user.id}
-              />
-            </TabsContent>
-            
-            <TabsContent value="settings">
-              <Card>
-                <CardHeader>
-                 <CardTitle>系统设置</CardTitle>
-                  <CardDescription>
-                   配置应用范围的设置
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-center py-8 text-gray-500">
-                   系统设置功能即将推出
-                  </p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-           
-            <TabsContent value="logs">
-              <Card>
-                <CardHeader>
-                 <CardTitle>活动日志</CardTitle>
-                  <CardDescription>
-                   查看系统活动和用户操作
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-center py-8 text-gray-500">
-                   活动日志功能即将推出
-                  </p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </main>
+    <div className="space-y-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">管理员控制面板</h1>
+        <p className="text-gray-600">管理用户和系统设置</p>
       </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="users">用户管理</TabsTrigger>
+          <TabsTrigger value="settings">系统设置</TabsTrigger>
+          <TabsTrigger value="logs">活动日志</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="users">
+          <UserManagement
+            users={users}
+            isLoading={isUsersLoading}
+            onDeleteUser={(userId) => deleteUserMutation.mutate(userId)}
+            onUpdateUser={(userId, data) => updateUserMutation.mutate({ userId, data })}
+            currentUserId={user.id}
+          />
+        </TabsContent>
+
+        <TabsContent value="settings">
+          <Card>
+            <CardHeader>
+             <CardTitle>系统设置</CardTitle>
+              <CardDescription>
+               配置应用范围的设置
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-center py-8 text-gray-500">
+               系统设置功能即将推出
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="logs">
+          <Card>
+            <CardHeader>
+             <CardTitle>活动日志</CardTitle>
+              <CardDescription>
+               查看系统活动和用户操作
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-center py-8 text-gray-500">
+               活动日志功能即将推出
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

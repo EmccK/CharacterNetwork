@@ -139,8 +139,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <main className="flex-1 overflow-y-auto bg-gray-50 p-4 md:p-6">
-      <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto space-y-6">
+      <div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full md:w-auto grid-cols-3 mb-6">
             <TabsTrigger value="profile" className="flex items-center">
@@ -395,6 +395,6 @@ export default function SettingsPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </main>
+    </div>
   );
 }

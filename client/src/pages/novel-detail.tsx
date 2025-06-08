@@ -214,34 +214,30 @@ export default function NovelDetail() {
   
   if (isNovelLoading) {
     return (
-      <main className="flex-1 overflow-y-auto bg-gray-50 p-4 md:p-6">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-        </div>
-      </main>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
     );
   }
   
   if (isNovelError || !novel) {
     return (
-      <main className="flex-1 overflow-y-auto bg-gray-50 p-4 md:p-6">
-        <div className="text-center py-12">
-          <h3 className="text-lg font-medium text-gray-900">未找到小说</h3>
-          <p className="mt-2 text-sm text-gray-500">
-            您查找的小说不存在或您没有查看权限。
-          </p>
-          <div className="mt-6">
-            <Button onClick={() => navigate("/novels")}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> 返回小说列表
-            </Button>
-          </div>
+      <div className="text-center py-12">
+        <h3 className="text-lg font-medium text-gray-900">未找到小说</h3>
+        <p className="mt-2 text-sm text-gray-500">
+          您查找的小说不存在或您没有查看权限。
+        </p>
+        <div className="mt-6">
+          <Button onClick={() => navigate("/novels")}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> 返回小说列表
+          </Button>
         </div>
-      </main>
+      </div>
     );
   }
   
   return (
-    <main className="flex-1 overflow-y-auto bg-gray-50 p-4 md:p-6">
+    <div className="space-y-6">
       {/* 返回按钮和标题栏 */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
@@ -576,6 +572,6 @@ export default function NovelDetail() {
           </div>
         </DialogContent>
       </Dialog>
-    </main>
+    </div>
   );
-} 
+}
