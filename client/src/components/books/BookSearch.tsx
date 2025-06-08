@@ -77,15 +77,13 @@ const BookSearch: React.FC<BookSearchProps> = ({ onSelectBook, setExternalSearch
   // 提供外部调用的方法
   useEffect(() => {
     if (setExternalSearchQuery) {
-      setExternalSearchQuery((query: string) => {
-        setSearchQuery(query);
-        if (query.trim().length > 0) {
-          setDebouncedQuery(query);
-        }
-        return query;
-      });
+      setExternalSearchQuery(query);
+      setSearchQuery(query);
+      if (query.trim().length > 0) {
+        setDebouncedQuery(query);
+      }
     }
-  }, [setExternalSearchQuery]);
+  }, [setExternalSearchQuery, query]);
 
   // 当用户输入时，设置一个延迟进行搜索
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -238,7 +236,7 @@ const BookSearch: React.FC<BookSearchProps> = ({ onSelectBook, setExternalSearch
                         {(book as any).payType === 1048577 ? '付费' : '免费'}
                       </span>
                     )}
-                    {book.categories && book.categories.length > 0 && (
+                    {book.categories && Array.isArray(book.categories) && book.categories.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {(book.categories as string[]).slice(0, 2).map((category, idx) => (
                           <span key={idx} className="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded">
