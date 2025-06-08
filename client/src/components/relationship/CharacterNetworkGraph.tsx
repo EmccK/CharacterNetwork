@@ -178,9 +178,6 @@ export default function CharacterNetworkGraph({
                   </div>
                   <div className="flex-grow">
                     <h3 className="text-xl font-bold mb-1">{selectedCharacter.name}</h3>
-                    {selectedCharacter.title && (
-                      <p className="text-sm text-gray-500 mb-2">{selectedCharacter.title}</p>
-                    )}
                     
                     {selectedCharacter.description && (
                       <p className="text-gray-700 mb-4">{selectedCharacter.description}</p>
@@ -219,7 +216,6 @@ export default function CharacterNetworkGraph({
                               </div>
                               <div className="flex-grow">
                                 <div className="font-medium">{otherChar.name}</div>
-                                <div className="text-sm text-gray-500">{otherChar.title}</div>
                               </div>
                               <Badge 
                                 style={{backgroundColor: relType.color}}

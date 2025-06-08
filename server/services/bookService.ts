@@ -119,9 +119,9 @@ export async function searchBooks(query: string): Promise<BookInfo[]> {
       rating: apiBook.newRating,
       ratingCount: apiBook.newRatingCount,
       payType: apiBook.payType
-    };
+    } as unknown as BookInfo;
   });
-  
+
   // 返回结果（数据库结果优先）
   return [...dbResults, ...enhancedNewBooks];
 }

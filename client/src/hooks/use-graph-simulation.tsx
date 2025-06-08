@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import * as d3 from 'd3';
 import { useGraphStore } from '@/components/relationship/graph/graphStore';
 import type { Character } from '@shared/schema';
-import type { GraphNode, GraphLink, RelationshipType } from '@/components/relationship/graph/types';
+import type { GraphNode, GraphLink } from '@/components/relationship/graph/types';
+import type { RelationshipType } from '@shared/schema';
 
 interface UseGraphSimulationProps {
   characters: Character[];
@@ -61,7 +62,7 @@ export function useGraphSimulation({
     const graphNodes: GraphNode[] = characters.map((character) => ({
       id: character.id,
       name: character.name,
-      avatar: character.avatar,
+      avatar: character.avatar || undefined,
       color: getNodeColor(character.id),
       degree: nodeDegrees.get(character.id) || 0,
       x: Math.random() * dimensions.width,
@@ -158,7 +159,7 @@ export function useGraphSimulation({
   const updateNodePosition = useCallback((nodeId: number, x: number, y: number) => {
     if (!simulationRef.current) return;
     
-    const node = simulationRef.current.nodes().find(n => n.id === nodeId);
+    const node = simulationRef.current.nodes().find((n: any) => n.id === nodeId);
     if (node) {
       node.fx = x;
       node.fy = y;
@@ -170,7 +171,7 @@ export function useGraphSimulation({
   const releaseNode = useCallback((nodeId: number) => {
     if (!simulationRef.current) return;
     
-    const node = simulationRef.current.nodes().find(n => n.id === nodeId);
+    const node = simulationRef.current.nodes().find((n: any) => n.id === nodeId);
     if (node) {
       node.fx = null;
       node.fy = null;

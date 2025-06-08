@@ -220,7 +220,10 @@ export default function CharacterList({
             <CharacterForm
               mode="update"
               characterId={characterToEdit.id}
-              initialData={characterToEdit}
+              initialData={{
+                ...characterToEdit,
+                avatar: characterToEdit?.avatar || undefined
+              }}
               novelId={novelId}
               onSuccess={() => {
                 setIsEditDialogOpen(false);

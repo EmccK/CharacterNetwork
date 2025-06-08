@@ -41,11 +41,11 @@ export async function apiRequest<TResponse, TData = unknown>(
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
-export const getQueryFn: <TResponse>(options: {
+export const getQueryFn = <TResponse>(options: {
   on401: UnauthorizedBehavior;
-}) => QueryFunction<TResponse> =
-  ({ on401: unauthorizedBehavior }) =>
+}): QueryFunction<TResponse> =>
   async ({ queryKey }) => {
+    const { on401: unauthorizedBehavior } = options;
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",
     });
@@ -98,10 +98,9 @@ export const patchRequest = <TResponse, TData = unknown>(url: string, data: TDat
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
+      staleTime: 5 * 60 * 1000, // 5分钟
       retry: false,
     },
     mutations: {

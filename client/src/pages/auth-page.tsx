@@ -116,7 +116,7 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>密码</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="请输入密码" autocomplete="current-password" {...field} />
+                            <Input type="password" placeholder="请输入密码" autoComplete="current-password" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -172,7 +172,7 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>密码</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="请创建密码" autocomplete="new-password" {...field} />
+                            <Input type="password" placeholder="请创建密码" autoComplete="new-password" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -185,7 +185,7 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>确认密码</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="请确认您的密码" autocomplete="new-password" {...field} />
+                            <Input type="password" placeholder="请确认您的密码" autoComplete="new-password" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

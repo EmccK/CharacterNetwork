@@ -1,4 +1,4 @@
-import { Express, Server } from "express";
+import { Express } from "express";
 import express from "express";
 import path from "path";
 import authRoutes from "./auth";

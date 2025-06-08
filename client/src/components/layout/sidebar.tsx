@@ -1,13 +1,13 @@
 import { useAuth } from "@/hooks/use-auth";
-import { useLocation } from "wouter";
+import { useLocation, Link as WouterLink } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { 
-  BookOpen, 
-  Users, 
-  Link, 
-  Settings, 
-  LogOut, 
-  LayoutDashboard, 
+import {
+  BookOpen,
+  Users,
+  Link,
+  Settings,
+  LogOut,
+  LayoutDashboard,
   Shield,
   BookType
 } from "lucide-react";
@@ -23,17 +23,35 @@ interface SidebarLinkProps {
 }
 
 function SidebarLink({ href, icon, children, active, onClick, count }: SidebarLinkProps) {
+  // 如果有自定义 onClick（如退出登录），使用 button
+  if (onClick && href === "/logout") {
+    return (
+      <button
+        className={cn(
+          "w-full flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-primary-600 transition-colors",
+          active && "bg-gray-100 text-primary-600"
+        )}
+        onClick={onClick}
+      >
+        <span className="w-6 h-6 flex items-center justify-center mr-3">{icon}</span>
+        <span className="flex-grow text-sm font-medium text-left">{children}</span>
+        {count !== undefined && (
+          <span className="ml-auto bg-gray-100 text-gray-700 rounded-full px-2 py-0.5 text-xs font-medium">
+            {count}
+          </span>
+        )}
+      </button>
+    );
+  }
+
+  // 对于普通链接，使用 wouter 的 Link 组件
   return (
-    <a 
-      href={href} 
+    <WouterLink
+      href={href}
       className={cn(
         "flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-primary-600 transition-colors",
         active && "bg-gray-100 text-primary-600"
       )}
-      onClick={(e) => {
-        e.preventDefault();
-        if (onClick) onClick();
-      }}
     >
       <span className="w-6 h-6 flex items-center justify-center mr-3">{icon}</span>
       <span className="flex-grow text-sm font-medium">{children}</span>
@@ -42,7 +60,7 @@ function SidebarLink({ href, icon, children, active, onClick, count }: SidebarLi
           {count}
         </span>
       )}
-    </a>
+    </WouterLink>
   );
 }
 
@@ -53,6 +71,7 @@ export default function Sidebar() {
   // 获取小说总数
   const { data: novels = [] } = useQuery({
     queryKey: ["/api/novels"],
+    queryFn: () => fetch("/api/novels", { credentials: "include" }).then(res => res.json()),
     refetchOnMount: true,
     refetchOnWindowFocus: true
   });
@@ -61,10 +80,11 @@ export default function Sidebar() {
   const { data: allCharacters = [] } = useQuery({
     queryKey: ["allCharacters"],
     queryFn: async () => {
-      if (novels.length === 0) return [];
-      
-      let characters = [];
-      for (const novel of novels) {
+      const novelsArray = novels as any[];
+      if (novelsArray.length === 0) return [];
+
+      let characters: any[] = [];
+      for (const novel of novelsArray) {
         try {
           const chars = await fetch(`/api/novels/${novel.id}/characters`, {
             credentials: "include"
@@ -76,7 +96,7 @@ export default function Sidebar() {
       }
       return characters;
     },
-    enabled: novels.length > 0,
+    enabled: (novels as any[]).length > 0,
     refetchOnMount: true,
     refetchOnWindowFocus: true
   });
@@ -85,10 +105,11 @@ export default function Sidebar() {
   const { data: allRelationships = [] } = useQuery({
     queryKey: ["allRelationships"],
     queryFn: async () => {
-      if (novels.length === 0) return [];
-      
-      let relationships = [];
-      for (const novel of novels) {
+      const novelsArray = novels as any[];
+      if (novelsArray.length === 0) return [];
+
+      let relationships: any[] = [];
+      for (const novel of novelsArray) {
         try {
           const rels = await fetch(`/api/novels/${novel.id}/relationships`, {
             credentials: "include"
@@ -100,7 +121,7 @@ export default function Sidebar() {
       }
       return relationships;
     },
-    enabled: novels.length > 0,
+    enabled: (novels as any[]).length > 0,
     refetchOnMount: true,
     refetchOnWindowFocus: true
   });
@@ -119,69 +140,62 @@ export default function Sidebar() {
         </div>
       </div>
       <nav className="mt-4">
-        <SidebarLink 
-          href="/" 
+        <SidebarLink
+          href="/"
           icon={<LayoutDashboard className="text-xl" />}
           active={location === "/"}
-          onClick={() => navigate("/")}
         >
           控制面板
         </SidebarLink>
-        <SidebarLink 
-          href="/novels" 
+        <SidebarLink
+          href="/novels"
           icon={<BookOpen className="text-xl" />}
           active={location === "/novels" || location.startsWith("/novels/")}
-          onClick={() => navigate("/novels")}
-          count={novels.length}
+          count={(novels as any[]).length}
         >
           小说作品
         </SidebarLink>
-        <SidebarLink 
-          href="/characters" 
+        <SidebarLink
+          href="/characters"
           icon={<Users className="text-xl" />}
           active={location === "/characters"}
-          onClick={() => navigate("/characters")}
           count={allCharacters.length}
         >
           人物角色
         </SidebarLink>
-        <SidebarLink 
-          href="/relationships" 
+        <SidebarLink
+          href="/relationships"
           icon={<Link className="text-xl" />}
           active={location === "/relationships"}
-          onClick={() => navigate("/relationships")}
           count={allRelationships.length}
         >
           角色关系
         </SidebarLink>
-        <SidebarLink 
-          href="/novel-genres" 
+        <SidebarLink
+          href="/novel-genres"
           icon={<BookType className="text-xl" />}
           active={location === "/novel-genres"}
-          onClick={() => navigate("/novel-genres")}
         >
           小说类型
         </SidebarLink>
         
         {/* Admin panel - only shown for admin users */}
         {user?.isAdmin && (
-          <SidebarLink 
-            href="/admin" 
+          <SidebarLink
+            href="/admin"
             icon={<Shield className="text-xl" />}
             active={location === "/admin"}
-            onClick={() => navigate("/admin")}
           >
             管理员面板
           </SidebarLink>
         )}
-        
+
         <div className="border-t my-4"></div>
-        
-        <SidebarLink 
-          href="/settings" 
+
+        <SidebarLink
+          href="/settings"
           icon={<Settings className="text-xl" />}
           active={location === "/settings"}
-          onClick={() => navigate("/settings")}
         >
           设置
         </SidebarLink>

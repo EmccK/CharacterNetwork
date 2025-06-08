@@ -67,7 +67,7 @@ export default function SettingsPage() {
   const updateProfileMutation = useMutation({
     mutationFn: async (data: z.infer<typeof profileSchema>) => {
       const res = await apiRequest("PATCH", `/api/users/${user?.id}`, data);
-      return await res.json();
+      return await (res as Response).json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
@@ -91,7 +91,7 @@ export default function SettingsPage() {
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       });
-      return await res.json();
+      return await (res as Response).json();
     },
     onSuccess: () => {
       toast({

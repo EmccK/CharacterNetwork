@@ -297,10 +297,11 @@ export default function RelationshipForm({
             <FormItem>
               <FormLabel>关系描述（可选）</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="关于这段关系的详细信息" 
-                  rows={3} 
-                  {...field} 
+                <Textarea
+                  placeholder="关于这段关系的详细信息"
+                  rows={3}
+                  {...field}
+                  value={field.value || ''}
                 />
               </FormControl>
               <FormMessage />

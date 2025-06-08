@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import {
   CalendarDays,
@@ -68,9 +68,7 @@ const TimelineAdvancedView: React.FC<TimelineAdvancedViewProps> = ({
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates => ({
-        ...sortableKeyboardCoordinates,
-      }),
+      coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
@@ -487,7 +485,10 @@ const TimelineAdvancedView: React.FC<TimelineAdvancedViewProps> = ({
             <TimelineForm
               novelId={novelId}
               characters={characters}
-              timelineEvent={eventToEdit}
+              timelineEvent={{
+                ...eventToEdit,
+                description: eventToEdit.description || undefined
+              }}
               onSuccess={() => {
                 setEventToEdit(null);
                 onUpdate();

@@ -14,8 +14,8 @@ if (process.env.NODE_ENV === 'development') {
   }, true);
 }
 
-// 注册Service Worker
-registerServiceWorker();
+// 临时禁用 Service Worker 来调试问题
+// registerServiceWorker();
 
 // 渲染应用
 createRoot(document.getElementById("root")!).render(<App />);

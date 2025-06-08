@@ -44,6 +44,7 @@ const TimelinePage: React.FC = () => {
     isLoading: isNovelLoading,
   } = useQuery({
     queryKey: [`/api/novels/${params?.id}`],
+    queryFn: () => fetch(`/api/novels/${params?.id}`, { credentials: "include" }).then(res => res.json()),
     enabled: !!params?.id,
   });
 
@@ -54,6 +55,7 @@ const TimelinePage: React.FC = () => {
     refetch: refetchTimelineEvents,
   } = useQuery<TimelineEvent[]>({
     queryKey: [`/api/novels/${params?.id}/timeline-events`],
+    queryFn: () => fetch(`/api/novels/${params?.id}/timeline-events`, { credentials: "include" }).then(res => res.json()),
     enabled: !!params?.id,
   });
 
@@ -63,6 +65,7 @@ const TimelinePage: React.FC = () => {
     isLoading: isCharactersLoading,
   } = useQuery<Character[]>({
     queryKey: [`/api/novels/${params?.id}/characters`],
+    queryFn: () => fetch(`/api/novels/${params?.id}/characters`, { credentials: "include" }).then(res => res.json()),
     enabled: !!params?.id,
   });
 
@@ -72,6 +75,7 @@ const TimelinePage: React.FC = () => {
     isLoading: isRelationshipsLoading,
   } = useQuery<Relationship[]>({
     queryKey: [`/api/novels/${params?.id}/relationships`],
+    queryFn: () => fetch(`/api/novels/${params?.id}/relationships`, { credentials: "include" }).then(res => res.json()),
     enabled: !!params?.id,
   });
 
@@ -79,7 +83,7 @@ const TimelinePage: React.FC = () => {
   const isLoading = isNovelLoading || isTimelineEventsLoading || isCharactersLoading || isRelationshipsLoading;
 
   // 小说标题
-  const novelTitle = novel?.title || '小说时间线';
+  const novelTitle = (novel as any)?.title || '小说时间线';
 
   // 渲染加载状态
   if (isLoading) {

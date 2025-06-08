@@ -66,20 +66,32 @@ const searchBooks = async (query: string): Promise<BookInfo[]> => {
 
 export interface BookSearchProps {
   onSelectBook: (book: BookInfo) => void;
-  setExternalSearchQuery?: (query: string) => void; // 新增方法属性
+  onExternalSearchQueryChange?: (setQueryFn: (query: string) => void) => void; // 暴露设置查询的方法
 }
 
-const BookSearch: React.FC<BookSearchProps> = ({ onSelectBook, setExternalSearchQuery }) => {
+const BookSearch: React.FC<BookSearchProps> = ({ onSelectBook, onExternalSearchQueryChange }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [isExternalUpdate, setIsExternalUpdate] = useState(false);
 
   // 提供外部调用的方法
   useEffect(() => {
-    if (setExternalSearchQuery) {
-      setExternalSearchQuery(searchQuery);
+    if (onExternalSearchQueryChange) {
+      onExternalSearchQueryChange((query: string) => {
+        setIsExternalUpdate(true);
+        setSearchQuery(query);
+      });
     }
-  }, [setExternalSearchQuery, searchQuery]);
+  }, [onExternalSearchQueryChange]);
+
+  // 当外部设置搜索查询时，立即触发搜索
+  useEffect(() => {
+    if (isExternalUpdate && searchQuery.trim().length > 0) {
+      setDebouncedQuery(searchQuery);
+      setIsExternalUpdate(false);
+    }
+  }, [searchQuery, isExternalUpdate]);
 
   // 当用户输入时，设置一个延迟进行搜索
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

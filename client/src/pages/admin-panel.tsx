@@ -23,6 +23,7 @@ export default function AdminPanel() {
     refetch: refetchUsers
   } = useQuery({
     queryKey: ["/api/admin/users"],
+    queryFn: () => fetch("/api/admin/users", { credentials: "include" }).then(res => res.json()),
     enabled: user?.isAdmin,
   });
   
@@ -106,7 +107,7 @@ export default function AdminPanel() {
 
         <TabsContent value="users">
           <UserManagement
-            users={users}
+            users={users as any[]}
             isLoading={isUsersLoading}
             onDeleteUser={(userId) => deleteUserMutation.mutate(userId)}
             onUpdateUser={(userId, data) => updateUserMutation.mutate({ userId, data })}

@@ -43,6 +43,7 @@ export default function NovelsPage() {
   // Fetch novels
   const { data: novels = [], isLoading, refetch } = useQuery({
     queryKey: ["/api/novels"],
+    queryFn: () => fetch("/api/novels", { credentials: "include" }).then(res => res.json()),
   });
 
   // Delete novel mutation
@@ -70,7 +71,7 @@ export default function NovelsPage() {
   });
 
   // Filter and sort novels
-  const filteredNovels = novels
+  const filteredNovels = (novels as any[])
     .filter((novel: any) => {
       // Apply genre filter
       if (genreFilter !== "all" && novel.genre !== genreFilter) return false;
@@ -98,7 +99,7 @@ export default function NovelsPage() {
     });
 
   // Get unique genres for filter dropdown
-  const uniqueGenres = Array.from(new Set(novels.map((novel: any) => novel.genre).filter(Boolean)));
+  const uniqueGenres = Array.from(new Set((novels as any[]).map((novel: any) => novel.genre).filter(Boolean)));
 
   const handleDeleteNovel = (id: number) => {
     if (window.confirm("您确定要删除这部小说吗？此操作无法撤销。")) {
@@ -138,7 +139,7 @@ export default function NovelsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">所有类型</SelectItem>
-              {uniqueGenres.map((genre: string) => (
+              {(uniqueGenres as string[]).map((genre: string) => (
                 <SelectItem key={genre} value={genre}>
                   {genre}
                 </SelectItem>

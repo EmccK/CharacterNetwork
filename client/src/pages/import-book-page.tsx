@@ -12,7 +12,7 @@ const ImportBookPage = () => {
   const { user } = useAuth();
   const [, navigate] = useLocation();
   const [selectedBook, setSelectedBook] = useState<BookInfo | null>(null);
-  const [setSearchQuery, setSetSearchQuery] = useState<(query: string) => string | null>(null);
+  const [setSearchQuery, setSetSearchQuery] = useState<((query: string) => void) | null>(null);
 
   // 确保用户已登录
   if (!user) {
@@ -28,9 +28,9 @@ const ImportBookPage = () => {
     setSelectedBook(null);
   };
   
-  // 设置搜索外部接口
-  const setExternalSearchQueryRef = useCallback((fn: (query: string) => string) => {
-    setSetSearchQuery(() => fn);
+  // 接收 BookSearch 组件的 setSearchQuery 方法
+  const handleExternalSearchQueryChange = useCallback((setQueryFn: (query: string) => void) => {
+    setSetSearchQuery(() => setQueryFn);
   }, []);
   
   // 处理点击关键词
@@ -77,7 +77,7 @@ const ImportBookPage = () => {
                 ))}
               </div>
             </div>
-            <BookSearch onSelectBook={handleSelectBook} setExternalSearchQuery={setExternalSearchQueryRef} />
+            <BookSearch onSelectBook={handleSelectBook} onExternalSearchQueryChange={handleExternalSearchQueryChange} />
           </>
         ) : (
           <BookDetail book={selectedBook} onBack={handleBackToSearch} />

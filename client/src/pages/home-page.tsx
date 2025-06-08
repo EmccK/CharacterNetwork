@@ -25,6 +25,7 @@ export default function HomePage() {
   // Get novels
   const { data: novels = [] } = useQuery<any[]>({
     queryKey: ["/api/novels"],
+    queryFn: () => fetch("/api/novels", { credentials: "include" }).then(res => res.json()),
   });
 
   // 获取角色数据

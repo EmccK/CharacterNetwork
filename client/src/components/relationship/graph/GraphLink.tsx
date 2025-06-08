@@ -8,9 +8,9 @@ interface GraphLinkProps {
 }
 
 const GraphLink: React.FC<GraphLinkProps> = ({ link, nodesMap, selectedNode }) => {
-  // 将source和target转换为数字类型
-  const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-  const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+  // source和target已经是数字类型
+  const sourceId = link.source;
+  const targetId = link.target;
   
   // 从nodesMap获取源节点和目标节点
   const source = nodesMap.get(sourceId);

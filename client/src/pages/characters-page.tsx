@@ -103,21 +103,23 @@ export default function CharactersPage() {
   // Fetch novels
   const { data: novels = [] } = useQuery({
     queryKey: ["/api/novels"],
+    queryFn: () => fetch("/api/novels", { credentials: "include" }).then(res => res.json()),
   });
 
   // Fetch characters for selected novel
   const { data: characters = [], isLoading } = useQuery({
     queryKey: [`/api/novels/${selectedNovelId}/characters`],
+    queryFn: () => fetch(`/api/novels/${selectedNovelId}/characters`, { credentials: "include" }).then(res => res.json()),
     enabled: selectedNovelId !== "all",
   });
 
   // Get all characters across all novels
   const { data: allCharacters = [], refetch: refetchAllCharacters } = useQuery({
-    queryKey: ["allCharacters", novels.length], // 添加novels.length作为依赖项
+    queryKey: ["allCharacters", (novels as any[]).length], // 添加novels.length作为依赖项
     queryFn: async () => {
-      console.log("获取所有小说的角色", novels.map(n => n.title));
+      console.log("获取所有小说的角色", (novels as any[]).map((n: any) => n.title));
       const allChars: any[] = [];
-      for (const novel of novels) {
+      for (const novel of (novels as any[])) {
         try {
           // 使用fetch而不是fetchQuery以避免缓存问题
           const response = await fetch(`/api/novels/${novel.id}/characters`, {
@@ -140,7 +142,7 @@ export default function CharactersPage() {
       }
       return allChars;
     },
-    enabled: selectedNovelId === "all" && novels.length > 0,
+    enabled: selectedNovelId === "all" && (novels as any[]).length > 0,
     refetchOnMount: true, // 确保每次挂载都刷新
     refetchOnWindowFocus: true, // 当窗口获得焦点时刷新
   });
@@ -155,7 +157,7 @@ export default function CharactersPage() {
           <h3 className="text-lg font-semibold text-gray-800">角色管理</h3>
           <Button
             onClick={() => setIsAddCharacterModalOpen(true)}
-            disabled={novels.length === 0}
+            disabled={(novels as any[]).length === 0}
           >
             添加角色
           </Button>
@@ -169,7 +171,7 @@ export default function CharactersPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">所有小说</SelectItem>
-              {novels.map((novel: any) => (
+              {(novels as any[]).map((novel: any) => (
                 <SelectItem key={novel.id} value={novel.id.toString()}>
                   {novel.title}
                 </SelectItem>
@@ -179,7 +181,7 @@ export default function CharactersPage() {
         </div>
 
         {/* Characters Grid */}
-        {novels.length === 0 ? (
+        {(novels as any[]).length === 0 ? (
           <Card>
             <CardContent className="p-6 text-center">
               <p className="text-gray-500 mb-4">您需要先创建小说再添加角色。</p>
@@ -192,9 +194,9 @@ export default function CharactersPage() {
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           </div>
-        ) : displayedCharacters.length > 0 ? (
+        ) : (displayedCharacters as any[]).length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {displayedCharacters.map((character: any) => (
+            {(displayedCharacters as any[]).map((character: any) => (
               <Card 
                 key={character.id} 
                 className="overflow-hidden hover:shadow-md transition-all hover:border-primary-200 group bg-white min-h-[140px]"
@@ -296,7 +298,7 @@ export default function CharactersPage() {
           <CharacterForm 
             mode="create"
             novelId={selectedNovelId !== "all" ? parseInt(selectedNovelId) : undefined}
-            novels={novels}
+            novels={novels as any[]}
             onSuccess={() => {
               setIsAddCharacterModalOpen(false);
               // 刷新当前选中小说的角色
@@ -339,7 +341,7 @@ export default function CharactersPage() {
                 avatar: selectedCharacter.avatar
               }}
               novelId={selectedCharacter.novelId}
-              novels={novels}
+              novels={novels as any[]}
               onSuccess={() => {
                 setIsEditCharacterModalOpen(false);
                 setSelectedCharacter(null);

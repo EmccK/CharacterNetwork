@@ -40,21 +40,25 @@ export default function RelationshipsPage() {
   // Fetch novels
   const { data: novels = [] } = useQuery({
     queryKey: ["/api/novels"],
+    queryFn: () => fetch("/api/novels", { credentials: "include" }).then(res => res.json()),
   });
 
   // Fetch relationship types
   const { data: relationshipTypes = [] } = useQuery({
     queryKey: ["/api/relationship-types"],
+    queryFn: () => fetch("/api/relationship-types", { credentials: "include" }).then(res => res.json()),
   });
 
   // Fetch characters and relationships for selected novel
   const { data: characters = [], isLoading: isCharactersLoading } = useQuery({
     queryKey: [`/api/novels/${selectedNovelId}/characters`],
+    queryFn: () => fetch(`/api/novels/${selectedNovelId}/characters`, { credentials: "include" }).then(res => res.json()),
     enabled: !!selectedNovelId,
   });
 
   const { data: relationships = [], isLoading: isRelationshipsLoading } = useQuery({
     queryKey: [`/api/novels/${selectedNovelId}/relationships`],
+    queryFn: () => fetch(`/api/novels/${selectedNovelId}/relationships`, { credentials: "include" }).then(res => res.json()),
     enabled: !!selectedNovelId,
   });
 
@@ -124,7 +128,7 @@ export default function RelationshipsPage() {
 
   const handleRelationshipTypeDelete = async (typeId: number) => {
     // 检查是否有使用此关系类型的关系
-    const relationshipsUsingType = relationships.filter((rel: any) => rel.typeId === typeId);
+    const relationshipsUsingType = (relationships as any[]).filter((rel: any) => rel.typeId === typeId);
     
     if (relationshipsUsingType.length > 0) {
       toast({
@@ -165,7 +169,7 @@ export default function RelationshipsPage() {
             </Button>
             <Button
               onClick={() => setIsAddRelationshipModalOpen(true)}
-              disabled={!selectedNovelId || characters.length < 2}
+              disabled={!selectedNovelId || (characters as any[]).length < 2}
             >
               <Plus className="h-4 w-4 mr-2" /> 添加关系
             </Button>
@@ -179,7 +183,7 @@ export default function RelationshipsPage() {
               <SelectValue placeholder="选择小说查看关系" />
             </SelectTrigger>
             <SelectContent>
-              {novels.map((novel: any) => (
+              {(novels as any[]).map((novel: any) => (
                 <SelectItem key={novel.id} value={novel.id.toString()}>
                   {novel.title}
                 </SelectItem>
@@ -192,9 +196,9 @@ export default function RelationshipsPage() {
         <div className="mb-6">
           <h4 className="text-md font-medium mb-2">关系类型</h4>
           <div className="flex flex-wrap gap-2 mb-4">
-            {relationshipTypes.map((type: any) => {
+            {(relationshipTypes as any[]).map((type: any) => {
               // 检查是否有使用此关系类型的关系
-              const isUsedInRelationships = relationships.some((rel: any) => rel.typeId === type.id);
+              const isUsedInRelationships = (relationships as any[]).some((rel: any) => rel.typeId === type.id);
               
               return (
                 <div 
@@ -226,24 +230,24 @@ export default function RelationshipsPage() {
                 </div>
               );
             })}
-            {relationshipTypes.length === 0 && (
+            {(relationshipTypes as any[]).length === 0 && (
               <p className="text-sm text-gray-500">没有定义自定义关系类型。</p>
             )}
           </div>
         </div>
 
         {/* Relationship List */}
-        {selectedNovelId && !isLoading && characters.length >= 2 && (
+        {selectedNovelId && !isLoading && (characters as any[]).length >= 2 && (
           <div className="mb-6">
             <h4 className="text-md font-medium mb-2">已有关系</h4>
-            {relationships.length === 0 ? (
+            {(relationships as any[]).length === 0 ? (
               <p className="text-sm text-gray-500">还没有定义任何关系。</p>
             ) : (
               <div className="grid gap-2 border rounded-lg p-2 bg-white">
-                {relationships.map((relationship: any) => {
-                  const source = characters.find((c: any) => c.id === relationship.sourceId);
-                  const target = characters.find((c: any) => c.id === relationship.targetId);
-                  const relType = relationshipTypes.find((t: any) => t.id === relationship.typeId);
+                {(relationships as any[]).map((relationship: any) => {
+                  const source = (characters as any[]).find((c: any) => c.id === relationship.sourceId);
+                  const target = (characters as any[]).find((c: any) => c.id === relationship.targetId);
+                  const relType = (relationshipTypes as any[]).find((t: any) => t.id === relationship.typeId);
                   
                   if (!source || !target || !relType) return null;
                   
@@ -299,7 +303,7 @@ export default function RelationshipsPage() {
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           </div>
-        ) : characters.length < 2 ? (
+        ) : (characters as any[]).length < 2 ? (
           <Card>
             <CardContent className="p-6 text-center">
               <div className="flex justify-center mb-4">
@@ -309,7 +313,7 @@ export default function RelationshipsPage() {
               </div>
               <CardTitle className="mb-2">没有可用的关系</CardTitle>
               <CardDescription className="mb-4">
-                您需要至少两个角色才能创建关系。这部小说有 {characters.length} 个角色。
+                您需要至少两个角色才能创建关系。这部小说有 {(characters as any[]).length} 个角色。
               </CardDescription>
               <Button onClick={() => navigate(`/novels/${selectedNovelId}`)}>
                 前往小说
@@ -319,11 +323,11 @@ export default function RelationshipsPage() {
         ) : (
           <div className="bg-white rounded-xl shadow-sm p-6">
             <CharacterNetworkGraph 
-              characters={characters}
-              relationships={relationships}
-              relationshipTypes={relationshipTypes}
+              characters={characters as any[]}
+              relationships={relationships as any[]}
+              relationshipTypes={relationshipTypes as any[]}
               isLoading={isLoading}
-              onNodeSelect={(character) => {
+              onSelectCharacter={(character: any) => {
                 // 选中角色后可以在相应的信息区域显示角色信息
                 // 而不是使用toast
                 if (character) {
@@ -343,9 +347,9 @@ export default function RelationshipsPage() {
           </DialogHeader>
           <RelationshipForm 
             novelId={parseInt(selectedNovelId)}
-            characters={characters}
-            relationships={relationships}
-            relationshipTypes={relationshipTypes}
+            characters={characters as any[]}
+            relationships={relationships as any[]}
+            relationshipTypes={relationshipTypes as any[]}
             onSuccess={() => {
               setIsAddRelationshipModalOpen(false);
               queryClient.invalidateQueries({ queryKey: [`/api/novels/${selectedNovelId}/relationships`] });

@@ -9,10 +9,10 @@ import { loadEnv } from "vite";
 function customRuntimeErrorOverlay() {
   return {
     name: 'custom-runtime-error-overlay',
-    apply: 'serve',
-    configureServer(server) {
+    apply: 'serve' as const,
+    configureServer(server: any) {
       // 覆盖原有的错误插件
-      server.middlewares.use((req, res, next) => {
+      server.middlewares.use((req: any, res: any, next: any) => {
         next();
       });
     },
@@ -20,17 +20,17 @@ function customRuntimeErrorOverlay() {
 }
 
 // 配置函数，接收环境变量
-export default defineConfig(async ({ mode }) => {
+export default defineConfig(({ mode }) => {
   // 加载环境变量
   const env = loadEnv(mode, process.cwd(), '');
-  
+
   // 创建环境变量替换对象
   const envReplacements = {
     'process.env.NODE_ENV': JSON.stringify(mode),
     '%VITE_SUPABASE_URL%': JSON.stringify(env.SUPABASE_URL || ''),
     '%VITE_SUPABASE_ANON_KEY%': JSON.stringify(env.SUPABASE_ANON_KEY || '')
   };
-  
+
   return {
     server: {
       hmr: {
@@ -43,83 +43,15 @@ export default defineConfig(async ({ mode }) => {
       react(),
       customRuntimeErrorOverlay(),
       themePlugin(),
-      VitePWA({
-        registerType: 'prompt',
-        includeAssets: ['favicon.png', 'robots.txt', 'icons/*.png'],
-        manifest: false, // 我们使用自定义的manifest.json
-        strategies: 'generateSW',
-        workbox: {
-          cleanupOutdatedCaches: true,
-          skipWaiting: true,
-          clientsClaim: true,
-          sourcemap: true,
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,json}'],
-          navigateFallbackDenylist: [/\/api\//], // API请求不应该回退
-          runtimeCaching: [
-            {
-              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'google-fonts-cache',
-                expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365 // 1年
-                },
-                cacheableResponse: {
-                  statuses: [0, 200]
-                }
-              }
-            },
-            {
-              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'gstatic-fonts-cache',
-                expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365 // 1年
-                },
-                cacheableResponse: {
-                  statuses: [0, 200]
-                }
-              }
-            },
-            {
-              urlPattern: /\.(?:png|jpg|jpeg|svg|gif)$/,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'images-cache',
-                expiration: {
-                  maxEntries: 50,
-                  maxAgeSeconds: 60 * 60 * 24 * 30 // 30天
-                }
-              }
-            },
-            {
-              urlPattern: /\/api\/.*/i,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'api-cache',
-                expiration: {
-                  maxEntries: 50,
-                  maxAgeSeconds: 60 * 60 * 24 // 24小时
-                },
-                cacheableResponse: {
-                  statuses: [0, 200]
-                }
-              }
-            }
-          ]
-        }
-      }),
-      ...(process.env.NODE_ENV !== "production" &&
-      process.env.REPL_ID !== undefined
-        ? [
-            await import("@replit/vite-plugin-cartographer").then((m) =>
-              m.cartographer()
-            ),
-          ]
-        : []),
+      // 注释掉异步插件加载，因为在同步配置中无法使用
+      // ...(process.env.NODE_ENV !== "production" &&
+      // process.env.REPL_ID !== undefined
+      //   ? [
+      //       await import("@replit/vite-plugin-cartographer").then((m) =>
+      //         m.cartographer()
+      //       ),
+      //     ]
+      //   : []),
     ],
     resolve: {
       alias: {

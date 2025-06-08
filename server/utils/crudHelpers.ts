@@ -284,7 +284,7 @@ export async function listResources(
     if (options.checkOwnership && options.currentUserId) {
       const ownerField = options.ownershipField || "userId";
       
-      return resources.filter(resource => 
+      return resources.filter((resource: any) =>
         resource[ownerField] === options.currentUserId || options.isAdmin
       );
     }

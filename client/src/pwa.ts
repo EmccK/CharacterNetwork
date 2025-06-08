@@ -1,26 +1,22 @@
-// Service Worker 注册函数
+// Service Worker 注册函数 - 现在由 Vite PWA 插件自动处理
 export function registerServiceWorker() {
+  // 清理可能存在的旧的 Service Worker
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
       try {
-        // 尝试先注销已有的Service Worker
+        // 检查是否有旧的 Service Worker 需要清理
         const registrations = await navigator.serviceWorker.getRegistrations();
-        for (const registration of registrations) {
-          await registration.unregister();
+        console.log('发现的 Service Worker 注册:', registrations.length);
+
+        // 如果有多个注册，清理旧的
+        if (registrations.length > 1) {
+          for (let i = 0; i < registrations.length - 1; i++) {
+            await registrations[i].unregister();
+            console.log('清理了旧的 Service Worker');
+          }
         }
-        
-        // 重新注册
-        const registration = await navigator.serviceWorker.register('/sw.js', { 
-          scope: '/',
-          updateViaCache: 'none' // 禁用缓存，确保每次都获取最新的service worker
-        });
-        
-        console.log('Service Worker 注册成功，范围:', registration.scope);
-        
-        // 强制更新
-        registration.update();
       } catch (error) {
-        console.error('Service Worker 注册失败:', error);
+        console.error('Service Worker 清理失败:', error);
       }
     });
   }

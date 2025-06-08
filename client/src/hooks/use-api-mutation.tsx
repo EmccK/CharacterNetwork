@@ -68,16 +68,18 @@ function useApiMutation<TData = any, TError = Error, TVariables = any>(
     };
     
     // 对于有请求体的方法，添加请求体
-    if (method !== 'GET' && method !== 'DELETE') {
+    if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
     // 检查variables是否为FormData类型
     if (variables instanceof FormData) {
     // 如果是FormData，直接使用，并删除Content-Type头（让浏览器自动设置）
       config.body = variables;
-    delete config.headers['Content-Type'];
+      if (config.headers && 'Content-Type' in config.headers) {
+        delete (config.headers as any)['Content-Type'];
+      }
     console.log(`[API请求] 使用FormData发送数据`);
       
         // 输出 FormData 的内容（仅用于调试）
-            const formDataEntries = [];
+            const formDataEntries: string[] = [];
             variables.forEach((value, key) => {
               if (value instanceof File) {
                 formDataEntries.push(`${key}: File(${value.name}, ${value.type}, ${value.size} bytes)`);
@@ -139,7 +141,10 @@ function useApiMutation<TData = any, TError = Error, TVariables = any>(
       
       // 显示成功提示
       if (options.showSuccessToast) {
-        toast.success(options.successMessage || '操作成功');
+        toast.toast({
+          title: '操作成功',
+          description: options.successMessage || '操作成功',
+        });
       }
       
       // 调用完成回调
@@ -168,10 +173,14 @@ function useApiMutation<TData = any, TError = Error, TVariables = any>(
       
       // 显示错误提示
       if (options.showErrorToast) {
-        const errorMessage = options.errorMessage || 
-          (typedError as any).message || 
+        const errorMessage = options.errorMessage ||
+          (typedError as any).message ||
           '操作失败，请稍后重试';
-        toast.error(errorMessage);
+        toast.toast({
+          variant: 'destructive',
+          title: '操作失败',
+          description: errorMessage,
+        });
       }
       
       // 调用完成回调

@@ -59,7 +59,9 @@ export const createNovel = async (req: Request, res: Response, next: NextFunctio
     };
 
     // 移除coverImageUrl字段，因为它不在我们的schema中
-    delete novelData.coverImageUrl;
+    if ('coverImageUrl' in novelData) {
+      delete (novelData as any).coverImageUrl;
+    }
 
     const novel = await createResource(storage, "createNovel", novelData, {
       currentUserId: req.user!.id,
@@ -120,7 +122,9 @@ export const updateNovel = async (req: Request, res: Response, next: NextFunctio
     console.log('[updateNovel] 最终更新数据:', novelData);
     
     // 移除coverImageUrl字段，因为它不在我们的schema中
-    delete novelData.coverImageUrl;
+    if ('coverImageUrl' in novelData) {
+      delete (novelData as any).coverImageUrl;
+    }
 
     const updatedNovel = await updateResource(
       storage, 

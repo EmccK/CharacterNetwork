@@ -6,6 +6,9 @@ import session from "express-session";
 
 // Interface for storage operations
 export interface IStorage {
+  // 索引签名，允许动态方法访问
+  [key: string]: any;
+
   // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;

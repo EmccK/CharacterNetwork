@@ -100,6 +100,7 @@ export default function NovelDetail() {
     isError: isNovelError
   } = useQuery<Novel>({
     queryKey: [`/api/novels/${params?.id}`],
+    queryFn: () => fetch(`/api/novels/${params?.id}`, { credentials: "include" }).then(res => res.json()),
     enabled: !!params?.id,
   });
   
@@ -110,6 +111,7 @@ export default function NovelDetail() {
     refetch: refetchCharacters
   } = useQuery<Character[]>({
     queryKey: [`/api/novels/${params?.id}/characters`],
+    queryFn: () => fetch(`/api/novels/${params?.id}/characters`, { credentials: "include" }).then(res => res.json()),
     enabled: !!params?.id,
   });
   
@@ -122,6 +124,7 @@ export default function NovelDetail() {
     refetch: refetchRelationships
   } = useQuery<Relationship[]>({
     queryKey: [`/api/novels/${params?.id}/relationships`],
+    queryFn: () => fetch(`/api/novels/${params?.id}/relationships`, { credentials: "include" }).then(res => res.json()),
     enabled: !!params?.id,
   });
   
@@ -131,6 +134,7 @@ export default function NovelDetail() {
     isLoading: isRelationshipTypesLoading
   } = useQuery<RelationshipType[]>({
     queryKey: ["/api/relationship-types"],
+    queryFn: () => fetch("/api/relationship-types", { credentials: "include" }).then(res => res.json()),
     enabled: !!params?.id,
   });
   
@@ -141,6 +145,7 @@ export default function NovelDetail() {
     refetch: refetchTimelineEvents
   } = useQuery<TimelineEvent[]>({
     queryKey: [`/api/novels/${params?.id}/timeline-events`],
+    queryFn: () => fetch(`/api/novels/${params?.id}/timeline-events`, { credentials: "include" }).then(res => res.json()),
     enabled: !!params?.id,
   });
   
@@ -151,6 +156,7 @@ export default function NovelDetail() {
     refetch: refetchNotes
   } = useQuery<Note[]>({
     queryKey: [`/api/novels/${params?.id}/notes`],
+    queryFn: () => fetch(`/api/novels/${params?.id}/notes`, { credentials: "include" }).then(res => res.json()),
     enabled: !!params?.id,
   });
   
@@ -401,7 +407,7 @@ export default function NovelDetail() {
                         relationships={relationships}
                         relationshipTypes={relationshipTypes}
                         isLoading={isCharactersLoading || isRelationshipsLoading || isRelationshipTypesLoading}
-                        onNodeSelect={(character) => {
+                        onSelectCharacter={(character: any) => {
                           if (character) {
                             console.log(`已选择角色：${character.name}`);
                           }
@@ -473,7 +479,10 @@ export default function NovelDetail() {
                 {activeTab === "timeline" && (
                   <div className="mt-4">
                     <TimelineView 
-                      events={timelineEvents}
+                      events={timelineEvents.map((event: any) => ({
+                        ...event,
+                        description: event.description || undefined
+                      }))}
                       characters={characters}
                       novelId={parseInt(params?.id || "0")}
                       isLoading={isTimelineEventsLoading || isCharactersLoading}
@@ -515,7 +524,10 @@ export default function NovelDetail() {
           </DialogHeader>
           <RelationshipForm 
             novelId={parseInt(params?.id || "0")}
-            characters={characters}
+            characters={characters.map((char: any) => ({
+              ...char,
+              createdAt: new Date(char.createdAt)
+            }))}
             relationships={relationships}
             relationshipTypes={relationshipTypes}
             onSuccess={() => {
