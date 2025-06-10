@@ -50,31 +50,15 @@ export const characters = pgTable("characters", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Default Relationship Type Schema - 系统默认关系类型
-export const defaultRelationshipTypes = pgTable("default_relationship_types", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  color: text("color").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+// 移除了 default_relationship_types 和 user_hidden_relationship_types 表
+// 现在所有关系类型都存储在 relationship_types 表中，使用 userId = 0 表示系统默认类型
 
-// User Hidden Relationship Types Schema - 用户隐藏的默认关系类型
-export const userHiddenRelationshipTypes = pgTable("user_hidden_relationship_types", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  defaultTypeId: integer("default_type_id").notNull().references(() => defaultRelationshipTypes.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => ({
-  // 确保用户不能重复隐藏同一个默认关系类型
-  uniqueUserDefaultType: unique().on(table.userId, table.defaultTypeId),
-}));
-
-// Relationship Type Schema - 用户自定义关系类型
+// Relationship Type Schema - 用户自定义关系类型和系统默认类型
 export const relationshipTypes = pgTable("relationship_types", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   color: text("color").notNull(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull(), // 0 表示系统默认类型，其他值表示用户自定义类型
 });
 
 // Relationship Schema
@@ -119,15 +103,7 @@ export const insertCharacterSchema = createInsertSchema(characters).pick({
   novelId: true,
 });
 
-export const insertDefaultRelationshipTypeSchema = createInsertSchema(defaultRelationshipTypes).pick({
-  name: true,
-  color: true,
-});
-
-export const insertUserHiddenRelationshipTypeSchema = createInsertSchema(userHiddenRelationshipTypes).pick({
-  userId: true,
-  defaultTypeId: true,
-});
+// 移除了相关的 insert schema
 
 export const insertRelationshipTypeSchema = createInsertSchema(relationshipTypes).pick({
   name: true,
@@ -158,11 +134,7 @@ export type Novel = typeof novels.$inferSelect & {
 export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
 export type Character = typeof characters.$inferSelect;
 
-export type InsertDefaultRelationshipType = z.infer<typeof insertDefaultRelationshipTypeSchema>;
-export type DefaultRelationshipType = typeof defaultRelationshipTypes.$inferSelect;
-
-export type InsertUserHiddenRelationshipType = z.infer<typeof insertUserHiddenRelationshipTypeSchema>;
-export type UserHiddenRelationshipType = typeof userHiddenRelationshipTypes.$inferSelect;
+// 移除了相关的类型定义
 
 export type InsertRelationshipType = z.infer<typeof insertRelationshipTypeSchema>;
 export type RelationshipType = typeof relationshipTypes.$inferSelect;

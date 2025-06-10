@@ -14,11 +14,11 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const isMobile = useIsMobile()
   const [location] = useLocation()
-  const { user } = useAuth()
-  
+  const { user, isLoading } = useAuth()
+
   // 如果是登录页面，不显示导航栏
   const isAuthPage = location === "/auth"
-  
+
   // 获取当前页面标题
   const getPageTitle = () => {
     if (location === "/") return "控制面板"
@@ -31,9 +31,26 @@ export function AppLayout({ children }: AppLayoutProps) {
     if (location.includes("/timeline")) return "时间线"
     return "人物关系管理器"
   }
-  
-  // 如果用户未登录并且不在登录页，不显示任何内容
-  if (!user && !isAuthPage) {
+
+  // 如果是登录页面，直接渲染子组件
+  if (isAuthPage) {
+    return <>{children}</>
+  }
+
+  // 如果正在加载认证状态，显示加载指示器
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600">正在验证身份...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // 如果用户未登录，让子组件处理重定向
+  if (!user) {
     return <>{children}</>
   }
   

@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "./lib/protected-route";
 import PWAInstallButton from "./components/PWAInstallButton";
 import { AppLayout } from "@/components/layout/app-layout";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
@@ -66,15 +67,17 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <PWAInstallButton />
-        <AppLayout>
-          <Router />
-        </AppLayout>
-        <Toaster />
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <PWAInstallButton />
+          <AppLayout>
+            <Router />
+          </AppLayout>
+          <Toaster />
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

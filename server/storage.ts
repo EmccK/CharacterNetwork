@@ -1,8 +1,6 @@
 import {
   type User, type Novel, type Character, type RelationshipType, type Relationship, type NovelGenre, type BookInfo, type TimelineEvent,
-  type DefaultRelationshipType, type UserHiddenRelationshipType,
-  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre, type InsertBookInfo, type InsertTimelineEvent,
-  type InsertDefaultRelationshipType, type InsertUserHiddenRelationshipType
+  type InsertUser, type InsertNovel, type InsertCharacter, type InsertRelationshipType, type InsertRelationship, type InsertNovelGenre, type InsertBookInfo, type InsertTimelineEvent
 } from "@shared/schema";
 import session from "express-session";
 
@@ -41,19 +39,10 @@ export interface IStorage {
   updateCharacter(id: number, character: Partial<Character>): Promise<Character | undefined>;
   deleteCharacter(id: number): Promise<boolean>;
 
-  // Default Relationship Type operations
-  getDefaultRelationshipTypes(): Promise<DefaultRelationshipType[]>;
-  getDefaultRelationshipType(id: number): Promise<DefaultRelationshipType | undefined>;
-  createDefaultRelationshipType(defaultRelationshipType: InsertDefaultRelationshipType): Promise<DefaultRelationshipType>;
-
-  // User Hidden Relationship Type operations
-  getUserHiddenRelationshipTypes(userId: number): Promise<UserHiddenRelationshipType[]>;
-  hideDefaultRelationshipType(userId: number, defaultTypeId: number): Promise<UserHiddenRelationshipType>;
-  unhideDefaultRelationshipType(userId: number, defaultTypeId: number): Promise<boolean>;
-
-  // Relationship Type operations (user custom types)
-  getRelationshipTypes(userId: number): Promise<RelationshipType[]>;
-  getAllAvailableRelationshipTypes(userId: number): Promise<(DefaultRelationshipType | RelationshipType)[]>;
+  // Relationship Type operations (包括系统默认类型和用户自定义类型)
+  getRelationshipTypes(userId: number): Promise<RelationshipType[]>; // 获取用户自定义类型
+  getAllAvailableRelationshipTypes(userId: number): Promise<RelationshipType[]>; // 获取所有可用类型（系统默认+用户自定义）
+  getSystemDefaultRelationshipTypes(): Promise<RelationshipType[]>; // 获取系统默认类型
   getRelationshipType(id: number): Promise<RelationshipType | undefined>;
   createRelationshipType(relationshipType: InsertRelationshipType): Promise<RelationshipType>;
   updateRelationshipType(id: number, relationshipType: Partial<RelationshipType>): Promise<RelationshipType | undefined>;

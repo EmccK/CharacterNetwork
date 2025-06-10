@@ -20,7 +20,8 @@ export function useGraphSimulation({
 }: UseGraphSimulationProps) {
   const { 
     setInitialData, 
-    updateNodes 
+    updateNodes,
+    updateLinks 
   } = useGraphStore();
   
   const simulationRef = useRef<d3.Simulation<GraphNode, d3.SimulationLinkDatum<GraphNode>> | null>(null);
@@ -65,14 +66,14 @@ export function useGraphSimulation({
       avatar: character.avatar || undefined,
       color: getNodeColor(character.id),
       degree: nodeDegrees.get(character.id) || 0,
-      x: Math.random() * dimensions.width,
-      y: Math.random() * dimensions.height
+      x: dimensions.width / 2 + (Math.random() - 0.5) * 100,
+      y: dimensions.height / 2 + (Math.random() - 0.5) * 100
     }));
 
     // 创建连接
     const graphLinks: GraphLink[] = relationships.map((relationship, index) => {
       const relType = relationshipTypes.find(type => type.id === relationship.typeId);
-      return {
+      const link = {
         source: relationship.sourceId,
         target: relationship.targetId,
         type: relType?.name || "未知",
@@ -80,17 +81,39 @@ export function useGraphSimulation({
         id: relationship.id ? `rel-${relationship.id}` : `rel-${index}-${relationship.sourceId}-${relationship.targetId}`,
         typeId: relationship.typeId
       };
+      
+      console.log('创建 GraphLink:', {
+        originalRelationship: relationship,
+        createdLink: link,
+        relType
+      });
+      
+      return link;
+    });
+
+    console.log('useGraphSimulation 设置初始数据:', {
+      graphNodes,
+      graphLinks,
+      relationships,
+      relationshipTypes
     });
 
     // 设置初始数据
     setInitialData({
       nodes: graphNodes,
-      links: graphLinks
+      links: []  // 先设置为空，在模拟初始化时再设置
     });
 
     // 初始化模拟
     if (graphNodes.length > 0) {
       initializeSimulation(graphNodes, graphLinks);
+    } else {
+      // 如果没有节点，清理模拟
+      if (simulationRef.current) {
+        simulationRef.current.stop();
+        simulationRef.current = null;
+      }
+      setIsSimulationReady(false);
     }
   }, [characters, relationships, relationshipTypes, dimensions, getNodeColor, setInitialData]);
 
@@ -116,17 +139,27 @@ export function useGraphSimulation({
         const targetExists = graphNodes.some(node => node.id === link.target);
         return sourceExists && targetExists;
       });
-      
+
+
+
       const simulation = d3.forceSimulation<GraphNode>()
         .nodes(graphNodes)
         .force('charge', d3.forceManyBody().strength(-150))
         .force('center', d3.forceCenter(dimensions.width / 2, dimensions.height / 2))
         .force('collision', d3.forceCollide().radius(30))
-        .force('link', d3.forceLink<GraphNode, any>(validLinks)
-          .id((d: any) => d.id)
-          .distance(100))
         .alpha(1)
         .alphaDecay(0.02);
+
+      // 单独设置链接力，确保正确初始化
+      if (validLinks.length > 0) {
+        simulation.force('link', d3.forceLink<GraphNode, any>(validLinks)
+          .id((d: any) => d.id)
+          .distance(100)
+          .strength(0.5));
+      }
+
+      // 确保links数据正确更新到store
+      updateLinks(validLinks);
 
       simulation.on('tick', () => {
         // 更新所有节点位置

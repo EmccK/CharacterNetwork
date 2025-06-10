@@ -8,6 +8,20 @@
       "when": 1749378465303,
       "tag": "0000_shallow_starfox",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1749573738998,
+      "tag": "0001_misty_screwball",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1749574212129,
+      "tag": "0002_glossy_enchantress",
+      "breakpoints": true
     }
   ]
 }

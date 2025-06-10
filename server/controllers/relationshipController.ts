@@ -93,7 +93,7 @@ export const createRelationship = async (req: Request, res: Response, next: Next
     if (!relationshipType) {
       return res.status(400).json({ message: "Relationship type not found" });
     }
-    
+
     // 检查关系类型是否属于此用户或是系统默认类型
     if (relationshipType.userId !== req.user!.id && relationshipType.userId !== 0) {
       return res.status(403).json({ message: "Forbidden: You don't own this relationship type" });
@@ -160,7 +160,7 @@ export const updateRelationship = async (req: Request, res: Response, next: Next
       if (!relationshipType) {
         return res.status(400).json({ message: "Relationship type not found" });
       }
-      
+
       // 检查关系类型是否属于此用户或是系统默认类型
       if (relationshipType.userId !== req.user!.id && relationshipType.userId !== 0) {
         return res.status(403).json({ message: "Forbidden: You don't own this relationship type" });
@@ -250,46 +250,14 @@ export const getUserCustomRelationshipTypes = async (req: Request, res: Response
  */
 export const getDefaultRelationshipTypes = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const defaultTypes = await storage.getDefaultRelationshipTypes();
+    const defaultTypes = await storage.getSystemDefaultRelationshipTypes();
     res.json(defaultTypes);
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * 隐藏默认关系类型
- */
-export const hideDefaultRelationshipType = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const userId = req.user!.id;
-    const defaultTypeId = parseInt(req.params.id);
-
-    const hiddenType = await storage.hideDefaultRelationshipType(userId, defaultTypeId);
-    res.status(201).json(hiddenType);
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * 取消隐藏默认关系类型
- */
-export const unhideDefaultRelationshipType = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const userId = req.user!.id;
-    const defaultTypeId = parseInt(req.params.id);
-
-    const success = await storage.unhideDefaultRelationshipType(userId, defaultTypeId);
-    if (success) {
-      res.json({ message: "关系类型已恢复显示" });
-    } else {
-      res.status(404).json({ message: "未找到隐藏记录" });
-    }
-  } catch (error) {
-    next(error);
-  }
-};
+// 移除了隐藏/取消隐藏默认关系类型的功能，现在所有关系类型都在同一个表中
 
 /**
  * 创建关系类型
