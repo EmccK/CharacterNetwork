@@ -23,19 +23,10 @@ cd CharacterNetwork
 2. 生成安全的环境变量：
 
 ```bash
-chmod +x generate-secrets.sh
-./generate-secrets.sh
-```
-
-这将创建一个包含随机安全密钥的 `.env` 文件。
-
-或者，您也可以手动配置环境变量：
-
-```bash
 cp .env.example .env
 ```
 
-然后编辑 `.env` 文件中的变量，尤其是 `SESSION_SECRET` 和数据库密码，建议更改为强随机密钥。
+然后编辑 `.env` 文件中的数据库密码等变量。SESSION_SECRET 会自动生成，无需手动配置。
 
 3. 赋予脚本执行权限：
 
@@ -152,7 +143,7 @@ cat backup.sql | docker exec -i character-network-db psql -U postgres -d charact
 开发环境的环境变量已在`.env`文件中设置，包括：
 
 - `DATABASE_URL`: 数据库连接字符串
-- `SESSION_SECRET`: 会话密钥
+- `SESSION_SECRET`: 会话密钥（可选，系统会自动生成）
 - `NODE_ENV`: 环境设置
 
 如果需要修改数据库连接信息，请编辑`.env`文件中的以下变量：
@@ -185,6 +176,6 @@ psql -U postgres -d characternetwork
 ## 安全注意事项
 
 - 在生产环境中，请确保更改默认的数据库密码
-- 设置一个强随机的`SESSION_SECRET`
+- SESSION_SECRET 会自动生成随机密钥，生产环境建议设置固定值
 - 考虑对`docker-compose.yml`中的端口映射进行调整
 - 在生产部署中，考虑使用Nginx作为反向代理

@@ -25,16 +25,9 @@ async function setupLocalDatabase() {
       console.log('创建uploads目录成功');
     }
     
-    // 读取SQL文件
-    const schemaPath = path.join(__dirname, '../supabase/migrations/20250525131355_azure_lagoon.sql');
-    const typesPath = path.join(__dirname, '../supabase/migrations/20250525131410_little_oasis.sql');
-    
-    // 执行SQL文件
-    console.log('执行数据库架构SQL...');
-    await execAsync(`psql "${dbUrl}" -f "${schemaPath}"`, { env: { PGPASSWORD: process.env.PGPASSWORD } });
-    
-    console.log('执行默认关系类型SQL...');
-    await execAsync(`psql "${dbUrl}" -f "${typesPath}"`, { env: { PGPASSWORD: process.env.PGPASSWORD } });
+    // 使用drizzle-kit推送schema到数据库
+    console.log('使用drizzle-kit推送数据库架构...');
+    await execAsync('npx drizzle-kit push', { env: process.env });
     
     console.log('数据库设置完成！');
   } catch (error) {

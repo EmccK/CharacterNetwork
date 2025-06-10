@@ -7,6 +7,11 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 
+// 生成随机session secret
+function generateSessionSecret(): string {
+  return randomBytes(32).toString('base64');
+}
+
 declare global {
   namespace Express {
     interface User extends SelectUser {}
@@ -29,8 +34,19 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
+  // 自动生成SESSION_SECRET，如果没有环境变量的话
+  const sessionSecret = process.env.SESSION_SECRET || generateSessionSecret();
+  
+  // 如果是自动生成的，在开发环境下给出提示
+  if (!process.env.SESSION_SECRET) {
+    console.log('📝 SESSION_SECRET未配置，已自动生成随机密钥');
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('⚠️  生产环境建议设置固定的SESSION_SECRET环境变量');
+    }
+  }
+
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "novel-character-manager-secret",
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore,

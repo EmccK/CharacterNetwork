@@ -11,7 +11,6 @@
     "dotenv": "dotenv",
     "check": "tsc",
     "db:push": "dotenv drizzle-kit push",
-    "db:migrate": "dotenv psql \"$DATABASE_URL\" -f supabase/migrations/20250525131355_azure_lagoon.sql",
     "db:setup": "node scripts/setup-local-db.js",
     "db:create": "echo '使用远程Supabase数据库，无需创建'",
     "db:drop": "echo '使用远程Supabase数据库，无需删除'",

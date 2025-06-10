@@ -16,7 +16,6 @@ services:
       - PGPORT=5432
       - PGUSER=postgres
       - PGPASSWORD=postgres
-      - SESSION_SECRET=${SESSION_SECRET:-your-secure-session-secret-change-me}
       - NODE_ENV=production
     volumes:
       - ./uploads:/app/uploads
